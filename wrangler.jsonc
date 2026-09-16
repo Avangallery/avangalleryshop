@@ -10,8 +10,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "avan_gallery",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+      "database_name": "avan-gallery-db",
+      "database_id": "92e44420-adb7-4b0f-a75f-4c1038602fe8"
     }
   ]
 }

@@ -1,17 +1,1 @@
-{
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "avan-gallery",
-  "main": "src/index.js",
-  "compatibility_date": "2026-09-16",
-  "assets": {
-    "directory": "./public",
-    "binding": "ASSETS"
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "avan-gallery-db",
-      "database_id": "92e44420-adb7-4b0f-a75f-4c1038602fe8"
-    }
-  ]
-}
+{"$schema":"node_modules/wrangler/config-schema.json","name":"avan-gallery-v110","main":"src/index.js","compatibility_date":"2026-09-16","assets":{"directory":"./public","binding":"ASSETS"},"d1_databases":[{"binding":"DB","database_name":"avan-gallery-db","database_id":"92e44420-adb7-4b0f-a75f-4c1038602fe8"}]}

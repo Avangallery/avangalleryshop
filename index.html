@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#03172a">
+  <meta name="description" content="AVAN GALLERY — گالری ساعت‌های کلاسیک و لوکس">
+  <title>AVAN GALLERY | آوان گالری</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="topbar">
+    <div class="top-message">✦ زمان فقط یک عدد نیست، سبک زندگی است ...</div>
+    <div class="top-services">
+      <span>♢ تضمین اصالت کالا</span>
+      <i></i>
+      <span>🚚 ارسال رایگان سفارش‌های بالای ۲ میلیون تومان</span>
+      <i></i>
+      <span>◷ پشتیبانی ۲۴ ساعته</span>
+    </div>
+  </div>
+
+  <div class="mainbar">
+    <a class="brand" href="#" aria-label="AVAN GALLERY">
+      <div class="brand-row">
+        <span class="avan-fa">آوان</span>
+        <span class="brand-mark">AVAN</span>
+      </div>
+      <span class="brand-en">A V A N &nbsp; G A L L E R Y</span>
+    </a>
+
+    <nav class="main-nav" id="mainNav">
+      <a class="active" href="#home">صفحه اصلی</a>
+      <a href="#products">محصولات <span>⌄</span></a>
+      <a href="#brands">برندها <span>⌄</span></a>
+      <a href="#about">درباره ما</a>
+      <a href="#contact">تماس با ما</a>
+    </nav>
+
+    <form class="search-box" id="searchForm">
+      <button type="submit" aria-label="جستجو">⌕</button>
+      <input id="searchInput" type="search" autocomplete="off" placeholder="جستجوی ساعت، برند یا مدل ..." aria-label="جستجوی ساعت">
+    </form>
+
+    <div class="actions">
+      <a class="login" href="#account"><span class="person">♙</span><span>ورود / ثبت‌نام</span></a>
+      <button class="round-action" type="button" aria-label="علاقه‌مندی‌ها">♡<b>0</b></button>
+      <button class="round-action" type="button" aria-label="سبد خرید">🛒<b>0</b></button>
+    </div>
+
+    <button class="hamburger" id="hamburger" type="button" aria-label="باز کردن منو" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="home">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      <div class="hero-copy">
+        <div class="eyebrow">AVAN GALLERY</div>
+        <h1>زمان،<br><strong>فراتر از یک انتخاب</strong></h1>
+        <p>مجموعه‌ای از اصیل‌ترین برندهای ساعت دنیا<br>در گالری آوان</p>
+        <a class="cta" href="#products">مشاهده محصولات <span>←</span></a>
+      </div>
+
+      <div class="slide-count" aria-label="اسلاید">
+        <strong>01</strong><i></i><span>02</span><span>03</span>
+      </div>
+
+      <div class="hero-arrows">
+        <button type="button" aria-label="اسلاید قبلی">←</button>
+        <button type="button" aria-label="اسلاید بعدی">→</button>
+      </div>
+
+      <div class="hero-bottom">
+        <div class="feature"><span>♢</span><div><b>تضمین اصالت کالا</b><small>خریدی مطمئن</small></div></div>
+        <div class="divider"></div>
+        <div class="feature"><span>🚚</span><div><b>ارسال سریع و رایگان</b><small>برای سفارش‌های بالای ۲ میلیون</small></div></div>
+        <div class="divider"></div>
+        <div class="feature"><span>♧</span><div><b>پشتیبانی ۲۴ ساعته</b><small>همیشه در کنار شما</small></div></div>
+        <div class="divider"></div>
+        <div class="feature"><span>▣</span><div><b>پرداخت امن</b><small>با کلیه کارت‌های بانکی</small></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="after" id="products">
+    <div>
+      <span>AVAN GALLERY</span>
+      <h2>محصولات منتخب</h2>
+      <p>این بخش آماده اتصال به محصولات واقعی فروشگاه و API پروژه اصلی آوان است.</p>
+    </div>
+  </section>
+
+  <section class="after" id="brands"><h2>برندها</h2></section>
+  <section class="after" id="about"><h2>درباره آوان گالری</h2></section>
+  <section class="after" id="contact"><h2>تماس با ما</h2></section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const nav = document.getElementById('mainNav');
+  const searchForm = document.getElementById('searchForm');
+  const searchInput = document.getElementById('searchInput');
+  const toast = document.getElementById('toast');
+
+  hamburger.addEventListener('click', () => {
+    const open = nav.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open);
+  });
+
+  nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    nav.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+  }));
+
+  searchForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const q = searchInput.value.trim();
+    if (!q) return;
+    toast.textContent = `جستجو برای «${q}»`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  });
+
+  document.querySelectorAll('.hero-arrows button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      toast.textContent = 'اسلاید بعدی در نسخه کامل فروشگاه متصل می‌شود.';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1800);
+    });
+  });
+</script>
+</body>
+</html>

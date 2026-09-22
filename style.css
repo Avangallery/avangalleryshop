@@ -48,3 +48,6 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
   .hero{height:calc(100vh - 52px);min-height:620px}
   .hero-copy{left:6%;top:27%}
 }
+
+/* FINAL CLEAN BACKGROUND: no baked header, logo, search, hero text or slider */
+.hero-art{background-image:url("assets/watch-background-clean.jpg");background-position:center center;background-size:cover}

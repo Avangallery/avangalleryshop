@@ -98,88 +98,27 @@
 (() => {
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
-
-  let cart = Number(localStorage.getItem('avan_cart_count') || 0);
-  let wishlist = Number(localStorage.getItem('avan_wishlist_count') || 0);
   let slide = 0;
-
   const slides = [
-    {title:'MORE THAN<br><span>JUST A WATCH</span>', subtitle:'انتخابی فراتر از زمان', pos:'center center'},
-    {title:'TIME<br><span>DEFINES YOUR STYLE</span>', subtitle:'استایل خودت را با آوان انتخاب کن', pos:'center center'},
-    {title:'WEAR<br><span>YOUR STORY</span>', subtitle:'هر ساعت، بخشی از داستان توست', pos:'center center'}
+    ['MORE THAN<br><span>JUST A WATCH</span>','انتخابی فراتر از زمان'],
+    ['TIME<br><span>DEFINES YOUR STYLE</span>','استایل خودت را با آوان انتخاب کن'],
+    ['WEAR<br><span>YOUR STORY</span>','هر ساعت، بخشی از داستان توست']
   ];
-
-  function counts(){
-    $('#cartCount').textContent = cart;
-    $('#wishCount').textContent = wishlist;
-    localStorage.setItem('avan_cart_count', cart);
-    localStorage.setItem('avan_wishlist_count', wishlist);
-  }
-
-  function toast(msg){
-    const t=$('#toast'); t.textContent=msg; t.classList.add('show');
-    clearTimeout(window.__toast); window.__toast=setTimeout(()=>t.classList.remove('show'),2200);
-  }
-
-  function modal(title,text){
-    $('#modalTitle').textContent=title; $('#modalText').textContent=text;
-    $('#modal').classList.add('show');
-  }
-
-  function closeModal(){ $('#modal').classList.remove('show'); }
-  $('#closeModal').onclick=closeModal; $('#modalOk').onclick=closeModal;
-  $('#modal').onclick=e=>{if(e.target.id==='modal') closeModal()};
-
-  function renderSlide(n){
+  function render(n){
     slide=(n+slides.length)%slides.length;
-    $('#heroTitle').innerHTML=slides[slide].title;
-    $('#heroSubtitle').textContent=slides[slide].subtitle;
-    $$('.slide-number').forEach((x,i)=>x.classList.toggle('active',i===slide));
+    $('#heroTitle').innerHTML=slides[slide][0];
+    $('#heroSubtitle').textContent=slides[slide][1];
+    $$('.slide-number').forEach((b,i)=>b.classList.toggle('active',i===slide));
   }
-  $('#prevSlide').onclick=()=>renderSlide(slide-1);
-  $('#nextSlide').onclick=()=>renderSlide(slide+1);
-  $$('.slide-number').forEach(x=>x.onclick=()=>renderSlide(Number(x.dataset.slide)));
-    const q=$('#searchInput').value.trim();
-    if(!q){toast('عبارت جستجو را وارد کن');return;}
-    location.hash='products';
-    $('#productHeading').textContent='نتایج جستجو برای «'+q+'»';
-    toast('جستجو برای «'+q+'»');
-  };
-
-  $('#wishlistBtn').onclick=()=>{
-    location.hash='products';
-    toast(wishlist ? 'محصولات مورد علاقه شما' : 'هنوز محصولی به علاقه‌مندی اضافه نشده');
-  };
-  $('#cartBtn').onclick=()=>{
-    location.hash='products';
-    modal('سبد خرید', cart ? `در حال حاضر ${cart} کالا در سبد خرید دارید.` : 'سبد خرید شما خالی است.');
-  };
-
-  $$('.add-cart').forEach(b=>b.onclick=()=>{cart++;counts();toast('محصول به سبد خرید اضافه شد');});
-  $$('.add-wish').forEach(b=>b.onclick=()=>{wishlist++;counts();toast('محصول به علاقه‌مندی‌ها اضافه شد');});
-  $('#addDemoProduct').onclick=()=>{cart++;counts();toast('ساعت نمونه به سبد اضافه شد');};
-
+  $('#prevSlide').onclick=()=>render(slide-1);
+  $('#nextSlide').onclick=()=>render(slide+1);
+  $$('.slide-number').forEach(b=>b.onclick=()=>render(+b.dataset.slide));
   $$('.service-card,.slogan').forEach(b=>b.onclick=()=>{
-    const map={
-      support:['پشتیبانی ۲۴ ساعته','تیم پشتیبانی آوان در تمام ساعات پاسخگوی شماست.'],
-      shipping:['ارسال رایگان','برای سفارش‌های بالای ۲ میلیون تومان ارسال رایگان فعال است.'],
-      authenticity:['تضمین اصالت کالا','تمام محصولات فروشگاه با ضمانت اصالت عرضه می‌شوند.'],
-      return:['۷ روز ضمانت بازگشت','شرایط بازگشت کالا در بخش قوانین فروشگاه قرار می‌گیرد.'],
-      about:['AVAN GALLERY','زمان تنها چیزیست که دوباره برنمی‌گردد.']
-    };
-    const v=map[b.dataset.action]||map.about; modal(v[0],v[1]);
+    const t={support:'پشتیبانی ۲۴ ساعته',shipping:'ارسال رایگان برای سفارش‌های بالای ۲ میلیون تومان',authenticity:'تضمین اصالت کالا',return:'۷ روز ضمانت بازگشت',about:'آوان گالری؛ انتخابی فراتر از زمان'};
+    alert(t[b.dataset.action]||t.about);
   });
-
-  $('#hamb').onclick=()=>{
-    const open=$('#nav').classList.toggle('open');
-    $('#hamb').setAttribute('aria-expanded',open);
-  };
-  $$('#nav a').forEach(a=>a.onclick=()=>$('#nav').classList.remove('open'));
-    $('#productHeading').textContent='محصولات: '+a.textContent;
-  });
-
-  counts();
-  setInterval(()=>renderSlide(slide+1),7000);
+  document.querySelector('.cta')?.addEventListener('click',()=>document.querySelector('#products')?.scrollIntoView({behavior:'smooth'}));
+  setInterval(()=>render(slide+1),7000);
 })();
 </script>
 </body>

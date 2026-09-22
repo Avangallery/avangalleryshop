@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AVAN GALLERY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,73 +13,224 @@
 
 <header class="site-header">
   <div class="service-bar">
-    <div class="service slogan">زمان تنها چیزیست که دوباره برنمی‌گردد ... <span>◇</span></div>
-    <div class="service-item"><span class="gold">▣</span><b>۷ روز ضمانت بازگشت</b><small>بدون قید و شرط</small></div>
-    <div class="service-item"><span class="gold">♢</span><b>تضمین اصالت کالا</b><small>با خیال راحت خرید کنید</small></div>
-    <div class="service-item"><span class="gold">▰</span><b>ارسال رایگان</b><small>برای سفارش‌های بالای ۲ میلیون</small></div>
-    <div class="service-item"><span class="gold">♧</span><b>پشتیبانی ۲۴ ساعته</b><small>همیشه در کنار شما</small></div>
+    <button class="service-card" data-action="support"><span>♧</span><strong>پشتیبانی ۲۴ ساعته</strong><small>همیشه در کنار شما</small></button>
+    <button class="service-card" data-action="shipping"><span>▰</span><strong>ارسال رایگان</strong><small>برای سفارش‌های بالای ۲ میلیون</small></button>
+    <button class="service-card" data-action="authenticity"><span>♢</span><strong>تضمین اصالت کالا</strong><small>با خیال راحت خرید کنید</small></button>
+    <button class="service-card" data-action="return"><span>□</span><strong>۷ روز ضمانت بازگشت</strong><small>بدون قید و شرط</small></button>
+    <button class="slogan" data-action="about">زمان تنها چیزیست که دوباره برنمی‌گردد ... <b>◇</b></button>
   </div>
 
   <div class="main-nav">
-    <a class="logo" href="#">
-      <div class="logo-line"><strong>آوان</strong><span>AVAN</span></div>
-      <small>A V A N &nbsp;&nbsp; G A L L E R Y</small>
+    <a class="logo" href="#home" aria-label="آوان گالری">
+      <div class="logo-row"><strong>آوان</strong><span>AVAN</span></div>
+      <small>A V A N&nbsp;&nbsp; G A L L E R Y</small>
     </a>
 
     <nav id="nav">
       <a class="active" href="#home">صفحه اصلی</a>
-      <a href="#cats">دسته‌بندی‌ها <i>⌄</i></a>
-      <a href="#brands">برندها <i>⌄</i></a>
+      <div class="dropdown">
+        <button>دسته‌بندی‌ها <i>⌄</i></button>
+        <div class="dropdown-menu">
+          <a href="#products" data-filter="classic">ساعت کلاسیک</a>
+          <a href="#products" data-filter="luxury">ساعت لوکس</a>
+          <a href="#products" data-filter="sport">ساعت اسپرت</a>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button>برندها <i>⌄</i></button>
+        <div class="dropdown-menu">
+          <a href="#products" data-filter="tissot">TISSOT</a>
+          <a href="#products" data-filter="casio">CASIO</a>
+          <a href="#products" data-filter="citizen">CITIZEN</a>
+        </div>
+      </div>
       <a href="#blog">وبلاگ</a>
       <a href="#about">درباره ما</a>
       <a href="#contact">تماس با ما</a>
     </nav>
 
     <form class="search" id="searchForm">
-      <button aria-label="جستجو">⌕</button>
-      <input id="searchInput" type="search" placeholder="جستجوی ساعت، برند یا مدل ...">
+      <button type="submit" aria-label="جستجو">⌕</button>
+      <input id="searchInput" type="search" placeholder="جستجوی ساعت، برند یا مدل ..." autocomplete="off">
     </form>
 
     <div class="actions">
       <a class="login" href="#account"><span>♙</span> ورود / ثبت‌نام</a>
-      <button class="round" aria-label="علاقه‌مندی">♡<em>0</em></button>
-      <button class="round" aria-label="سبد خرید">🛒<em>0</em></button>
+      <button class="round" id="wishlistBtn" aria-label="علاقه‌مندی‌ها">♡<em id="wishCount">0</em></button>
+      <button class="round" id="cartBtn" aria-label="سبد خرید">🛒<em id="cartCount">0</em></button>
     </div>
-
-    <button class="hamb" id="hamb" aria-label="منو">☰</button>
+    <button class="hamb" id="hamb" aria-label="باز کردن منو" aria-expanded="false">☰</button>
   </div>
 </header>
 
 <main>
 <section class="hero" id="home">
-  <div class="hero-art"></div>
-  <div class="hero-content">
-    <div class="hero-copy">
-      <div class="eyebrow">A V A N &nbsp; G A L L E R Y</div>
-      <h1>MORE THAN<br><span>JUST A WATCH</span></h1>
-      <div class="gold-line"></div>
-      <h2>انتخابی فراتر از زمان</h2>
-    </div>
-    <div class="slider">
-      <b>01</b><i></i><span>02</span><span>03</span>
-    </div>
+  <div class="hero-art" id="heroArt"></div>
+  <div class="hero-shade"></div>
+
+  <div class="hero-copy" id="heroCopy">
+    <div class="eyebrow">A V A N &nbsp; G A L L E R Y</div>
+    <h1 id="heroTitle">MORE THAN<br><span>JUST A WATCH</span></h1>
+    <div class="gold-line"></div>
+    <h2 id="heroSubtitle">انتخابی فراتر از زمان</h2>
+    <a class="cta" href="#products" id="productsBtn">مشاهده محصولات <span>←</span></a>
   </div>
+
+  <div class="slider">
+    <button class="slide-number active" data-slide="0">01</button>
+    <i></i>
+    <button class="slide-number" data-slide="1">02</button>
+    <button class="slide-number" data-slide="2">03</button>
+  </div>
+
   <div class="hero-arrows">
-    <button>‹</button><button>›</button>
+    <button id="prevSlide" aria-label="اسلاید قبلی">‹</button>
+    <button id="nextSlide" aria-label="اسلاید بعدی">›</button>
+  </div>
+
+  <div class="hero-bottom">
+    <div><b>♢</b><span><strong>تضمین اصالت کالا</strong><small>خریدی مطمئن</small></span></div>
+    <i></i>
+    <div><b>▰</b><span><strong>ارسال سریع و رایگان</strong><small>برای سفارش‌های بالای ۲ میلیون</small></span></div>
+    <i></i>
+    <div><b>♧</b><span><strong>پشتیبانی ۲۴ ساعته</strong><small>همیشه در کنار شما</small></span></div>
+    <i></i>
+    <div><b>▣</b><span><strong>پرداخت امن</strong><small>با کلیه کارت‌های بانکی</small></span></div>
   </div>
 </section>
 
-<section class="after"><span>AVAN GALLERY</span><h2>محصولات منتخب</h2></section>
+<section class="content-section" id="products">
+  <div class="section-head">
+    <div><span>AVAN GALLERY</span><h2 id="productHeading">محصولات منتخب</h2></div>
+    <button id="addDemoProduct">＋ افزودن ساعت نمونه به سبد</button>
+  </div>
+  <div class="product-demo">
+    <article class="product-card">
+      <div class="watch-placeholder">AVAN</div>
+      <h3>ساعت کلاسیک آوان</h3>
+      <p>مدل نمونه فروشگاه</p>
+      <div><strong>12,900,000 تومان</strong><button class="add-cart">افزودن به سبد</button><button class="add-wish">♡</button></div>
+    </article>
+    <article class="product-card">
+      <div class="watch-placeholder">AVAN</div>
+      <h3>ساعت لوکس آوان</h3>
+      <p>مدل نمونه فروشگاه</p>
+      <div><strong>18,500,000 تومان</strong><button class="add-cart">افزودن به سبد</button><button class="add-wish">♡</button></div>
+    </article>
+  </div>
+</section>
+
+<section class="content-section compact" id="blog"><h2>وبلاگ آوان</h2><p>راهنمای انتخاب و نگهداری ساعت.</p></section>
+<section class="content-section compact" id="about"><h2>درباره آوان گالری</h2><p>فروشگاه تخصصی ساعت‌های کلاسیک و لوکس.</p></section>
+<section class="content-section compact" id="contact"><h2>تماس با ما</h2><p>پشتیبانی و ارتباط با آوان گالری.</p></section>
+<section class="content-section compact" id="account"><h2>حساب کاربری</h2><p>ورود و ثبت‌نام مشتری.</p></section>
 </main>
 
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <button class="close" id="closeModal">×</button>
+    <h3 id="modalTitle">آوان گالری</h3>
+    <p id="modalText"></p>
+    <button class="modal-ok" id="modalOk">متوجه شدم</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
 <script>
-const nav=document.getElementById('nav'),hamb=document.getElementById('hamb');
-hamb.onclick=()=>nav.classList.toggle('open');
-document.getElementById('searchForm').onsubmit=e=>{
- e.preventDefault();
- const q=document.getElementById('searchInput').value.trim();
- if(q) alert('جستجو: '+q);
-};
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  let cart = Number(localStorage.getItem('avan_cart_count') || 0);
+  let wishlist = Number(localStorage.getItem('avan_wishlist_count') || 0);
+  let slide = 0;
+
+  const slides = [
+    {title:'MORE THAN<br><span>JUST A WATCH</span>', subtitle:'انتخابی فراتر از زمان', pos:'center center'},
+    {title:'TIME<br><span>DEFINES YOUR STYLE</span>', subtitle:'استایل خودت را با آوان انتخاب کن', pos:'center center'},
+    {title:'WEAR<br><span>YOUR STORY</span>', subtitle:'هر ساعت، بخشی از داستان توست', pos:'center center'}
+  ];
+
+  function counts(){
+    $('#cartCount').textContent = cart;
+    $('#wishCount').textContent = wishlist;
+    localStorage.setItem('avan_cart_count', cart);
+    localStorage.setItem('avan_wishlist_count', wishlist);
+  }
+
+  function toast(msg){
+    const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(window.__toast); window.__toast=setTimeout(()=>t.classList.remove('show'),2200);
+  }
+
+  function modal(title,text){
+    $('#modalTitle').textContent=title; $('#modalText').textContent=text;
+    $('#modal').classList.add('show');
+  }
+
+  function closeModal(){ $('#modal').classList.remove('show'); }
+  $('#closeModal').onclick=closeModal; $('#modalOk').onclick=closeModal;
+  $('#modal').onclick=e=>{if(e.target.id==='modal') closeModal()};
+
+  function renderSlide(n){
+    slide=(n+slides.length)%slides.length;
+    $('#heroTitle').innerHTML=slides[slide].title;
+    $('#heroSubtitle').textContent=slides[slide].subtitle;
+    $$('.slide-number').forEach((x,i)=>x.classList.toggle('active',i===slide));
+  }
+  $('#prevSlide').onclick=()=>renderSlide(slide-1);
+  $('#nextSlide').onclick=()=>renderSlide(slide+1);
+  $$('.slide-number').forEach(x=>x.onclick=()=>renderSlide(Number(x.dataset.slide)));
+
+  $('#searchForm').onsubmit=e=>{
+    e.preventDefault();
+    const q=$('#searchInput').value.trim();
+    if(!q){toast('عبارت جستجو را وارد کن');return;}
+    location.hash='products';
+    $('#productHeading').textContent='نتایج جستجو برای «'+q+'»';
+    toast('جستجو برای «'+q+'»');
+  };
+
+  $('#wishlistBtn').onclick=()=>{
+    location.hash='products';
+    toast(wishlist ? 'محصولات مورد علاقه شما' : 'هنوز محصولی به علاقه‌مندی اضافه نشده');
+  };
+  $('#cartBtn').onclick=()=>{
+    location.hash='products';
+    modal('سبد خرید', cart ? `در حال حاضر ${cart} کالا در سبد خرید دارید.` : 'سبد خرید شما خالی است.');
+  };
+
+  $$('.add-cart').forEach(b=>b.onclick=()=>{cart++;counts();toast('محصول به سبد خرید اضافه شد');});
+  $$('.add-wish').forEach(b=>b.onclick=()=>{wishlist++;counts();toast('محصول به علاقه‌مندی‌ها اضافه شد');});
+  $('#addDemoProduct').onclick=()=>{cart++;counts();toast('ساعت نمونه به سبد اضافه شد');};
+
+  $$('.service-card,.slogan').forEach(b=>b.onclick=()=>{
+    const map={
+      support:['پشتیبانی ۲۴ ساعته','تیم پشتیبانی آوان در تمام ساعات پاسخگوی شماست.'],
+      shipping:['ارسال رایگان','برای سفارش‌های بالای ۲ میلیون تومان ارسال رایگان فعال است.'],
+      authenticity:['تضمین اصالت کالا','تمام محصولات فروشگاه با ضمانت اصالت عرضه می‌شوند.'],
+      return:['۷ روز ضمانت بازگشت','شرایط بازگشت کالا در بخش قوانین فروشگاه قرار می‌گیرد.'],
+      about:['AVAN GALLERY','زمان تنها چیزیست که دوباره برنمی‌گردد.']
+    };
+    const v=map[b.dataset.action]||map.about; modal(v[0],v[1]);
+  });
+
+  $('#hamb').onclick=()=>{
+    const open=$('#nav').classList.toggle('open');
+    $('#hamb').setAttribute('aria-expanded',open);
+  };
+  $$('#nav a').forEach(a=>a.onclick=()=>$('#nav').classList.remove('open'));
+  $$('.dropdown button').forEach(b=>b.onclick=e=>{
+    e.preventDefault(); b.parentElement.classList.toggle('open');
+  });
+  $$('.dropdown-menu a').forEach(a=>a.onclick=()=>{
+    $('#nav').classList.remove('open');
+    $('#productHeading').textContent='محصولات: '+a.textContent;
+  });
+
+  counts();
+  setInterval(()=>renderSlide(slide+1),7000);
+})();
 </script>
 </body>
 </html>

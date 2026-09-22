@@ -1,1 +1,0 @@
-ALTER TABLE products ADD COLUMN specs TEXT NOT NULL DEFAULT '{}';

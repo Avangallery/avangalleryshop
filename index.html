@@ -19,48 +19,6 @@
     <button class="service-card" data-action="return"><span>□</span><strong>۷ روز ضمانت بازگشت</strong><small>بدون قید و شرط</small></button>
     <button class="slogan" data-action="about">زمان تنها چیزیست که دوباره برنمی‌گردد ... <b>◇</b></button>
   </div>
-
-  <div class="main-nav">
-    <a class="logo" href="#home" aria-label="آوان گالری">
-      <div class="logo-row"><strong>آوان</strong><span>AVAN</span></div>
-      <small>A V A N&nbsp;&nbsp; G A L L E R Y</small>
-    </a>
-
-    <nav id="nav">
-      <a class="active" href="#home">صفحه اصلی</a>
-      <div class="dropdown">
-        <button>دسته‌بندی‌ها <i>⌄</i></button>
-        <div class="dropdown-menu">
-          <a href="#products" data-filter="classic">ساعت کلاسیک</a>
-          <a href="#products" data-filter="luxury">ساعت لوکس</a>
-          <a href="#products" data-filter="sport">ساعت اسپرت</a>
-        </div>
-      </div>
-      <div class="dropdown">
-        <button>برندها <i>⌄</i></button>
-        <div class="dropdown-menu">
-          <a href="#products" data-filter="tissot">TISSOT</a>
-          <a href="#products" data-filter="casio">CASIO</a>
-          <a href="#products" data-filter="citizen">CITIZEN</a>
-        </div>
-      </div>
-      <a href="#blog">وبلاگ</a>
-      <a href="#about">درباره ما</a>
-      <a href="#contact">تماس با ما</a>
-    </nav>
-
-    <form class="search" id="searchForm">
-      <button type="submit" aria-label="جستجو">⌕</button>
-      <input id="searchInput" type="search" placeholder="جستجوی ساعت، برند یا مدل ..." autocomplete="off">
-    </form>
-
-    <div class="actions">
-      <a class="login" href="#account"><span>♙</span> ورود / ثبت‌نام</a>
-      <button class="round" id="wishlistBtn" aria-label="علاقه‌مندی‌ها">♡<em id="wishCount">0</em></button>
-      <button class="round" id="cartBtn" aria-label="سبد خرید">🛒<em id="cartCount">0</em></button>
-    </div>
-    <button class="hamb" id="hamb" aria-label="باز کردن منو" aria-expanded="false">☰</button>
-  </div>
 </header>
 
 <main>
@@ -181,9 +139,6 @@
   $('#prevSlide').onclick=()=>renderSlide(slide-1);
   $('#nextSlide').onclick=()=>renderSlide(slide+1);
   $$('.slide-number').forEach(x=>x.onclick=()=>renderSlide(Number(x.dataset.slide)));
-
-  $('#searchForm').onsubmit=e=>{
-    e.preventDefault();
     const q=$('#searchInput').value.trim();
     if(!q){toast('عبارت جستجو را وارد کن');return;}
     location.hash='products';
@@ -220,11 +175,6 @@
     $('#hamb').setAttribute('aria-expanded',open);
   };
   $$('#nav a').forEach(a=>a.onclick=()=>$('#nav').classList.remove('open'));
-  $$('.dropdown button').forEach(b=>b.onclick=e=>{
-    e.preventDefault(); b.parentElement.classList.toggle('open');
-  });
-  $$('.dropdown-menu a').forEach(a=>a.onclick=()=>{
-    $('#nav').classList.remove('open');
     $('#productHeading').textContent='محصولات: '+a.textContent;
   });
 

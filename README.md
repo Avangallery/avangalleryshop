@@ -1,11 +1,9 @@
-# AVAN GALLERY Hero V1
+# AVAN GALLERY STORE — V110
 
-نسخه استاتیک هدر + Hero آوان گالری.
+Homepage polish based on V109.
 
-## Deploy روی GitHub
-1. همه فایل‌ها را داخل Repository قرار بده.
-2. فایل `index.html` در ریشه Repository باشد.
-3. در Cloudflare Workers/Pages، پروژه را از GitHub وصل کن.
-4. برای سایت استاتیک Build Command را خالی بگذار و Output Directory را `/` قرار بده.
-
-این نسخه به R2 یا دیتابیس نیاز ندارد و تصویر Hero داخل `assets/avan-hero.png` قرار گرفته است.
+- Category artwork uses the dedicated category SVG artwork.
+- Featured products uses a stable RTL two-column layout: fixed-width promotion card + five-column real product grid on desktop.
+- Empty product state no longer causes the promotion card or grid to stretch unexpectedly.
+- No fake products are injected; product cards come from `/api/products` / the store database.
+- Existing header, hero, authentication and Google OAuth flow are preserved.

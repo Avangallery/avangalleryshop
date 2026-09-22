@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
+  "name": "avan-gallery",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-11",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "avan-gallery-db",
+      "database_id": "92e44420-adb7-4b0f-a75f-4c1038602fe8"
+    }
+  ]
+}

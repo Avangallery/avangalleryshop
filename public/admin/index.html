@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>داشبورد مدیریت | آوان گالری</title>
+<link rel="icon" type="image/png" href="/assets/avan-logo.svg">
+  <link rel="apple-touch-icon" href="/assets/avan-logo.svg">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div id="login" class="login-screen">
+  <div class="login-card">
+    <div class="brand-mark">AVAN</div><div class="brand-title">آوان گالری</div><small>AVAN GALLERY</small>
+    <h1>ورود به پنل مدیریت</h1><p>برای مدیریت فروشگاه وارد حساب مدیریت شوید.</p>
+    <input id="pass" type="password" placeholder="رمز مدیریت" autocomplete="current-password">
+    <button class="primary full" onclick="login()">ورود به پنل</button><div id="err" class="error"></div>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <aside class="sidebar">
+    <div class="side-brand"><div class="brand-mark">AVAN</div><div><strong>آوان گالری</strong><small>AVAN GALLERY</small></div></div>
+    <nav>
+      <button class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')"><span>⌂</span> داشبورد</button>
+      <button class="nav-item" data-section="orders" onclick="showSection('orders')"><span>🛒</span> مدیریت سفارش‌ها <b id="navNew">0</b></button>
+      <button class="nav-item" data-section="products" onclick="showSection('products')"><span>▣</span> مدیریت محصولات</button>
+      <button class="nav-item" data-section="users" onclick="showSection('users')"><span>♙</span> مدیریت کاربران</button>
+      <button class="nav-item" data-section="reports" onclick="showSection('reports')"><span>▥</span> گزارش‌ها</button>
+      <button class="nav-item" data-section="payments" onclick="showSection('payments')"><span>💳</span> پرداخت‌ها <b id="navPayments">0</b></button>
+      <button class="nav-item" data-section="reviews" onclick="showSection('reviews')"><span>⭐</span> نظرات مشتریان <b id="navReviews">0</b></button>
+      <button class="nav-item" data-section="coupons" onclick="showSection('coupons')"><span>🎟️</span> کدهای تخفیف</button><button class="nav-item" data-section="inventory" onclick="showSection('inventory')"><span>📦</span> انبار <b id="navLowStock">0</b></button><button class="nav-item" data-section="banners" onclick="showSection('banners')"><span>🖼️</span> بنرهای صفحه اصلی</button><button class="nav-item" data-section="advanced" onclick="showSection('advanced')"><span>🚀</span> امکانات V60–V90</button><button class="nav-item" data-section="settings" onclick="showSection('settings')"><span>⚙</span> تنظیمات</button>
+    </nav>
+    <div class="side-promo"><div class="promo-icon">♛</div><strong>فروش بیشتر<br>با مدیریت بهتر</strong><small>AVAN GALLERY</small></div>
+    <button class="logout" onclick="logout()">↪ خروج از حساب</button>
+  </aside>
+
+  <section class="workspace">
+    <header class="topbar">
+      <button class="mobile-menu" onclick="toggleSidebar()">☰</button>
+      <div class="search"><span>⌕</span><input id="globalSearch" placeholder="جستجوی سفارش، کاربر یا محصول..." oninput="globalFilter()"></div>
+      <div class="top-actions"><button class="icon-btn" onclick="loadAll()">↻</button><div class="notification-wrap"><button class="bell" onclick="toggleNotifications()" title="اعلان‌ها">🔔<i id="bellCount">0</i></button><div id="notificationsPanel" class="notifications-panel" hidden><div class="notifications-head"><div><strong>اعلان‌ها</strong><small id="notificationsCount">۰ اعلان جدید</small></div><button class="ghost" onclick="markAllNotificationsRead()">خواندن همه</button></div><div id="notificationsList" class="notifications-list"></div></div></div><div class="admin-user"><div class="avatar">●</div><div><strong>مدیر سایت</strong><small>مدیریت فروشگاه</small></div></div></div>
+    </header>
+
+    <main class="content">
+      <section id="dashboard" class="page active-page">
+        <div class="page-head"><div><h1>خوش آمدید، مدیر عزیز 👋</h1><p>اینجا می‌توانید فروشگاه خود را به‌صورت کامل مدیریت کنید.</p></div><div class="today">امروز<br><b id="todayText"></b></div></div>
+        <div class="stats-grid">
+          <div class="stat-card purple"><span class="stat-icon">▣</span><div><small>فروش کل</small><strong id="statSales">۰ تومان</strong><em id="salesChange">اطلاعات فروش</em></div></div>
+          <div class="stat-card gold"><span class="stat-icon">□</span><div><small>کل محصولات</small><strong id="statProducts">۰</strong><em>محصول ثبت شده</em></div></div>
+          <div class="stat-card blue"><span class="stat-icon">♙</span><div><small>کل کاربران</small><strong id="statUsers">۰</strong><em>کاربر ثبت‌نام شده</em></div></div>
+          <div class="stat-card green"><span class="stat-icon">🛒</span><div><small>سفارش‌های جدید</small><strong id="statNew">۰</strong><em>در انتظار بررسی</em></div></div>
+        </div>
+        <div class="period-grid">
+          <div class="period-card"><small>فروش امروز</small><strong id="periodTodaySales">۰ تومان</strong><span id="periodTodayOrders">۰ سفارش</span></div>
+          <div class="period-card"><small>فروش ۷ روز اخیر</small><strong id="periodWeekSales">۰ تومان</strong><span id="periodWeekOrders">۰ سفارش</span></div>
+          <div class="period-card"><small>فروش این ماه</small><strong id="periodMonthSales">۰ تومان</strong><span id="periodMonthOrders">۰ سفارش</span></div>
+        </div>
+        <div class="two-col">
+          <div class="panel orders-panel"><div class="panel-head"><h2>آخرین سفارش‌ها</h2><button class="ghost" onclick="showSection('orders')">مشاهده همه ←</button></div><div id="recentOrders" class="table-wrap"></div></div>
+          <div class="panel"><div class="panel-head"><h2>وضعیت سفارش‌ها</h2></div><div id="statusChart" class="status-chart"></div></div>
+        </div>
+        <div class="two-col bottom-grid">
+          <div class="panel"><div class="panel-head"><h2>نمودار فروش ماهانه</h2><select id="monthsSelect" onchange="renderSalesChart()"><option value="6">۶ ماه اخیر</option></select></div><div id="salesChart" class="sales-chart"></div></div>
+          <div class="panel"><div class="panel-head"><h2>محصولات پرفروش</h2><button class="ghost" onclick="showSection('products')">مشاهده همه ←</button></div><div id="topProducts" class="top-products"></div></div>
+        </div>
+        <div class="panel quick-panel"><div class="panel-head"><h2>دسترسی سریع</h2><span class="report-note">مدیریت روزانه</span></div><div class="quick-actions"><button onclick="showSection('orders')">🛒 سفارش‌ها</button><button onclick="showSection('payments')">💳 پرداخت‌ها</button><button onclick="showSection('products')">📱 محصولات</button><button onclick="showSection('coupons')">🎟️ کدهای تخفیف</button><button onclick="showSection('reports')">📊 گزارش‌ها</button></div></div>
+      </section>
+
+      <section id="orders" class="page"><div class="page-head"><div><h1>مدیریت سفارش‌ها</h1><p>سفارش‌های مشتریان را بررسی و وضعیت آن‌ها را مدیریت کنید.</p></div><button class="primary" onclick="loadOrders()">↻ بروزرسانی</button></div><div class="filter-row"><input id="orderSearch" placeholder="جستجوی نام مشتری یا شماره سفارش..." oninput="renderOrders()"><select id="orderStatus" onchange="renderOrders()"><option value="">همه وضعیت‌ها</option><option>در انتظار بررسی</option><option>تأیید شده</option><option>در حال ارسال</option><option>تکمیل شده</option><option>لغو شده</option></select></div><div class="panel"><div id="ordersTable" class="table-wrap"></div></div></section>
+
+      <section id="products" class="page"><div class="page-head"><div><h1>مدیریت محصولات</h1><p>محصولات فروشگاه را اضافه، ویرایش و حذف کنید.</p></div><button class="primary" onclick="openProductForm()">＋ افزودن محصول</button></div><div class="panel"><div class="filter-row product-admin-filters"><input id="productSearch" placeholder="جستجوی محصول، برند یا توضیحات..." oninput="renderProducts()"><select id="productCategory" onchange="renderProducts()"><option value="">همه دسته‌ها</option></select><select id="productCondition" onchange="renderProducts()"><option value="">همه وضعیت‌ها</option><option value="نو">نو</option><option value="کارکرده">کارکرده</option><option value="استوک">استوک</option></select><select id="productAvailability" onchange="renderProducts()"><option value="">همه موجودی</option><option value="1">موجود</option><option value="0">ناموجود</option></select><select id="productSort" onchange="renderProducts()"><option value="newest">جدیدترین</option><option value="priceAsc">ارزان‌ترین</option><option value="priceDesc">گران‌ترین</option><option value="name">نام محصول</option></select></div><div id="productsTable" class="table-wrap"></div></div></section>
+
+      <section id="users" class="page"><div class="page-head"><div><h1>مدیریت کاربران</h1><p>فهرست مشتریان ثبت‌نام‌شده فروشگاه.</p></div></div><div class="panel"><div id="usersTable" class="table-wrap"></div></div></section>
+
+      <section id="reports" class="page">
+<div class="page-head"><div><h1>گزارش فروش و آمار</h1><p>نمای کامل عملکرد فروشگاه بر اساس سفارش‌ها و داده‌های ثبت‌شده.</p></div><button class="primary" onclick="loadAll()">↻ بروزرسانی گزارش</button></div>
+<div class="stats-grid report-stats">
+<div class="stat-card purple"><span class="stat-icon">▣</span><div><small>فروش کل</small><strong id="reportSales">۰ تومان</strong><em>تمام سفارش‌ها</em></div></div>
+<div class="stat-card green"><span class="stat-icon">↗</span><div><small>میانگین مبلغ سفارش</small><strong id="avgOrder">۰ تومان</strong><em>میانگین هر سفارش</em></div></div>
+<div class="stat-card blue"><span class="stat-icon">♙</span><div><small>کل مشتریان</small><strong id="reportUsers">۰</strong><em>کاربر ثبت‌نام شده</em></div></div>
+<div class="stat-card gold"><span class="stat-icon">▣</span><div><small>کل سفارش‌ها</small><strong id="reportOrders">۰</strong><em id="reportCompleted">۰ تکمیل‌شده</em></div></div>
+</div>
+<div class="report-grid">
+<div class="panel"><div class="panel-head"><h2>فروش ماهانه</h2><span class="report-note">۶ ماه اخیر</span></div><div id="reportSalesChart" class="report-sales-chart"></div></div>
+<div class="panel"><div class="panel-head"><h2>وضعیت سفارش‌ها</h2></div><div id="reportStatusBars" class="report-status-bars"></div></div>
+</div>
+<div class="panel"><div class="panel-head"><h2>خلاصه عملکرد</h2></div><div id="reportSummary" class="report-summary"></div></div>
+</section>
+
+
+      <section id="payments" class="page">
+        <div class="page-head"><div><h1>پرداخت‌های کارت‌به‌کارت</h1><p>رسیدهای مشتریان را بررسی و پرداخت‌ها را تأیید یا رد کنید.</p></div><button class="primary" onclick="loadPayments()">↻ بروزرسانی</button></div>
+        <div class="payment-admin-grid">
+          <div class="panel"><div class="panel-head"><h2>اطلاعات کارت فروشگاه</h2><span class="status-on">فعال</span></div>
+            <div class="form-grid payment-settings-form"><label>شماره کارت<input id="payCardNumber" inputmode="numeric" placeholder="۶۱۰۴..."></label><label>نام صاحب کارت<input id="payCardHolder" placeholder="نام فروشگاه / صاحب حساب"></label><label>بانک<input id="payBankName" placeholder="نام بانک"></label><label class="full-field">توضیحات پرداخت<textarea id="payInstructions" placeholder="بعد از کارت‌به‌کارت شماره پیگیری و تصویر رسید را ارسال کنید."></textarea></label></div>
+            <div class="modal-actions"><button class="primary" onclick="savePaymentSettings()">ذخیره اطلاعات پرداخت</button></div><p id="paymentSettingsMsg" class="success"></p>
+          </div>
+          <div class="panel gateway-panel"><div class="panel-head"><div><h2>درگاه پرداخت آنلاین</h2><p class="panel-subtitle">فعلاً آماده اتصال؛ بعد از دریافت درگاه فقط اطلاعات آن را وارد کنید.</p></div><span id="gatewayStatus" class="status-off">غیرفعال</span></div>
+            <div class="form-grid payment-settings-form"><label>درگاه<select id="gatewayProvider"><option value="">انتخاب درگاه</option><option value="zarinpal">زرین‌پال</option><option value="zibal">زیبال</option><option value="idpay">آیدی‌پی</option><option value="nextpay">نکست‌پی</option></select></label><label>Merchant ID / شناسه درگاه<input id="gatewayMerchantId" placeholder="بعداً از پنل درگاه وارد کنید"></label><label class="full-field check"><input id="gatewayEnabled" type="checkbox"> فعال‌سازی پرداخت آنلاین</label></div>
+            <div class="gateway-note">🔐 کلید API داخل کد یا GitHub ذخیره نمی‌شود؛ هنگام اتصال نهایی به‌صورت Secret در Cloudflare قرار می‌گیرد.</div>
+            <div class="modal-actions"><button class="primary" onclick="saveGatewaySettings()">ذخیره تنظیمات درگاه</button></div><p id="gatewaySettingsMsg" class="success"></p>
+          </div>
+          <div class="panel"><div class="panel-head"><h2>وضعیت پرداخت‌ها</h2></div><div id="paymentSummary" class="payment-summary"></div></div>
+        </div>
+        <div class="panel"><div class="panel-head"><h2>رسیدهای ارسالی</h2><select id="paymentStatusFilter" onchange="renderPayments()"><option value="">همه</option><option>در انتظار بررسی</option><option>تأیید شده</option><option>رد شده</option></select></div><div id="paymentsTable" class="payments-table"></div></div>
+      </section>
+
+<section id="inventory" class="page"><div class="page-head"><div><h1>مدیریت انبار</h1><p>موجودی محصولات، حد هشدار و وضعیت کالاها را مدیریت کنید.</p></div><button class="primary" onclick="loadInventory()">↻ بروزرسانی</button></div><div class="panel"><div class="filter-row"><input id="inventorySearch" placeholder="جستجوی محصول..." oninput="renderInventory()"><select id="inventoryFilter" onchange="renderInventory()"><option value="">همه</option><option value="low">موجودی کم</option><option value="out">ناموجود</option><option value="ok">موجود</option></select></div><div id="inventoryTable" class="inventory-table"></div></div></section>
+<section id="banners" class="page"><div class="page-head"><div><h1>بنرهای صفحه اصلی</h1><p>عنوان، متن، تصویر و دکمه بنر اصلی را بدون تغییر کد مدیریت کنید.</p></div><button class="primary" onclick="loadBanners()">↻ بروزرسانی</button></div><div class="panel banner-form-panel"><div class="form-grid"><label>عنوان بنر<input id="bannerTitle" placeholder="عنوان"></label><label>متن زیر عنوان<input id="bannerSubtitle" placeholder="توضیح کوتاه"></label><label class="full-field">آدرس تصویر بنر<input id="bannerImage" placeholder="https://..."></label><label>متن دکمه<input id="bannerButton" value="مشاهده محصولات"></label><label>لینک دکمه<input id="bannerLink" value="#products"></label><label>ترتیب نمایش<input id="bannerSort" type="number" value="0"></label><label class="check"><input id="bannerActive" type="checkbox" checked> فعال</label></div><div class="modal-actions"><button class="primary" onclick="createBanner()">+ افزودن بنر</button></div><p id="bannerMsg" class="success"></p></div><div class="panel"><div class="panel-head"><h2>بنرهای ثبت‌شده</h2></div><div id="bannersTable" class="banners-list"></div></div></section>
+<section id="reviews" class="page"><div class="page-head"><div><h1>نظرات مشتریان</h1><p>نظرات را بررسی و قبل از انتشار تأیید کنید.</p></div><select id="reviewStatusFilter" class="review-filter" onchange="renderReviews()"><option value="">همه نظرات</option><option value="pending">در انتظار بررسی</option><option value="approved">تأیید شده</option><option value="rejected">رد شده</option></select></div><div id="reviewsSummary" class="review-admin-summary"></div><div class="panel"><div id="reviewsTable" class="reviews-admin-list"></div></div></section>
+
+
+      <section id="coupons" class="page"><div class="page-head"><div><h1>کدهای تخفیف</h1><p>ساخت و مدیریت کدهای تخفیف فروشگاه.</p></div><button class="primary" onclick="loadCoupons()">↻ بروزرسانی</button></div><div class="panel coupon-admin-panel"><div class="panel-head"><div><h2>ساخت کد تخفیف</h2><p class="panel-subtitle">درصدی یا مبلغ ثابت، با محدودیت زمان و تعداد استفاده.</p></div></div><div class="form-grid"><label>کد تخفیف<input id="couponCodeAdmin" placeholder="مثلاً AVAN10" maxlength="32"></label><label>نوع تخفیف<select id="couponType"><option value="percent">درصدی</option><option value="fixed">مبلغ ثابت</option></select></label><label>مقدار تخفیف<input id="couponValue" type="number" min="1" placeholder="مثلاً 10"></label><label>حداقل مبلغ سفارش<input id="couponMin" type="number" min="0" placeholder="۰"></label><label>تاریخ شروع<input id="couponStart" type="datetime-local"></label><label>تاریخ پایان<input id="couponEnd" type="datetime-local"></label><label>حداکثر تعداد استفاده<input id="couponMax" type="number" min="0" placeholder="۰ = نامحدود"></label><label class="check full-field"><input id="couponActive" type="checkbox" checked> کد فعال باشد</label></div><div class="modal-actions"><button class="primary" onclick="createCoupon()">+ ساخت کد تخفیف</button></div><p id="couponAdminMsg" class="success"></p></div><div class="panel"><div class="panel-head"><h2>کدهای ثبت‌شده</h2></div><div id="couponsTable" class="payments-table"></div></div></section><section id="advanced" class="page"><div class="page-head"><div><h1>مرکز امکانات V60 تا V90</h1><p>پشتیبانی، محتوای سایت، لاگ امنیتی و ابزارهای مدیریتی پیشرفته.</p></div><button class="primary" onclick="loadAdvanced()">↻ بروزرسانی</button></div><div id="advancedStats" class="stats-grid"></div><div class="panel"><div class="panel-head"><h2>تیکت‌های پشتیبانی</h2></div><div id="ticketsTable" class="table-wrap"></div></div><div class="panel"><div class="panel-head"><h2>محتوای قابل ویرایش سایت</h2></div><div id="contentEditor"></div><button class="primary" onclick="saveSiteContent()">ذخیره محتوا</button><div id="contentMsg"></div></div><div class="panel"><div class="panel-head"><h2>گزارش فعالیت‌های سیستمی</h2></div><div id="auditTable" class="table-wrap"></div></div><div class="quick-actions"><a class="btn primary" href="/api/admin/export/orders.csv">⬇ خروجی سفارش‌ها CSV</a></div></section><section id="settings" class="page"><div class="page-head"><div><h1>تنظیمات</h1><p>تنظیمات عمومی پنل مدیریت.</p></div></div><div class="panel settings-card"><div class="setting-row"><div><strong>امنیت پنل</strong><p>احراز هویت مدیریت با نشست امن Cloudflare Worker انجام می‌شود.</p></div><span class="status-on">فعال</span></div><div class="setting-row"><div><strong>پایگاه داده</strong><p>محصولات، کاربران و سفارش‌ها در Cloudflare D1 ذخیره می‌شوند.</p></div><span class="status-on">متصل</span></div><div class="setting-row"><div><strong>فروشگاه</strong><p>AVAN GALLERY</p></div><a class="ghost link-btn" href="/" target="_blank">مشاهده فروشگاه ↗</a></div></div></section>
+    </main>
+  </section>
+</div>
+
+<div id="productModal" class="modal" hidden><div class="modal-card"><button class="close" onclick="closeProductForm()">×</button><h2 id="formTitle">افزودن محصول</h2><div class="form-grid"><label>نام محصول *<input id="name" placeholder="مثلاً iPhone 13"></label><label>قیمت *<input id="price" placeholder="۹۲,۰۰۰,۰۰۰"></label><label>قیمت تخفیف<input id="discountPrice" placeholder="مثلاً ۸۹,۰۰۰,۰۰۰"></label><label>شروع تخفیف<input id="saleStart" type="datetime-local"></label><label>پایان تخفیف<input id="saleEnd" type="datetime-local"></label><label>وضعیت<select id="condition"><option>نو</option><option>کارکرده</option><option>استوک</option></select></label><label>دسته‌بندی<select id="category"><option value="موبایل">گوشی موبایل</option><option value="لوازم جانبی">لوازم جانبی</option><option value="تبلت">تبلت</option><option value="ساعت هوشمند">ساعت هوشمند</option><option value="هدفون">هدفون</option><option value="اسپیکر">اسپیکر</option><option value="کابل و شارژر">کابل و شارژر</option></select></label><label class="full-field">برچسب محصول<input id="badge" placeholder="مثلاً پیشنهاد ویژه"></label><div id="specFields" class="spec-fields full-field"></div><div class="check-row full-field"><span>برچسب‌های ویژه:</span><label class="check"><input id="featured" type="checkbox"> ویژه</label><label class="check"><input id="bestseller" type="checkbox"> پرفروش</label><label class="check"><input id="newest" type="checkbox"> جدیدترین</label></div><label class="full-field">لینک مستقیم تصویر<input id="imageUrl" placeholder="https://..."></label><div class="upload-box full-field"><div><strong>یا انتخاب تصویر از دستگاه</strong><small>می‌توانید تا ۵ تصویر انتخاب کنید؛ تصاویر فشرده و به‌صورت گالری ذخیره می‌شوند.</small></div><div class="upload-actions"><label class="upload-btn">📁 انتخاب فایل<input id="imageFile" type="file" accept="image/*" multiple hidden></label><span id="fileName">فایلی انتخاب نشده</span><button type="button" class="ghost" id="clearImage" onclick="clearImageFile()">پاک کردن</button></div></div><label class="full-field">توضیحات<textarea id="desc" placeholder="توضیحات محصول"></textarea></label><label class="check full-field"><label>تعداد موجودی<input id="quantity" type="number" min="0" step="1" value="0" placeholder="مثلاً 10"></label><input id="available" type="checkbox" checked> محصول موجود است</label></div><div id="preview" class="preview"></div><div class="modal-actions"><button class="ghost" onclick="closeProductForm()">انصراف</button><button class="primary" onclick="saveProduct()">ذخیره محصول</button></div><p id="msg" class="success"></p></div></div>
+
+<div id="toast" class="toast"></div>
+<script>
+let editing=null, products=[], orders=[], users=[], stats={}, payments=[], coupons=[], inventory=[], banners=[];
+const $=id=>document.getElementById(id);
+const toman=n=>Number(n||0).toLocaleString('fa-IR')+' تومان';
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};
+async function api(url,opt={}){opt={...opt,credentials:'include',headers:{...(opt.headers||{})}};const t=sessionStorage.getItem('avan_admin_token');if(t&&!opt.headers.Authorization)opt.headers.Authorization='Bearer '+t;const r=await fetch(url,opt);const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'خطا');return d}
+async function check(){try{const d=await api('/api/me');if(d.admin){$('login').hidden=true;$('app').hidden=false;setToday();await loadAll();const sec=new URLSearchParams(location.search).get('section');if(sec&&document.getElementById(sec))showSection(sec);return true} $('login').hidden=false;return false}catch(e){$('login').hidden=false;return false}}
+async function login(){try{const d=await api('/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:$('pass').value})});if(d.token)sessionStorage.setItem('avan_admin_token',d.token);$('err').textContent='';const ok=await check();if(!ok)throw Error('ورود انجام نشد؛ صفحه را یک‌بار تازه‌سازی کنید.')}catch(e){$('err').textContent=e.message}}
+async function logout(){sessionStorage.removeItem('avan_admin_token');await api('/api/logout',{method:'POST'});location.reload()}
+function setToday(){$('todayText').textContent=new Intl.DateTimeFormat('fa-IR',{dateStyle:'medium'}).format(new Date())}
+function showSection(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active-page',x.id===id));document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.section===id));if(id==='orders')renderOrders();if(id==='products')renderProducts();if(id==='users')renderUsers();if(id==='reports')renderReports();if(id==='payments')loadPayments();if(id==='reviews')loadReviews();if(id==='coupons')loadCoupons();if(id==='inventory')loadInventory();if(id==='banners')loadBanners();document.querySelector('.sidebar')?.classList.remove('open')}
+function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('open')}
+let notifications=[];
+let notificationsBusy=false;
+async function loadNotifications(){if(notificationsBusy)return;notificationsBusy=true;try{const d=await api('/api/admin/notifications');notifications=d.notifications||[];renderNotifications(d.unread||0)}catch(e){}finally{notificationsBusy=false}}
+function renderNotifications(unread=notifications.filter(n=>!n.read_at).length){$('bellCount').textContent=fa(unread);$('notificationsCount').textContent=unread?`${fa(unread)} اعلان جدید`:'همه اعلان‌ها خوانده شده‌اند';$('notificationsList').innerHTML=notifications.length?notifications.map(n=>`<button class="notification-item ${n.read_at?'read':''}" onclick="openNotification(${Number(n.id)})"><span class="notification-icon">${n.type==='payment'?'💳':n.type==='order'?'🛒':n.type==='user'?'👤':n.type==='inventory'?'📦':'🔔'}</span><span><strong>${esc(n.title)}</strong><small>${esc(n.message)}</small><em>${esc(n.created_at||'')}</em></span>${!n.read_at?'<i class="notification-dot"></i>':''}</button>`).join(''):'<div class="notifications-empty">اعلانی وجود ندارد.</div>'}
+function toggleNotifications(){const p=$('notificationsPanel');if(!p)return;p.hidden=!p.hidden;if(!p.hidden)loadNotifications()}
+async function openNotification(id){try{await api('/api/admin/notifications/'+id+'/read',{method:'PUT'});const n=notifications.find(x=>Number(x.id)===Number(id));if(n)n.read_at=new Date().toISOString();renderNotifications();if(n&&n.link){const u=new URL(n.link,location.origin);showSection(u.searchParams.get('section')||'dashboard')}$('notificationsPanel').hidden=true}catch(e){toast(e.message)}}
+async function markAllNotificationsRead(){try{await api('/api/admin/notifications/read-all',{method:'PUT'});notifications.forEach(n=>n.read_at=n.read_at||new Date().toISOString());renderNotifications(0)}catch(e){toast(e.message)}}
+setInterval(()=>{if(document.visibilityState==='visible')loadNotifications()},15000);
+function normalizeSearch(v){return String(v||'').toLowerCase().replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[كک]/g,'ک').replace(/[يى]/g,'ی').trim()}
+function populateProductAdminFilters(){const cats=[...new Set(products.map(p=>p.category||'موبایل'))].sort((a,b)=>a.localeCompare(b,'fa'));const el=$('productCategory');if(el){const cur=el.value;el.innerHTML='<option value="">همه دسته‌ها</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');el.value=cur}}
+async function loadAll(){try{[stats,products,orders,users]=await Promise.all([api('/api/admin/stats'),api('/api/products?admin=1'),api('/api/admin/orders'),api('/api/admin/users')]);renderStats();renderRecentOrders();renderStatusChart();renderSalesChart();renderTopProducts();populateProductAdminFilters();renderOrders();renderProducts();renderUsers();renderReports();loadReviews();loadNotifications()}catch(e){toast(e.message)}}
+async function loadOrders(){try{orders=await api('/api/admin/orders');renderOrders();renderRecentOrders();renderStatusChart();$('statNew').textContent=fa(stats.new_orders||0);$('navNew').textContent=fa(stats.new_orders||0)}catch(e){toast(e.message)}}
+function fa(n){return Number(n||0).toLocaleString('fa-IR')}
+function renderStats(){$('statSales').textContent=toman(stats.total_sales||0);$('statProducts').textContent=fa(stats.products||0);$('statUsers').textContent=fa(stats.users||0);$('statNew').textContent=fa(stats.new_orders||0);$('reportUsers').textContent=fa(stats.users||0);$('navNew').textContent=fa(stats.new_orders||0);$('avgOrder').textContent=toman(stats.avg_order||0);$('salesChange').textContent=fa(stats.orders||0)+' سفارش ثبت شده';const p=stats.periods||{};[['today','periodTodaySales','periodTodayOrders'],['week','periodWeekSales','periodWeekOrders'],['month','periodMonthSales','periodMonthOrders']].forEach(([k,s,o])=>{if($(s))$(s).textContent=toman(p[k]?.total||0);if($(o))$(o).textContent=fa(p[k]?.orders||0)+' سفارش'});$('reportSales').textContent=toman(stats.total_sales||0);$('reportOrders').textContent=fa(stats.orders||0);$('reportCompleted').textContent=fa(stats.completed_orders||0)+' تکمیل‌شده'}
+function orderStatusClass(s){return s.includes('لغو')?'cancel':s.includes('تکمیل')?'done':s.includes('ارسال')?'ship':s.includes('تأیید')?'approve':'wait'}
+function statusSelect(o){const opts=['در انتظار بررسی','تأیید شده','در حال ارسال','تکمیل شده','لغو شده'];return `<select class="status-select ${orderStatusClass(o.status)}" onchange="changeStatus(${o.id},this.value)">${opts.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select>`}
+function orderRow(o){const ship=o.shipping_status||'آماده ارسال';const payment=o.payment_status||'پرداخت نشده';const paymentClass=payment==='رد شده'?'cancel':payment==='تأیید شده'?'done':'wait';const shipClass=ship==='ارسال شد'?'ship':ship==='تحویل داده شد'?'done':'ready';return `<article class="order-card ${shipClass}"><div class="order-main"><div class="order-id"><span>#${o.id}</span><small>شماره سفارش</small></div><div class="order-customer"><strong>${esc(o.customer_name||'مشتری')}</strong><small>${esc(o.phone||'')}</small></div><div class="order-product"><strong>${esc(o.items_text||'—')}</strong><small>محصولات سفارش</small></div><div class="order-total"><strong>${toman(o.total)}</strong><small>مبلغ کل</small></div><div class="order-date"><strong>${esc(o.created_at||'')}</strong><small>تاریخ ثبت</small></div><div class="order-status">${statusSelect(o)}<span class="order-payment-badge ${paymentClass}">💳 ${esc(payment)}</span></div></div><div class="shipping-box"><div class="shipping-title"><div><b>🚚 اطلاعات ارسال</b><small>شرکت، کد رهگیری و وضعیت مرسوله</small></div><span class="ship-badge ${shipClass}">${ship}</span></div><div class="shipping-fields"><label class="ship-field"><span>شرکت ارسال</span><select id="carrier-${o.id}"><option value="" ${!o.carrier?'selected':''}>انتخاب شرکت ارسال</option><option ${o.carrier==='پست'?'selected':''}>پست</option><option ${o.carrier==='تیپاکس'?'selected':''}>تیپاکس</option><option ${o.carrier==='چاپار'?'selected':''}>چاپار</option><option ${o.carrier==='پیک'?'selected':''}>پیک</option></select></label><label class="ship-field tracking-field"><span>کد رهگیری مرسوله</span><div class="tracking-input"><span class="track-icon">▣</span><input id="tracking-${o.id}" value="${esc(o.tracking_code||'')}" placeholder="کد رهگیری را وارد کنید"><button type="button" onclick="copyTracking(${o.id})" title="کپی کد">کپی</button></div></label><label class="ship-field"><span>وضعیت ارسال</span><select id="shipstatus-${o.id}" class="ship-status-select ${shipClass}"><option ${ship==='آماده ارسال'?'selected':''}>آماده ارسال</option><option ${ship==='ارسال شد'?'selected':''}>ارسال شد</option><option ${ship==='تحویل داده شد'?'selected':''}>تحویل داده شد</option></select></label><button class="ship-save primary" onclick="saveShipping(${o.id})">✓ ذخیره تغییرات</button></div><div class="shipping-footer"><span>برای ثبت وضعیت «ارسال شد»، وارد کردن کد رهگیری الزامی است.</span><button type="button" class="view-order-btn" onclick="showSection('orders')">مشاهده سفارش</button></div></div></article>`}
+function copyTracking(id){const v=$('tracking-'+id)?.value?.trim();if(!v)return toast('کد رهگیری وارد نشده است.');navigator.clipboard?.writeText(v);toast('کد رهگیری کپی شد ✓')}
+function tableHead(){return ''}
+function renderRecentOrders(){$('recentOrders').innerHTML=orders.length?tableHead()+orders.slice(0,5).map(orderRow).join(''):'<div class="empty">هنوز سفارشی ثبت نشده است.</div>'}
+function renderOrders(){let q=($('orderSearch')?.value||'').trim().toLowerCase(), st=$('orderStatus')?.value||'';let list=orders.filter(o=>(!st||o.status===st)&&(!q||String(o.id).includes(q)||String(o.customer_name||'').toLowerCase().includes(q)||String(o.phone||'').includes(q)));$('ordersTable').innerHTML=list.length?tableHead()+list.map(orderRow).join(''):'<div class="empty">سفارشی با این مشخصات پیدا نشد.</div>'}
+async function saveShipping(id){const carrier=$('carrier-'+id).value,tracking=$('tracking-'+id).value.trim(),status=$('shipstatus-'+id).value;try{await api('/api/admin/orders/'+id+'/shipping',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({carrier,tracking_code:tracking,status})});const o=orders.find(x=>x.id===id);if(o){o.carrier=carrier;o.tracking_code=tracking;o.shipping_status=status;if(status==='ارسال شد')o.status='در حال ارسال';if(status==='تحویل داده شد')o.status='تکمیل شده';}renderOrders();renderRecentOrders();toast('اطلاعات ارسال با موفقیت ذخیره شد ✓');setTimeout(loadOrders,250)}catch(e){toast(e.message)}}
+async function changeStatus(id,status){try{await api('/api/admin/orders/'+id+'/status',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({status})});const o=orders.find(x=>x.id===id);if(o)o.status=status;renderOrders();renderRecentOrders();renderStatusChart();toast('وضعیت سفارش بروزرسانی شد ✓')}catch(e){toast(e.message);loadOrders()}}
+function renderStatusChart(){const total=orders.length||1, groups=['در انتظار بررسی','تأیید شده','در حال ارسال','تکمیل شده','لغو شده'];const counts=groups.map(s=>orders.filter(o=>o.status===s).length);const deg=[];let cur=0;counts.forEach((n,i)=>{let d=n/total*360;deg.push(`${chartColors[i]} ${cur}deg ${cur+d}deg`);cur+=d});$('statusChart').innerHTML=`<div class="donut" style="background:conic-gradient(${deg.join(',')})"><div>${fa(orders.length)}<small>سفارش</small></div></div><div class="legend">${groups.map((s,i)=>`<div><i style="background:${chartColors[i]}"></i><span>${s}</span><b>${fa(counts[i])}</b></div>`).join('')}</div>`}
+const chartColors=['#1d9bf0','#22c55e','#f59e0b','#14b8a6','#ef4444'];
+function renderSalesChart(){const data=stats.monthly_sales||[];const max=Math.max(...data.map(x=>Number(x.total)||0),1);$('salesChart').innerHTML=data.length?data.map(x=>`<div class="bar-col"><div class="bar-value">${shortMoney(x.total)}</div><div class="bar" style="height:${Math.max(8,(Number(x.total)||0)/max*180)}px"></div><small>${esc(x.month)}</small></div>`).join(''):'<div class="empty">هنوز داده فروش کافی نیست.</div>'}
+function shortMoney(n){n=Number(n||0);if(n>=1000000000)return (n/1000000000).toFixed(1)+'B';if(n>=1000000)return Math.round(n/1000000)+'M';if(n>=1000)return Math.round(n/1000)+'K';return n}
+function renderTopProducts(){const map={};orders.forEach(o=>(o.items||[]).forEach(i=>{map[i.name]=(map[i.name]||0)+i.quantity}));const list=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5);$('topProducts').innerHTML=list.length?list.map((x,i)=>`<div class="top-item"><b>${i+1}</b><span>${esc(x[0])}</span><small>${fa(x[1])} فروش</small></div>`).join(''):'<div class="empty">هنوز فروشی ثبت نشده است.</div>'}
+function renderProducts(){let q=normalizeSearch($('productSearch')?.value||''),av=$('productAvailability')?.value||'',cat=$('productCategory')?.value||'',cond=$('productCondition')?.value||'',sort=$('productSort')?.value||'newest';let list=products.filter(p=>{const text=normalizeSearch(String((p.name||'')+' '+(p.description||'')));const okq=!q||text.includes(q),okav=!av||String(p.available)===av,okcat=!cat||String(p.category||'موبایل')===cat,okcond=!cond||String(p.condition||'نو')===cond;return okq&&okav&&okcat&&okcond});if(sort==='priceAsc')list.sort((a,b)=>Number(a.discount_price||a.price)-Number(b.discount_price||b.price));else if(sort==='priceDesc')list.sort((a,b)=>Number(b.discount_price||b.price)-Number(a.discount_price||a.price));else if(sort==='name')list.sort((a,b)=>String(a.name).localeCompare(String(b.name),'fa'));else list.sort((a,b)=>Number(b.id)-Number(a.id));$('productsTable').innerHTML=list.length?`<div class="table-head product-head"><span>محصول</span><span>وضعیت</span><span>قیمت</span><span>عملیات</span></div>`+list.map(p=>`<div class="table-row product-row"><span class="product-cell"><img src="${esc(p.image_url||'/assets/avan-logo.svg')}" onerror="this.src='/assets/avan-logo.svg'"><strong>${esc(p.name)}</strong><small>${esc(p.condition||'نو')}</small></span><span><i class="stock ${p.available?'in':'out'}">${p.available?'موجود':'ناموجود'}</i></span><div><strong>${esc(p.price)} تومان</strong>${p.discount_price&&Number(String(p.discount_price).replace(/[^0-9]/g,""))<Number(String(p.price).replace(/[^0-9]/g,""))?`<small class="sale-admin-note">تخفیف زمان‌بندی‌شده</small>`:`<small class="sale-admin-note muted">بدون تخفیف فعال</small>`}</div><span class="actions"><button class="edit" onclick='openProductForm(${JSON.stringify(p)})'>ویرایش</button><button class="delete" onclick="deleteProduct(${p.id})">حذف</button></span></div>`).join(''):'<div class="empty">محصولی وجود ندارد.</div>'}
+function renderUsers(){let list=users; $('usersTable').innerHTML=list.length?`<div class="table-head users-head"><span>کاربر</span><span>شماره موبایل</span><span>تاریخ ثبت‌نام</span><span>تعداد سفارش</span></div>`+list.map(u=>`<div class="table-row"><span><strong>${esc(u.name)}</strong></span><span>${esc(u.phone)}</span><span>${esc(u.created_at||'')}</span><span>${fa(u.order_count||0)}</span></div>`).join(''):'<div class="empty">کاربری ثبت نشده است.</div>'}
+function renderReports(){
+  $('reportSales').textContent=toman(stats.total_sales||0);$('avgOrder').textContent=toman(stats.avg_order||0);$('reportUsers').textContent=fa(stats.users||0);$('reportOrders').textContent=fa(stats.orders||0);$('reportCompleted').textContent=fa(stats.completed_orders||0)+' تکمیل‌شده';
+  const groups=['در انتظار بررسی','تأیید شده','در حال ارسال','تکمیل شده','لغو شده'];const counts=groups.map(s=>orders.filter(o=>o.status===s).length);const total=orders.length||1;
+  $('reportStatusBars').innerHTML=groups.map((g,i)=>{const c=counts[i],pct=Math.round(c/total*100);return `<div class="r-status"><div><span>${g}</span><b>${fa(c)} <small>${pct}٪</small></b></div><div class="r-track"><i style="width:${pct}%;background:${chartColors[i]}"></i></div></div>`}).join('');
+  const data=stats.monthly_sales||[],max=Math.max(...data.map(x=>Number(x.total)||0),1);$('reportSalesChart').innerHTML=data.length?data.map(x=>`<div class="r-bar-col"><b>${shortMoney(x.total)}</b><div class="r-bar" style="height:${Math.max(10,(Number(x.total)||0)/max*170)}px"></div><span>${esc(x.month)}</span></div>`).join(''):'<div class="empty">هنوز داده فروش کافی نیست.</div>';
+  $('reportSummary').innerHTML=`<div><b>${fa(stats.new_orders||0)}</b><span>در انتظار بررسی</span></div><div><b>${fa(stats.completed_orders||0)}</b><span>تکمیل‌شده</span></div><div><b>${fa(orders.filter(o=>String(o.status||'').includes('لغو')).length)}</b><span>لغوشده</span></div><div><b>${toman(stats.avg_order||0)}</b><span>میانگین هر سفارش</span></div>`;
+}
+
+let selectedImageData=[];
+
+const SPEC_CONFIG={
+  'موبایل':[
+    ['batteryHealth','سلامت باتری','مثلاً ۸۵٪'],['appearance','وضعیت ظاهری','مثلاً تمیز / خط و خش جزئی'],
+    ['registry','رجیستری',['دارد','ندارد','نامشخص']],['simCount','تعداد سیم‌کارت','مثلاً دو سیم‌کارت'],
+    ['ram','RAM','مثلاً ۸GB'],['storage','حافظه داخلی','مثلاً ۲۵۶GB'],['color','رنگ','مثلاً مشکی'],
+    ['processor','پردازنده','مثلاً Snapdragon 8 Gen 3'],['accessories','لوازم همراه','مثلاً جعبه و کابل'],['warranty','گارانتی','مثلاً ۷ روز مهلت تست']
+  ],
+  'لوازم جانبی':[
+    ['compatibility','سازگاری','مثلاً آیفون / اندروید'],['connection','نوع اتصال','مثلاً Bluetooth / USB-C'],
+    ['material','جنس','مثلاً آلومینیوم'],['power','توان / ظرفیت','مثلاً ۲۰W'],['length','طول','مثلاً ۱ متر'],
+    ['color','رنگ','مثلاً مشکی'],['model','مدل / نسخه','مثلاً A20'],['accessories','لوازم همراه','مثلاً کابل'],
+    ['warranty','گارانتی','مثلاً ۶ ماه']
+  ],
+  'تبلت':[
+    ['display','اندازه صفحه‌نمایش','مثلاً ۱۱ اینچ'],['os','سیستم‌عامل','مثلاً Android 15'],
+    ['ram','RAM','مثلاً ۸GB'],['storage','حافظه داخلی','مثلاً ۲۵۶GB'],['processor','پردازنده','مثلاً Snapdragon 8 Gen 2'],
+    ['battery','ظرفیت باتری','مثلاً ۸۰۰۰mAh'],['simCount','تعداد سیم‌کارت','مثلاً تک سیم‌کارت'],
+    ['camera','دوربین','مثلاً ۱۳MP'],['color','رنگ','مثلاً خاکستری'],['warranty','گارانتی','مثلاً ۷ روز مهلت تست']
+  ],
+  'ساعت هوشمند':[
+    ['display','نوع / اندازه نمایشگر','مثلاً AMOLED 1.9"'],['os','سیستم‌عامل','مثلاً Wear OS'],
+    ['connection','اتصال','مثلاً Bluetooth 5.3'],['battery','باتری','مثلاً تا ۷ روز'],
+    ['waterResistance','مقاومت در برابر آب','مثلاً 5ATM'],['sensors','حسگرها','مثلاً ضربان قلب و SpO2'],
+    ['size','اندازه / بند','مثلاً ۴۴mm'],['color','رنگ','مثلاً مشکی'],['accessories','لوازم همراه','مثلاً بند اضافه'],['warranty','گارانتی','مثلاً ۶ ماه']
+  ],
+  'هدفون':[
+    ['type','نوع','مثلاً TWS / روگوشی'],['connection','اتصال','مثلاً Bluetooth 5.3'],
+    ['battery','شارژدهی','مثلاً ۸ ساعت'],['noiseCancel','حذف نویز','مثلاً ANC دارد'],
+    ['microphone','میکروفون','مثلاً دوگانه'],['driver','درایور','مثلاً ۴۰mm'],
+    ['compatibility','سازگاری','مثلاً Android / iOS'],['color','رنگ','مثلاً مشکی'],['warranty','گارانتی','مثلاً ۶ ماه']
+  ],
+  'اسپیکر':[
+    ['power','توان خروجی','مثلاً ۳۰W'],['connection','اتصال','مثلاً Bluetooth 5.3'],
+    ['battery','باتری / شارژدهی','مثلاً ۱۲ ساعت'],['waterResistance','مقاومت در برابر آب','مثلاً IPX7'],
+    ['inputs','درگاه‌ها / ورودی‌ها','مثلاً USB-C و AUX'],['weight','وزن','مثلاً ۱.۵ کیلوگرم'],
+    ['dimensions','ابعاد','مثلاً ۲۸×۱۲×۱۲ سانتی‌متر'],['color','رنگ','مثلاً مشکی'],['warranty','گارانتی','مثلاً ۶ ماه']
+  ],
+  'کابل و شارژر':[
+    ['type','نوع محصول','مثلاً شارژر دیواری'],['connector','نوع کانکتور','مثلاً USB-C به USB-C'],
+    ['power','توان خروجی','مثلاً ۶۷W'],['length','طول کابل','مثلاً ۱.۲ متر'],
+    ['fastCharge','شارژ سریع','مثلاً PD / QC'],['compatibility','سازگاری','مثلاً iPhone / Android'],
+    ['material','جنس','مثلاً روکش کنفی'],['color','رنگ','مثلاً سفید'],['warranty','گارانتی','مثلاً ۶ ماه']
+  ]
+};
+
+function specConfigFor(category){
+  return SPEC_CONFIG[category]||SPEC_CONFIG['لوازم جانبی'];
+}
+function renderSpecFields(category, values={}){
+  const box=$('specFields'); if(!box)return;
+  const defs=specConfigFor(category);
+  box.innerHTML=`<div class="spec-fields-title"><strong>مشخصات فنی ${esc(category)}</strong><small>مشخصات اختصاصی همین دسته‌بندی را وارد کنید.</small></div>`+
+    `<div class="spec-fields-grid">`+defs.map(([key,label,third])=>{
+      const value=String(values?.[key]??'');
+      if(Array.isArray(third)){
+        return `<label>${esc(label)}<select data-spec-key="${esc(key)}">${third.map(v=>`<option ${v===value?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`;
+      }
+      return `<label>${esc(label)}<input data-spec-key="${esc(key)}" value="${esc(value)}" placeholder="${esc(third)}"></label>`;
+    }).join('')+`</div>`;
+}
+function collectSpecs(){
+  const out={};
+  document.querySelectorAll('#specFields [data-spec-key]').forEach(el=>{
+    const key=el.dataset.specKey, value=String(el.value||'').trim();
+    if(value)out[key]=value;
+  });
+  return out;
+}
+function splitImageInput(raw){
+  const s=String(raw||'').trim(); if(!s)return [];
+  return s.split(/\r?\n|\|/).map(x=>x.trim()).filter(Boolean);
+}
+function renderImagePreview(){
+  const urls=selectedImageData.length?selectedImageData:splitImageInput($('imageUrl').value);
+  $('preview').innerHTML=urls.map((u,i)=>`<div class="preview-item"><img src="${esc(u)}" onerror="this.style.display='none'"><small>تصویر ${i+1}</small></div>`).join('');
+}
+function openProductForm(p=null){
+  editing=p?.id||null; selectedImageData=[];
+  $('formTitle').textContent=p?'ویرایش محصول':'افزودن محصول';
+  $('name').value=p?.name||'';$('price').value=p?.price||'';$('discountPrice').value=p?.discount_price||'';
+  $('saleStart').value=p?.sale_start_at?String(p.sale_start_at).slice(0,16):'';
+  $('saleEnd').value=p?.sale_end_at?String(p.sale_end_at).slice(0,16):'';
+  $('condition').value=p?.condition||'نو'; $('category').value=p?.category||'موبایل'; $('badge').value=p?.badge||'';
+  let sp={};try{sp=typeof p?.specs==='string'?JSON.parse(p.specs||'{}'):(p?.specs||{})}catch{}
+  renderSpecFields($('category').value,sp);
+  $('featured').checked=!!p?.featured;$('bestseller').checked=!!p?.bestseller;$('newest').checked=!!p?.newest;
+  $('desc').value=p?.description||'';$('imageUrl').value=p?.image_url||'';$('available').checked=p?p.available!==0:true;$('quantity').value=Number(p?.quantity??0);
+  $('fileName').textContent=p?.image_url?`${splitImageInput(p.image_url).length} تصویر ثبت شده`:'فایلی انتخاب نشده';
+  $('imageFile').value='';renderImagePreview();$('msg').textContent='';$('productModal').hidden=false;
+}
+function closeProductForm(){$('productModal').hidden=true;editing=null;selectedImageData=[]}
+function clearImageFile(){selectedImageData=[];$('imageFile').value='';$('fileName').textContent='فایلی انتخاب نشده';renderImagePreview()}
+$('category').addEventListener('change',()=>{renderSpecFields($('category').value,{});});
+$('imageUrl').addEventListener('input',()=>{selectedImageData=[];renderImagePreview()});
+$('imageFile').addEventListener('change',async()=>{
+  const files=[...($('imageFile').files||[])];
+  if(!files.length)return;
+  if(files.length>5){$('imageFile').value='';$('msg').textContent='حداکثر ۵ تصویر برای هر محصول انتخاب کنید.';return}
+  try{
+    selectedImageData=[];
+    for(const f of files)selectedImageData.push(await compressImage(f));
+    const total=selectedImageData.join('\n').length;
+    if(total>1650000)throw new Error('حجم مجموع تصاویر زیاد است؛ لطفاً تعداد یا کیفیت تصاویر را کمتر کنید.');
+    $('imageUrl').value=selectedImageData.join('\n');
+    $('fileName').textContent=`${files.length} تصویر انتخاب شد`;
+    renderImagePreview();$('msg').textContent='';
+  }catch(e){
+    selectedImageData=[];$('imageFile').value='';$('msg').textContent=e.message||'خطا در آماده‌سازی تصاویر.'
+  }
+});
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>{
+      const im=new Image();
+      im.onload=()=>{
+        const max=1100,scale=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');
+        c.width=Math.max(1,Math.round(im.width*scale));c.height=Math.max(1,Math.round(im.height*scale));
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        let q=.72,data=c.toDataURL('image/jpeg',q);
+        while(data.length>430000&&q>.38){q-=.07;data=c.toDataURL('image/jpeg',q)}
+        if(data.length>500000)return reject(new Error('یکی از تصاویر هنوز بزرگ است.'));
+        resolve(data)
+      };im.onerror=reject;im.src=r.result
+    };r.onerror=reject;r.readAsDataURL(file)
+  })
+}
+async function saveProduct(){
+  const images=(selectedImageData.length?selectedImageData:splitImageInput($('imageUrl').value));
+  const image_url=images.join('\n');
+  if(images.length>5)return $('msg').textContent='حداکثر ۵ تصویر برای هر محصول انتخاب کنید.';
+  if(image_url.length>1650000)return $('msg').textContent='حجم مجموع تصاویر زیاد است؛ لطفاً تصاویر کم‌حجم‌تری انتخاب کنید.';
+  const quantity=Math.max(0,parseInt($('quantity').value||'0',10));$('available').checked=quantity>0;const specs=collectSpecs();
+  const body={name:$('name').value.trim(),price:$('price').value.trim(),discount_price:$('discountPrice').value.trim(),sale_start_at:$('saleStart').value||null,sale_end_at:$('saleEnd').value||null,condition:$('condition').value,category:$('category').value,badge:$('badge').value.trim(),featured:$('featured').checked?1:0,bestseller:$('bestseller').checked?1:0,newest:$('newest').checked?1:0,specs,description:$('desc').value.trim(),image_url,available:$('available').checked,quantity};
+  try{await api(editing?'/api/products/'+editing:'/api/products',{method:editing?'PUT':'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});closeProductForm();products=await api('/api/products?admin=1');populateProductAdminFilters();renderProducts();renderStats();toast('محصول با موفقیت ذخیره شد ✓')}catch(e){$('msg').textContent=e.message}
+}
+
+
+async function deleteProduct(id){
+  if(!id)return;
+  if(!confirm('این محصول حذف شود؟'))return;
+  try{
+    await api('/api/products/'+id,{method:'DELETE'});
+    products=await api('/api/products?admin=1');
+    populateProductAdminFilters();
+    renderProducts();
+    renderStats();
+    toast('محصول با موفقیت حذف شد ✓');
+  }catch(e){
+    toast(e.message||'حذف محصول انجام نشد.');
+  }
+}
+
+async function loadReviews(){try{reviews=await api('/api/admin/reviews');renderReviews()}catch(e){toast(e.message)}}
+function renderReviews(){const f=$('reviewStatusFilter')?.value||'';const list=reviews.filter(r=>!f||r.status===f);const pending=reviews.filter(r=>r.status==='pending').length,approved=reviews.filter(r=>r.status==='approved').length,rejected=reviews.filter(r=>r.status==='rejected').length;$('navReviews').textContent=fa(pending);$('reviewsSummary').innerHTML=`<div><b>${fa(pending)}</b><span>در انتظار بررسی</span></div><div><b>${fa(approved)}</b><span>تأیید شده</span></div><div><b>${fa(rejected)}</b><span>رد شده</span></div>`;$('reviewsTable').innerHTML=list.length?list.map(reviewRow).join(''):'<div class="empty">نظری برای نمایش وجود ندارد.</div>'}
+function reviewRow(r){const status=r.status==='approved'?'done':r.status==='rejected'?'cancel':'wait';return `<article class="review-admin-row"><div class="review-admin-main"><div><strong>${esc(r.product_name||'محصول حذف شده')}</strong><small>${esc(r.customer_name||'مشتری')} — ${esc(r.phone||'')}</small></div><span class="payment-status ${status}">${r.status==='approved'?'تأیید شده':r.status==='rejected'?'رد شده':'در انتظار بررسی'}</span><small>${esc(r.created_at||'')}</small></div><div class="review-admin-stars">${'★'.repeat(Number(r.rating)||0)}${'☆'.repeat(5-(Number(r.rating)||0))}</div><p>${esc(r.comment||'')}</p><div class="review-admin-actions">${r.status!=='approved'?`<button class="approve-btn" onclick="reviewStatus(${r.id},'approved')">✓ تأیید و انتشار</button>`:''}${r.status!=='rejected'?`<button class="reject-btn" onclick="reviewStatus(${r.id},'rejected')">× رد</button>`:''}<button class="ghost" onclick="deleteReview(${r.id})">حذف</button></div></article>`}
+async function reviewStatus(id,status){try{await api('/api/admin/reviews/'+id+'/status',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({status})});await loadReviews();toast(status==='approved'?'نظر منتشر شد ✓':'نظر رد شد')}catch(e){toast(e.message)}}
+async function deleteReview(id){if(!confirm('این نظر حذف شود؟'))return;try{await api('/api/admin/reviews/'+id,{method:'DELETE'});await loadReviews();toast('نظر حذف شد')}catch(e){toast(e.message)}}
+async function loadPayments(){
+  try{
+    payments=await api('/api/admin/payments');
+    renderPayments();
+  }catch(e){
+    toast(e.message||'خطا در دریافت پرداخت‌ها');
+  }
+}
+function renderPayments(){const f=$('paymentStatusFilter')?.value||'';const list=payments.filter(p=>!f||p.status===f);const pending=payments.filter(p=>p.status==='در انتظار بررسی').length,approved=payments.filter(p=>p.status==='تأیید شده').length,rejected=payments.filter(p=>p.status==='رد شده').length;$('navPayments').textContent=fa(pending);$('paymentSummary').innerHTML=`<div><b>${fa(pending)}</b><span>در انتظار بررسی</span></div><div><b>${fa(approved)}</b><span>تأیید شده</span></div><div><b>${fa(rejected)}</b><span>رد شده</span></div>`;$('paymentsTable').innerHTML=list.length?list.map(paymentRow).join(''):'<div class="empty">پرداختی برای نمایش وجود ندارد.</div>'}
+function paymentRow(p){const status=p.status==='تأیید شده'?'done':p.status==='رد شده'?'cancel':'wait';return `<div class="payment-row"><div><strong>سفارش #${p.order_id}</strong><small>${esc(p.customer_name||'مشتری')} — ${esc(p.phone||'')}</small></div><div><b>${toman(p.amount)}</b><small>پیگیری: ${esc(p.tracking_code||'—')}</small></div><span class="payment-status ${status}">${esc(p.status)}</span><small>${esc(p.created_at||'')}</small><div class="payment-actions"><button class="ghost" onclick="viewReceipt(${p.id})">🧾 رسید</button>${p.status==='در انتظار بررسی'?`<button class="approve-btn" onclick="reviewPayment(${p.id},'تأیید شده')">✓ تأیید</button><button class="reject-btn" onclick="reviewPayment(${p.id},'رد شده')">× رد</button>`:''}</div></div>`}
+function viewReceipt(id){const p=payments.find(x=>x.id===id);if(!p?.receipt_data)return toast('رسیدی برای این پرداخت ثبت نشده است');const w=window.open();if(!w)return;const safeSrc=String(p.receipt_data).replace(/"/g,'&quot;');w.document.write(`<title>رسید پرداخت #${p.order_id}</title><body style="margin:0;background:#111;color:#fff;display:grid;place-items:center;min-height:100vh;font-family:Arial"><img src="${safeSrc}" style="max-width:95%;max-height:95vh;object-fit:contain"></body>`);w.document.close()}
+async function loadAdvanced(){try{const [st,tickets,content,logs]=await Promise.all([api('/api/admin/advanced-stats'),api('/api/admin/tickets'),api('/api/admin/site-content'),api('/api/admin/audit-logs')]);$('advancedStats').innerHTML=[['تیکت باز',st.open_tickets],['مشتری',st.customers],['موجودی کیف پول',fa(st.wallet_total)+' تومان'],['امتیازها',st.points_total],['پیام‌های چت',st.chat_messages]].map(x=>`<div class="stat-card green"><small>${x[0]}</small><strong>${x[1]}</strong></div>`).join('');$('ticketsTable').innerHTML=(tickets||[]).map(t=>`<div class="table-row"><b>#${t.id} ${esc(t.subject)}</b> — ${esc(t.customer_name||'')} — ${esc(t.status)} <button class="ghost" onclick="replyAdminTicket(${t.id})">پاسخ</button><button class="ghost" onclick="closeAdminTicket(${t.id})">بستن</button></div>`).join('')||'<div class="empty">تیکتی نیست.</div>';$('contentEditor').innerHTML=(content||[]).map(x=>`<label style="display:block;margin:8px 0"><b>${esc(x.key)}</b><textarea id="content-${esc(x.key)}" style="width:100%;min-height:70px">${esc(x.value)}</textarea></label>`).join('')||'<div class="empty">محتوایی ثبت نشده.</div>';$('auditTable').innerHTML=(logs||[]).slice(0,100).map(x=>`<div class="table-row"><b>${esc(x.action)}</b> — ${esc(x.details)} — ${esc(x.created_at)}</div>`).join('')||'<div class="empty">لاگی نیست.</div>'}catch(e){toast(e.message)}
+}
+async function replyAdminTicket(id){const m=prompt('پاسخ پشتیبانی:');if(!m)return;await api('/api/admin/tickets/'+id+'/reply',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message:m})});toast('پاسخ ارسال شد ✓');loadAdvanced()}
+async function closeAdminTicket(id){await api('/api/admin/tickets/'+id+'/status',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({status:'closed'})});loadAdvanced()}
+async function saveSiteContent(){const out={};document.querySelectorAll('[id^="content-"]').forEach(x=>out[x.id.slice(8)]=x.value);await api('/api/admin/site-content',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(out)});$('contentMsg').textContent='محتوا ذخیره شد ✓';toast('محتوا ذخیره شد')}
+
+async function reviewPayment(id,status){const note=status==='رد شده'?prompt('دلیل رد پرداخت (اختیاری):')||'':'پرداخت توسط مدیر تأیید شد';try{await api('/api/admin/payments/'+id+'/status',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({status,admin_note:note})});toast(status==='تأیید شده'?'پرداخت تأیید شد ✓':'پرداخت رد شد');await loadPayments();orders=await api('/api/admin/orders');renderOrders();renderRecentOrders();renderStatusChart()}catch(e){toast(e.message)}}
+async function savePaymentSettings(){try{const card=$('payCardNumber').value.replace(/\s+/g,'').trim();if(card && !/^\d{16}$/.test(card))return $('paymentSettingsMsg').textContent='شماره کارت باید ۱۶ رقم باشد.';await api('/api/admin/payment-settings',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({card_number:card,card_holder:$('payCardHolder').value.trim(),bank_name:$('payBankName').value.trim(),instructions:$('payInstructions').value.trim(),gateway_enabled:$('gatewayEnabled')?.checked?1:0,gateway_provider:$('gatewayProvider')?.value||'',gateway_merchant_id:$('gatewayMerchantId')?.value.trim()||''})});$('paymentSettingsMsg').textContent='اطلاعات پرداخت با موفقیت ذخیره شد ✓';toast('اطلاعات پرداخت ذخیره شد')}catch(e){$('paymentSettingsMsg').textContent=e.message}}
+async function saveGatewaySettings(){const msg=$('gatewaySettingsMsg');try{const enabled=$('gatewayEnabled').checked,provider=$('gatewayProvider').value,merchant=$('gatewayMerchantId').value.trim();if(enabled&&!provider){msg.textContent='برای فعال‌سازی، نوع درگاه را انتخاب کنید.';return}await api('/api/admin/payment-settings',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({card_number:$('payCardNumber').value.replace(/\s+/g,'').trim(),card_holder:$('payCardHolder').value.trim(),bank_name:$('payBankName').value.trim(),instructions:$('payInstructions').value.trim(),gateway_enabled:enabled?1:0,gateway_provider:provider,gateway_merchant_id:merchant})});paymentSettings.gateway_enabled=enabled?1:0;paymentSettings.gateway_provider=provider;paymentSettings.gateway_merchant_id=merchant;$('gatewayStatus').textContent=enabled?'فعال':'غیرفعال';$('gatewayStatus').className=enabled?'status-on':'status-off';msg.textContent='تنظیمات درگاه ذخیره شد ✓';toast('تنظیمات درگاه ذخیره شد')}catch(e){msg.textContent=e.message}}
+
+async function loadInventory(){try{inventory=await api('/api/admin/inventory');renderInventory()}catch(e){toast(e.message)}}
+function renderInventory(){const q=($('inventorySearch')?.value||'').trim().toLowerCase(),f=$('inventoryFilter')?.value||'';const list=inventory.filter(p=>(!q||String(p.name).toLowerCase().includes(q))&&(!f||(f==='low'?Number(p.stock_qty)>0&&Number(p.stock_qty)<=Number(p.low_stock_threshold):f==='out'?Number(p.stock_qty)<=0:Number(p.stock_qty)>0)));$('navLowStock').textContent=fa(inventory.filter(p=>Number(p.stock_qty)>0&&Number(p.stock_qty)<=Number(p.low_stock_threshold)).length);$('inventoryTable').innerHTML=list.length?list.map(p=>`<div class="inventory-row"><div><strong>${esc(p.name)}</strong><small>${esc(p.category||'')} · ${esc(p.condition||'')}</small></div><div><label>موجودی<input id="stock-${p.id}" type="number" min="0" value="${Number(p.stock_qty)||0}"></label><label>هشدار<input id="threshold-${p.id}" type="number" min="0" value="${Number(p.low_stock_threshold)||2}"></label></div><span class="inventory-status ${Number(p.stock_qty)<=0?'out':Number(p.stock_qty)<=Number(p.low_stock_threshold)?'low':'ok'}">${Number(p.stock_qty)<=0?'ناموجود':Number(p.stock_qty)<=Number(p.low_stock_threshold)?'موجودی کم':'موجود'}</span><button class="primary" onclick="saveInventory(${p.id})">ذخیره</button></div>`).join(''):'<div class="empty">موردی برای نمایش نیست.</div>'}
+async function saveInventory(id){try{await api('/api/admin/inventory/'+id,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({stock_qty:Number($('stock-'+id).value)||0,low_stock_threshold:Number($('threshold-'+id).value)||2})});await loadInventory();products=await api('/api/products?admin=1');renderProducts();toast('موجودی ذخیره شد ✓')}catch(e){toast(e.message)}}
+async function loadBanners(){try{banners=await api('/api/admin/banners');renderBanners()}catch(e){toast(e.message)}}
+function renderBanners(){const el=$('bannersTable');if(!el)return;el.innerHTML=banners.length?banners.map(b=>`<div class="banner-row"><div class="banner-preview">${b.image_url?`<img src="${esc(b.image_url)}" onerror="this.style.display='none'">`:''}<div><strong>${esc(b.title||'بدون عنوان')}</strong><small>${esc(b.subtitle||'')}</small></div></div><span class="status-${Number(b.active)?'on':'off'}">${Number(b.active)?'فعال':'غیرفعال'}</span><div class="coupon-actions"><button class="ghost" onclick="toggleBanner(${b.id},${Number(b.active)?0:1})">${Number(b.active)?'غیرفعال کردن':'فعال کردن'}</button><button class="danger" onclick="deleteBanner(${b.id})">حذف</button></div></div>`).join(''):'<div class="empty">هنوز بنری ثبت نشده است.</div>'}
+async function createBanner(){const msg=$('bannerMsg');try{await api('/api/admin/banners',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title:$('bannerTitle').value,subtitle:$('bannerSubtitle').value,image_url:$('bannerImage').value,button_text:$('bannerButton').value,button_link:$('bannerLink').value,sort_order:Number($('bannerSort').value)||0,active:$('bannerActive').checked?1:0})});msg.textContent='بنر اضافه شد ✓';$('bannerTitle').value='';$('bannerSubtitle').value='';$('bannerImage').value='';await loadBanners()}catch(e){msg.textContent=e.message}}
+async function toggleBanner(id,active){try{const b=banners.find(x=>x.id===id)||{};await api('/api/admin/banners/'+id,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({...b,active})});await loadBanners()}catch(e){toast(e.message)}}
+async function deleteBanner(id){if(!confirm('این بنر حذف شود؟'))return;try{await api('/api/admin/banners/'+id,{method:'DELETE'});await loadBanners();toast('بنر حذف شد')}catch(e){toast(e.message)}}
+async function loadCoupons(){try{coupons=await api('/api/admin/coupons');renderCoupons()}catch(e){toast(e.message)}}
+function renderCoupons(){const el=$('couponsTable');if(!el)return;el.innerHTML=coupons.length?coupons.map(c=>{const value=c.discount_type==='percent'?`${fa(c.discount_value)}٪`:toman(c.discount_value);const active=Number(c.active)?'فعال':'غیرفعال';return `<div class="coupon-row-admin"><div><strong>${esc(c.code)}</strong><small>${value} | حداقل ${toman(c.min_order)} | استفاده ${fa(c.used_count)}${Number(c.max_uses)?'/'+fa(c.max_uses):''}</small></div><span class="status-${Number(c.active)?'on':'off'}">${active}</span><div class="coupon-actions"><button class="ghost" onclick="toggleCoupon(${c.id},${Number(c.active)?0:1})">${Number(c.active)?'غیرفعال کردن':'فعال کردن'}</button><button class="danger" onclick="deleteCoupon(${c.id})">حذف</button></div></div>`}).join(''):'<div class="empty">هنوز کد تخفیفی ساخته نشده است.</div>'}
+async function createCoupon(){const msg=$('couponAdminMsg');try{const code=$('couponCodeAdmin').value.trim(),type=$('couponType').value,value=Number($('couponValue').value),min=Number($('couponMin').value)||0,max=Number($('couponMax').value)||0;const start=$('couponStart').value?new Date($('couponStart').value).toISOString():null,end=$('couponEnd').value?new Date($('couponEnd').value).toISOString():null;await api('/api/admin/coupons',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({code,discount_type:type,discount_value:value,min_order:min,start_at:start,end_at:end,max_uses:max,active:$('couponActive').checked?1:0})});msg.textContent='کد تخفیف ساخته شد ✓';$('couponCodeAdmin').value='';$('couponValue').value='';await loadCoupons()}catch(e){msg.textContent=e.message}}
+async function toggleCoupon(id,active){try{await api('/api/admin/coupons/'+id,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({active})});await loadCoupons()}catch(e){toast(e.message)}}
+async function deleteCoupon(id){if(!confirm('این کد تخفیف حذف شود؟'))return;try{await api('/api/admin/coupons/'+id,{method:'DELETE'});await loadCoupons();toast('کد تخفیف حذف شد')}catch(e){toast(e.message)}}
+function globalFilter(){const q=$('globalSearch').value.trim();if(!q)return;showSection('orders');$('orderSearch').value=q;renderOrders()}
+check();
+setInterval(()=>{if(!$('app')?.hidden)loadNotifications()},15000);
+</script>
+<script>
+async function loadAdvanced(){try{const [st,tickets,content,logs]=await Promise.all([api('/api/admin/advanced-stats'),api('/api/admin/tickets'),api('/api/admin/site-content'),api('/api/admin/audit-logs')]);$('advancedStats').innerHTML=[['تیکت باز',st.open_tickets],['مشتری',st.customers],['موجودی کیف پول',fa(st.wallet_total)+' تومان'],['امتیازها',st.points_total],['پیام‌های چت',st.chat_messages]].map(x=>`<div class="stat-card green"><small>${x[0]}</small><strong>${x[1]}</strong></div>`).join('');$('ticketsTable').innerHTML=(tickets||[]).map(t=>`<div class="table-row"><b>#${t.id} ${esc(t.subject)}</b> — ${esc(t.customer_name||'')} — ${esc(t.status)} <button class="ghost" onclick="replyAdminTicket(${t.id})">پاسخ</button><button class="ghost" onclick="closeAdminTicket(${t.id})">بستن</button></div>`).join('')||'<div class="empty">تیکتی نیست.</div>';$('contentEditor').innerHTML=(content||[]).map(x=>`<label style="display:block;margin:8px 0"><b>${esc(x.key)}</b><textarea id="content-${esc(x.key)}" style="width:100%;min-height:70px">${esc(x.value)}</textarea></label>`).join('')||'<div class="empty">محتوایی ثبت نشده.</div>';$('auditTable').innerHTML=(logs||[]).slice(0,100).map(x=>`<div class="table-row"><b>${esc(x.action)}</b> — ${esc(x.details)} — ${esc(x.created_at)}</div>`).join('')||'<div class="empty">لاگی نیست.</div>'}catch(e){toast(e.message)}}
+async function replyAdminTicket(id){const m=prompt('پاسخ پشتیبانی:');if(!m)return;await api('/api/admin/tickets/'+id+'/reply',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message:m})});toast('پاسخ ارسال شد ✓');loadAdvanced()}
+async function closeAdminTicket(id){await api('/api/admin/tickets/'+id+'/status',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({status:'closed'})});loadAdvanced()}
+async function saveSiteContent(){const out={};document.querySelectorAll('[id^="content-"]').forEach(x=>out[x.id.slice(8)]=x.value);await api('/api/admin/site-content',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(out)});$('contentMsg').textContent='محتوا ذخیره شد ✓';toast('محتوا ذخیره شد')}
+</script>
+</body></html>

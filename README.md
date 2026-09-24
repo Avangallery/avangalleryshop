@@ -1,7 +1,7 @@
-AVAN GALLERY V25
-- Based on V24.
-- Hero watch/photo composition reduced to 84% scale on desktop.
-- Right-aligned image with breathing room around the watch.
-- Existing header and HTML hero text retained.
-- No slider, no automatic scrolling, no 01/02/03, no arrows.
-- Other site sections are untouched.
+AVAN GALLERY V26
+Hero refinement:
+- The watch/photo is visibly smaller and has breathing room.
+- Photo is placed in a 90% height / 90% width composition on desktop.
+- The existing HTML hero text, CTA, header, and service bar remain.
+- No slider, no automatic scrolling, no 01/02/03.
+- Mobile keeps the full-width hero.

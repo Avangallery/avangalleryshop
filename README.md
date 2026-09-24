@@ -1,7 +1,6 @@
-AVAN GALLERY V26
-Hero refinement:
-- The watch/photo is visibly smaller and has breathing room.
-- Photo is placed in a 90% height / 90% width composition on desktop.
-- The existing HTML hero text, CTA, header, and service bar remain.
-- No slider, no automatic scrolling, no 01/02/03.
-- Mobile keeps the full-width hero.
+AVAN GALLERY V27
+این نسخه مشکل اصلی V26 را اصلاح می‌کند:
+V26 از object-fit:cover استفاده می‌کرد و عکس را crop می‌کرد؛
+بنابراین کوچک‌کردن کادر عملاً ساعت را کوچک نشان نمی‌داد.
+V27 عکس را با object-fit:contain در یک پنل 72 درصدی سمت راست قرار می‌دهد
+تا خود ساعت واقعاً کوچک‌تر و فضای اطراف آن بیشتر دیده شود.

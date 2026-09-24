@@ -1,0 +1,22 @@
+/* AVAN V23 — final hero only */
+.hero{position:relative!important;display:block!important;width:100%!important;height:620px!important;min-height:620px!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#020a12!important}
+.hero-single-image{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;z-index:1!important}
+.hero-single-image img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center center!important}
+.hero-overlay{position:absolute!important;inset:0!important;display:block!important;z-index:2!important;pointer-events:none!important;background:linear-gradient(90deg,rgba(0,7,14,.95) 0%,rgba(0,7,14,.76) 24%,rgba(0,7,14,.30) 52%,rgba(0,7,14,.05) 80%)!important}
+.hero-copy{position:absolute!important;display:block!important;visibility:visible!important;opacity:1!important;z-index:20!important;left:5.5%!important;right:auto!important;top:25%!important;width:520px!important;max-width:42%!important;direction:ltr!important;text-align:left!important;color:#fff!important}
+.hero-copy .hero-eyebrow{display:block!important;visibility:visible!important;color:#fff!important;font:700 12px/1.4 Arial,sans-serif!important;letter-spacing:.45em!important;margin:0 0 20px!important}
+.hero-copy h1{display:block!important;visibility:visible!important;color:#fff!important;font:500 58px/1.04 Georgia,'Times New Roman',serif!important;margin:0!important;text-shadow:0 4px 22px rgba(0,0,0,.5)!important}
+.hero-copy h1 span{color:#efc96d!important}
+.hero-copy .hero-line{display:block!important;width:58px!important;height:2px!important;background:#efc96d!important;margin:24px 0 20px!important}
+.hero-copy h2{display:block!important;visibility:visible!important;color:#fff!important;font:700 20px/1.8 Vazirmatn,sans-serif!important;margin:0 0 24px!important;direction:rtl!important;text-align:left!important}
+.hero-copy .hero-cta{display:inline-flex!important;visibility:visible!important;align-items:center!important;gap:14px!important;background:#efc96d!important;color:#07131d!important;padding:14px 26px!important;border-radius:28px!important;text-decoration:none!important;font:800 14px/1 Vazirmatn,sans-serif!important}
+.hero-copy .hero-cta span{display:inline!important;color:#07131d!important}
+.hero .slider,.hero .hero-arrows,.hero .hero-dots,.hero .slide-number{display:none!important}
+@media(max-width:850px){.hero{height:600px!important;min-height:600px!important}.hero-copy{left:7%!important;top:23%!important;width:76%!important;max-width:76%!important}.hero-copy h1{font-size:42px!important}}
+/* Header visual order, RTL: logo → menu → search → login/cart */
+.main-nav{direction:rtl!important;display:flex!important;align-items:center!important}
+.main-nav .logo{order:1!important}
+.main-nav .desktop-menu{order:2!important}
+.main-nav .header-search{order:3!important}
+.main-nav .header-actions{order:4!important}
+.main-nav .mobile-menu{order:5!important}

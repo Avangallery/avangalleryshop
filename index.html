@@ -42,11 +42,7 @@
 
 <main>
 <section class="hero" id="home">
-  <div class="hero-image-slider" id="heroImageSlider" aria-label="گالری ساعت">
-    <img class="hero-slide-image is-active" src="assets/hero-final-1.jpg" alt="ساعت لوکس رولکس">
-    <img class="hero-slide-image" src="assets/hero-final-2.jpg" alt="ساعت لوکس امگا">
-    <img class="hero-slide-image" src="assets/hero-final-3.jpg" alt="ساعت لوکس تیسوت">
-  </div>
+<div class="hero-single-image"><img src="assets/avan-single-hero.png" alt="AVAN GALLERY"></div>
   <div class="hero-shade"></div>
 
   <div class="hero-copy" id="heroCopy">
@@ -55,13 +51,6 @@
     <div class="gold-line"></div>
     <h2 id="heroSubtitle">انتخابی فراتر از زمان</h2>
     <a class="cta" href="#products" id="productsBtn">مشاهده محصولات <span>←</span></a>
-  </div>
-
-  <div class="slider" id="sliderDots"><button class="active" data-slide="0">01</button><button data-slide="1">02</button><button data-slide="2">03</button></div>
-
-  <div class="hero-arrows">
-    <button id="prevSlide" aria-label="اسلاید قبلی">‹</button>
-    <button id="nextSlide" aria-label="اسلاید بعدی">›</button>
   </div>
 
   <div class="hero-bottom">
@@ -113,88 +102,7 @@
 <div class="toast" id="toast"></div>
 
 
-<script>
-(() => {
-  const slides = [
-    {
-      img: 'assets/hero-final-1.jpg',
-      brand: 'ROLEX',
-      title: 'ترکیب اصالت<br><span>و قدرت</span>',
-      sub: 'ساعتی فراتر از زمان برای کسانی که همیشه یک قدم جلوترند'
-    },
-    {
-      img: 'assets/hero-final-2.jpg',
-      brand: 'OMEGA',
-      title: 'دقت<br><span>در هر لحظه</span>',
-      sub: 'دقت سوئیسی برای سبک زندگی خاص و ماندگار'
-    },
-    {
-      img: 'assets/hero-final-3.jpg',
-      brand: 'TISSOT',
-      title: 'همراه لحظات<br><span>واقعی</span>',
-      sub: 'طراحی متفاوت برای لحظه‌هایی که فراموش نمی‌شوند'
-    }
-  ];
-
-  const images = [...document.querySelectorAll('.hero-slide-image')];
-  const brand = document.querySelector('#heroBrand');
-  const title = document.querySelector('#heroTitle');
-  const subtitle = document.querySelector('#heroSubtitle');
-  const dots = [...document.querySelectorAll('#sliderDots button')];
-  const prev = document.querySelector('#prevSlide');
-  const next = document.querySelector('#nextSlide');
-
-  let current = 0;
-  let timer = null;
-
-  // Preload all images.
-  slides.forEach(s => {
-    const img = new Image();
-    img.src = s.img;
-  });
-
-  function render(index) {
-    current = (index + slides.length) % slides.length;
-
-    images.forEach((img, i) => {
-      img.classList.toggle('is-active', i === current);
-    });
-
-    if (brand) brand.textContent = slides[current].brand;
-    if (title) title.innerHTML = slides[current].title;
-    if (subtitle) subtitle.textContent = slides[current].sub;
-
-    dots.forEach((dot, i) => {
-      dot.classList.toggle('active', i === current);
-    });
-  }
-
-  function restart() {
-    clearInterval(timer);
-    timer = setInterval(() => render(current + 1), 3000);
-  }
-
-  dots.forEach((dot, i) => {
-    dot.addEventListener('click', () => {
-      render(i);
-      restart();
-    });
-  });
-
-  prev?.addEventListener('click', () => {
-    render(current - 1);
-    restart();
-  });
-
-  next?.addEventListener('click', () => {
-    render(current + 1);
-    restart();
-  });
-
-  render(0);
-  restart();
-})();
-</script>
+<script>/* AVAN static hero: no slider */</script>
 
 </body>
 </html>

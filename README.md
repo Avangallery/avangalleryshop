@@ -1,9 +1,5 @@
-# AVAN GALLERY V17
-نسخه نهایی Hero:
-- سه عکس کاملاً متفاوت و مستقل: Rolex / Omega / Tissot
-- عکس‌ها فقط شامل ساعت و محیط هستند؛ متن و دکمه داخل فایل تصویر نیست.
-- متن واقعی سایت در سمت چپ روی فضای تاریک قرار دارد.
-- شماره‌های اسلاید در سمت راست و فلش‌ها پایین چپ هستند.
-- عکس، برند، تیتر و توضیح هر ۳ ثانیه با هم عوض می‌شوند.
-- Hero بدون فاصله مستقیماً زیر هدر قرار دارد.
-- بخش‌های دیگر سایت دست نخورده‌اند.
+AVAN GALLERY V18
+Static single-image hero.
+RTL header order.
+No slider, auto-scroll, arrows, or 01/02/03.
+Hero image is directly under the main navigation.

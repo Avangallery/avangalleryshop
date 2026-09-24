@@ -473,3 +473,48 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
   .hero h1{font-size:38px!important}
   .slider{right:5%!important}
 }
+
+/* AVAN V18 — STATIC SINGLE HERO */
+html,body{direction:rtl}
+.hero{
+ position:relative!important;
+ margin:0!important;
+ padding:0!important;
+ height:calc(100vh - 154px)!important;
+ min-height:650px!important;
+ overflow:hidden!important;
+ border:0!important;
+ direction:rtl!important;
+}
+.hero-single-image{
+ position:absolute!important;
+ inset:0!important;
+ z-index:0!important;
+}
+.hero-single-image img{
+ width:100%!important;
+ height:100%!important;
+ display:block!important;
+ object-fit:cover!important;
+ object-position:center center!important;
+ margin:0!important;
+}
+.hero-image-slider,.hero .slider,.hero .hero-arrows,.hero .hero-dots,
+.hero [data-slide],.hero .slide-number{display:none!important}
+.hero-shade{
+ position:absolute!important;
+ inset:0!important;
+ z-index:1!important;
+ pointer-events:none!important;
+ background:linear-gradient(90deg,rgba(1,8,14,.78),rgba(1,8,14,.16) 62%,rgba(1,8,14,.12))!important;
+}
+.hero-copy{
+ position:absolute!important;
+ z-index:3!important;
+ left:5%!important;
+ top:29%!important;
+ width:38%!important;
+ direction:rtl!important;
+ text-align:right!important;
+}
+.hero h1 span{color:#f0c96b!important}

@@ -205,3 +205,15 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
   .main-nav .header-search{order:7!important}
   .hero{height:calc(100vh - 130px)!important;min-height:600px!important}
 }
+
+/* V10: RTL service strip and zero-gap hero */
+.service-bar{direction:rtl!important;height:66px!important;padding:0 3.5%!important;display:flex!important;flex-direction:row!important;align-items:stretch!important;justify-content:space-between!important;gap:0!important;background:linear-gradient(180deg,#061d31,#031624)!important;border-bottom:1px solid rgba(225,185,94,.14)!important}
+.service-card,.slogan{direction:rtl!important;flex:1 1 0!important;min-width:0!important;max-width:none!important;margin:0!important;padding:0 22px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:12px!important;color:#fff!important;background:transparent!important;border:0!important;border-left:1px solid rgba(255,255,255,.06)!important;border-radius:0!important;cursor:pointer}
+.service-bar .slogan{order:1!important;justify-content:flex-start!important;flex:1.25 1 0!important}
+.service-bar .service-card[data-action="return"]{order:2!important}.service-bar .service-card[data-action="authenticity"]{order:3!important}.service-bar .service-card[data-action="shipping"]{order:4!important}.service-bar .service-card[data-action="support"]{order:5!important;border-left:0!important}
+.service-icon{width:31px!important;height:31px!important;flex:0 0 31px!important;display:grid!important;place-items:center!important;color:#e9bd58!important}
+.service-icon svg{width:25px!important;height:25px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.55!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.service-card>span:last-child{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important}.service-card strong{font-size:11px!important;color:#f6f7f8!important;white-space:nowrap}.service-card small{font-size:8px!important;color:#8fa3b3!important;white-space:nowrap}.slogan-text{font-size:10px!important;font-weight:600!important;white-space:nowrap}.slogan-icon{width:27px!important;height:27px!important}.slogan-icon svg{width:21px!important;height:21px!important}
+.main-nav,.hero,.site-header{margin-top:0!important;margin-bottom:0!important}.hero{padding-top:0!important;border:0!important}.hero-art{top:0!important;margin:0!important}
+@media(max-width:1000px){.service-bar{padding:0 10px!important}.service-card,.slogan{padding:0 10px!important}.service-card small{display:none!important}.slogan-text{font-size:8px!important}}
+@media(max-width:700px){.slogan{display:none!important}.service-card{padding:0 7px!important}.service-card strong{font-size:9px!important}}

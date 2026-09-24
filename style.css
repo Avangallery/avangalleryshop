@@ -316,3 +316,160 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
   position:relative!important;
   z-index:3!important;
 }
+
+/* =========================================================
+   AVAN V17 — FINAL HERO LAYOUT
+   ========================================================= */
+.hero{
+  position:relative!important;
+  margin:0!important;
+  padding:0!important;
+  height:calc(100vh - 154px)!important;
+  min-height:650px!important;
+  overflow:hidden!important;
+  border:0!important;
+  background:#020b13!important;
+}
+
+/* Only these 3 photos are used in the hero. */
+.hero-image-slider{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  overflow:hidden!important;
+}
+.hero-slide-image{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  display:block!important;
+  transition:opacity .55s ease!important;
+}
+.hero-slide-image.is-active{
+  opacity:1!important;
+  visibility:visible!important;
+}
+
+/* Dark empty zone on the left for HTML text; watch stays visually dominant. */
+.hero-shade{
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(90deg,
+      rgba(1,8,14,.94) 0%,
+      rgba(1,8,14,.82) 19%,
+      rgba(1,8,14,.45) 38%,
+      rgba(1,8,14,.08) 67%,
+      rgba(1,8,14,.18) 100%),
+    linear-gradient(0deg,rgba(1,7,12,.48),transparent 48%)!important;
+}
+
+/* Hero text is deliberately on the LEFT, never over the watch face. */
+.hero-copy{
+  position:absolute!important;
+  z-index:3!important;
+  left:5.2%!important;
+  right:auto!important;
+  top:29%!important;
+  width:39%!important;
+  max-width:560px!important;
+  direction:ltr!important;
+  text-align:left!important;
+}
+.hero-copy .eyebrow{
+  color:#fff!important;
+  margin-bottom:24px!important;
+}
+.hero h1{
+  color:#fff!important;
+  font-size:52px!important;
+  line-height:1.08!important;
+  margin:0!important;
+  text-shadow:0 4px 24px rgba(0,0,0,.55)!important;
+}
+.hero h1 span{
+  color:#f0c96b!important;
+}
+.hero h2{
+  color:#fff!important;
+  direction:rtl!important;
+  text-align:left!important;
+  font-size:20px!important;
+  line-height:1.8!important;
+}
+.gold-line{
+  margin:24px 0!important;
+  width:58px!important;
+}
+
+/* Slide numbers on the RIGHT. */
+.slider{
+  position:absolute!important;
+  z-index:4!important;
+  right:3.8%!important;
+  left:auto!important;
+  top:42%!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  gap:17px!important;
+}
+.slider button{
+  min-width:30px!important;
+  color:rgba(255,255,255,.70)!important;
+  background:transparent!important;
+  border:0!important;
+  padding:0 0 7px!important;
+  cursor:pointer!important;
+}
+.slider button.active{
+  color:#f0c96b!important;
+  border-bottom:2px solid #f0c96b!important;
+}
+
+/* Arrows on bottom-left. */
+.hero-arrows{
+  position:absolute!important;
+  z-index:4!important;
+  left:5.2%!important;
+  right:auto!important;
+  bottom:6%!important;
+}
+.hero-arrows button{
+  width:48px!important;
+  height:48px!important;
+  border:1px solid rgba(255,255,255,.45)!important;
+  background:rgba(1,12,20,.42)!important;
+  color:#fff!important;
+  border-radius:50%!important;
+  cursor:pointer!important;
+  margin-right:8px!important;
+}
+
+/* Hide the old lower feature strip inside the hero; the top service bar remains. */
+.hero-bottom{
+  display:none!important;
+}
+
+@media(max-width:850px){
+  .hero{
+    height:calc(100vh - 121px)!important;
+    min-height:620px!important;
+  }
+  .hero-copy{
+    left:7%!important;
+    width:78%!important;
+    top:27%!important;
+  }
+  .hero h1{font-size:38px!important}
+  .slider{right:5%!important}
+}

@@ -1,6 +1,7 @@
-AVAN GALLERY V19
-Static single-image Hero.
-One clean photographic image only.
-No slider, no auto-scroll, no 01/02/03, no arrows.
-Hero starts immediately below the real navigation.
-The image contains no site UI/text layer.
+AVAN GALLERY V20
+- هدر واقعی سایت فقط یک بار نمایش داده می‌شود.
+- بلافاصله زیر هدر یک عکس واحد و تمیز قرار دارد.
+- عکس به‌صورت wide واقعی و بدون crop شدید نمایش داده می‌شود.
+- هیچ متن، لوگو، دکمه، شماره 01/02/03، فلش یا اسلایدری روی عکس وجود ندارد.
+- هیچ اسکرول خودکاری وجود ندارد.
+- سایر بخش‌های سایت دست‌نخورده باقی مانده‌اند.

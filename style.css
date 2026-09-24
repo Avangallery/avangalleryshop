@@ -515,3 +515,34 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
 .hero [data-slide]{
  display:none!important;
 }
+
+/* AVAN V20 — single wide clean photo, no overlay UI */
+.hero{
+  position:relative!important;
+  margin:0!important;
+  padding:0!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  background:#020b13!important;
+}
+.hero-single-image{
+  position:relative!important;
+  width:100%!important;
+  height:auto!important;
+  line-height:0!important;
+  overflow:hidden!important;
+}
+.hero-single-image img{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  object-fit:initial!important;
+}
+.hero-copy,.hero-shade,.hero-image-slider,.hero .slider,
+.hero .hero-arrows,.hero .hero-dots,.hero .slide-number{
+  display:none!important;
+}

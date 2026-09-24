@@ -19,6 +19,19 @@
     <button class="service-card" data-action="return"><span>□</span><strong>۷ روز ضمانت بازگشت</strong><small>بدون قید و شرط</small></button>
     <button class="slogan" data-action="about">زمان تنها چیزیست که دوباره برنمی‌گردد ... <b>◇</b></button>
   </div>
+
+<div class="main-nav">
+<a class="logo" href="#home"><div><strong>آوان</strong><span>AVAN</span></div><small>A V A N&nbsp;&nbsp; G A L L E R Y</small></a>
+<nav id="mainMenu">
+<a class="active" href="#home">صفحه اصلی</a>
+<div class="nav-drop"><button type="button">دسته‌بندی‌ها <b>⌄</b></button><div class="drop-menu"><a href="#products">ساعت کلاسیک</a><a href="#products">ساعت لوکس</a><a href="#products">ساعت اسپرت</a><a href="#products">ساعت مردانه</a><a href="#products">ساعت زنانه</a></div></div>
+<div class="nav-drop"><button type="button">برندها <b>⌄</b></button><div class="drop-menu"><a href="#products">TISSOT</a><a href="#products">CITIZEN</a><a href="#products">CASIO</a><a href="#products">SEIKO</a></div></div>
+<a href="#products">فروشگاه</a><a href="#blog">وبلاگ</a><a href="#about">درباره ما</a><a href="#contact">تماس با ما</a>
+</nav>
+<form class="header-search" id="headerSearch"><button type="submit">⌕</button><input id="headerSearchInput" type="search" placeholder="جستجوی ساعت، برند یا مدل..."></form>
+<div class="header-actions"><a class="account-btn" href="#account">♙ <strong>ورود / ثبت‌نام</strong></a><button class="header-icon" id="headerWishlist">♡<em id="wishCount">0</em></button><button class="header-icon" id="headerCart">🛒<em id="cartCount">0</em></button></div>
+<button class="mobile-menu" id="mobileMenu">☰</button>
+</div>
 </header>
 
 <main>
@@ -121,5 +134,15 @@
   setInterval(()=>render(slide+1),7000);
 })();
 </script>
-</body>
+<script>
+const menu=document.getElementById("mainMenu"),mobile=document.getElementById("mobileMenu");
+mobile.onclick=()=>menu.classList.toggle("open");
+document.querySelectorAll(".nav-drop>button").forEach(b=>b.onclick=e=>{e.stopPropagation();b.parentElement.classList.toggle("open")});
+document.addEventListener("click",()=>document.querySelectorAll(".nav-drop.open").forEach(x=>x.classList.remove("open")));
+document.getElementById("headerSearch").onsubmit=e=>{e.preventDefault();const q=document.getElementById("headerSearchInput").value.trim();if(q)location.hash="products"};
+let ccount=+localStorage.getItem("avan_cart_count")||0,wcount=+localStorage.getItem("avan_wish_count")||0;
+const sync=()=>{document.getElementById("cartCount").textContent=ccount;document.getElementById("wishCount").textContent=wcount;localStorage.setItem("avan_cart_count",ccount);localStorage.setItem("avan_wish_count",wcount)};
+document.getElementById("headerCart").onclick=()=>location.hash="products";
+document.getElementById("headerWishlist").onclick=()=>location.hash="products";sync();
+</script></body>
 </html>

@@ -218,18 +218,22 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
 @media(max-width:1000px){.service-bar{padding:0 10px!important}.service-card,.slogan{padding:0 10px!important}.service-card small{display:none!important}.slogan-text{font-size:8px!important}}
 @media(max-width:700px){.slogan{display:none!important}.service-card{padding:0 7px!important}.service-card strong{font-size:9px!important}}
 
-/* V11 — generated AVAN hero banners */
-.hero-art{
-  background-size:cover!important;
-  background-position:center center!important;
-  background-repeat:no-repeat!important;
-}
+/* ===== AVAN V11 FIXED ===== */
 .service-bar .service-card,
 .service-bar .slogan{
   cursor:default!important;
+  user-select:none!important;
 }
 .service-bar .service-card:hover,
 .service-bar .slogan:hover{
   background:transparent!important;
   transform:none!important;
+}
+.hero{
+  margin-top:0!important;
+  padding-top:0!important;
+}
+.hero-art{
+  background-size:cover!important;
+  background-position:center center!important;
 }

@@ -194,8 +194,6 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
 .main-nav{margin-bottom:0!important}
 
 /* Make the 3 watch images visibly distinct and premium */
-#heroArt{background-image:url("assets/hero-watch-1.jpg")!important}
-
 @media(max-width:980px){
   .main-nav{direction:rtl!important}
   .main-nav .logo{order:1!important;margin-left:auto!important}
@@ -249,4 +247,9 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
   background:
     linear-gradient(90deg,rgba(1,8,14,.97) 0%,rgba(1,8,14,.78) 25%,rgba(1,8,14,.18) 55%,rgba(1,8,14,.05) 100%),
     linear-gradient(0deg,rgba(1,7,12,.58),transparent 42%)!important;
+}
+
+/* V13 FIX: the slider JS controls the image; do not lock one image with !important */
+.hero-art{
+  background-image:none;
 }

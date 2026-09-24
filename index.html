@@ -125,6 +125,10 @@
 
   const art = $('#heroArt');
   const title = $('#heroTitle');
+
+  // Preload all three hero images so changing slides also changes the photo instantly.
+  ['assets/hero-watch-1.jpg','assets/hero-watch-2.jpg','assets/hero-watch-3.jpg']
+    .forEach(src => { const img = new Image(); img.src = src; });
   const sub = $('#heroSubtitle');
   const dots = $$('#sliderDots button');
 
@@ -139,7 +143,7 @@
     current = (i + slides.length) % slides.length;
     art.style.opacity = '0';
     setTimeout(() => {
-      art.style.backgroundImage = `url("${slides[current].img}")`;
+      art.style.setProperty('background-image', `url("${slides[current].img}")`);
       title.innerHTML = slides[current].title;
       sub.textContent = slides[current].sub;
       dots.forEach((d,n) => d.classList.toggle('active', n === current));

@@ -1,6 +1,1 @@
-AVAN GALLERY V22
-- هدر واقعی سایت فقط یک بار نمایش داده می‌شود.
-- یک عکس ثابت و تمیز مستقیماً زیر هدر قرار دارد.
-- متن Hero دوباره به صورت HTML واقعی روی سمت چپ عکس قرار گرفته است.
-- متن، خط طلایی و دکمه داخل فایل عکس نیستند.
-- هیچ اسلایدر، عدد، فلش یا اسکرول خودکاری وجود ندارد.
+AVAN GALLERY V24 — final clean static hero. One image, real HTML text overlay, no slider, no numbers, no arrows, no auto-scroll.

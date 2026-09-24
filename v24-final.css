@@ -1,0 +1,4 @@
+#avanHeroCopy{display:block!important;visibility:visible!important;opacity:1!important;position:absolute!important;z-index:9999!important;}
+.hero > img{z-index:1!important;}
+.hero > #avanHeroCopy{z-index:9999!important;}
+.hero .slider,.hero .hero-arrows,.hero .hero-dots,.hero .slide-number{display:none!important;}

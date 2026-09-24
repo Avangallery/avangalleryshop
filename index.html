@@ -42,17 +42,15 @@
 
 <main>
 <section class="hero" id="home">
-<div class="hero-image-slider" id="heroImageSlider" aria-label="گالری ساعت">
-  <img class="hero-slide-image is-active" src="assets/hero-brand-1.jpg" alt="ساعت لوکس رولکس">
-  <img class="hero-slide-image" src="assets/hero-brand-2.jpg" alt="ساعت لوکس امگا">
-  <img class="hero-slide-image" src="assets/hero-brand-3.jpg" alt="ساعت لوکس تیسوت">
-</div>
-
-  <img class="hero-art" id="heroArt" src="assets/hero-1.jpg" alt="ساعت آوان گالری">
+  <div class="hero-image-slider" id="heroImageSlider" aria-label="گالری ساعت">
+    <img class="hero-slide-image is-active" src="assets/hero-clean-1.jpg" alt="ساعت لوکس رولکس">
+    <img class="hero-slide-image" src="assets/hero-clean-2.jpg" alt="ساعت لوکس امگا">
+    <img class="hero-slide-image" src="assets/hero-clean-3.jpg" alt="ساعت لوکس تیسوت">
+  </div>
   <div class="hero-shade"></div>
 
   <div class="hero-copy" id="heroCopy">
-    <div class="eyebrow">A V A N &nbsp; G A L L E R Y</div>
+    <div class="eyebrow" id="heroBrand">ROLEX</div>
     <h1 id="heroTitle">MORE THAN<br><span>JUST A WATCH</span></h1>
     <div class="gold-line"></div>
     <h2 id="heroSubtitle">انتخابی فراتر از زمان</h2>
@@ -114,117 +112,87 @@
 </div>
 <div class="toast" id="toast"></div>
 
+
 <script>
 (() => {
-  const $ = s => document.querySelector(s);
-  const $$ = s => [...document.querySelectorAll(s)];
-
   const slides = [
-    {img:'assets/hero-1.jpg', title:'TIME<br><span>DEFINES YOUR STYLE</span>', sub:'استایل خودت را با آوان انتخاب کن'},
-    {img:'assets/hero-2.jpg', title:'ELEGANCE<br><span>IN EVERY SECOND</span>', sub:'جزئیات، تفاوت را ایجاد می‌کند'},
-    {img:'assets/hero-3.jpg', title:'MORE THAN<br><span>JUST A WATCH</span>', sub:'انتخابی فراتر از زمان'}
+    {
+      img: 'assets/hero-clean-1.jpg',
+      brand: 'ROLEX',
+      title: 'ترکیب اصالت<br><span>و قدرت</span>',
+      sub: 'ساعتی فراتر از زمان برای کسانی که همیشه یک قدم جلوترند'
+    },
+    {
+      img: 'assets/hero-clean-2.jpg',
+      brand: 'OMEGA',
+      title: 'دقت<br><span>در هر لحظه</span>',
+      sub: 'دقت سوئیسی برای سبک زندگی خاص و ماندگار'
+    },
+    {
+      img: 'assets/hero-clean-3.jpg',
+      brand: 'TISSOT',
+      title: 'همراه لحظات<br><span>واقعی</span>',
+      sub: 'طراحی متفاوت برای لحظه‌هایی که فراموش نمی‌شوند'
+    }
   ];
 
+  const images = [...document.querySelectorAll('.hero-slide-image')];
+  const brand = document.querySelector('#heroBrand');
+  const title = document.querySelector('#heroTitle');
+  const subtitle = document.querySelector('#heroSubtitle');
+  const dots = [...document.querySelectorAll('#sliderDots button')];
+  const prev = document.querySelector('#prevSlide');
+  const next = document.querySelector('#nextSlide');
+
   let current = 0;
-  let cart = Number(localStorage.getItem('avan_cart_count') || 0);
-  let wish = Number(localStorage.getItem('avan_wish_count') || 0);
+  let timer = null;
 
-  const art = $('#heroArt');
-  const title = $('#heroTitle');
-
-  // Preload all three hero images so changing slides also changes the photo instantly.
-  ['assets/hero-1.jpg','assets/hero-2.jpg','assets/hero-3.jpg']
-    .forEach(src => { const img = new Image(); img.src = src; });
-  const sub = $('#heroSubtitle');
-  const dots = $$('#sliderDots button');
-
-  function syncCounts(){
-    $('#cartCount').textContent = cart;
-    $('#wishCount').textContent = wish;
-    localStorage.setItem('avan_cart_count', cart);
-    localStorage.setItem('avan_wish_count', wish);
-  }
-
-  function show(i){
-    current = (i + slides.length) % slides.length;
-    art.style.opacity = '0';
-    setTimeout(() => {
-      art.src = slides[current].img;
-      title.innerHTML = slides[current].title;
-      sub.textContent = slides[current].sub;
-      dots.forEach((d,n) => d.classList.toggle('active', n === current));
-      art.style.opacity = '1';
-    }, 180);
-  }
-
-  $('#prevSlide')?.addEventListener('click', () => show(current - 1));
-  $('#nextSlide')?.addEventListener('click', () => show(current + 1));
-  dots.forEach(d => d.addEventListener('click', () => show(Number(d.dataset.slide))));
-
-  setInterval(() => show(current + 1), 3000);
-
-  const menu = $('#mainMenu');
-  $('#mobileMenu')?.addEventListener('click', () => menu?.classList.toggle('open'));
-
-  $$('.nav-drop > button').forEach(btn => btn.addEventListener('click', e => {
-    e.stopPropagation();
-    btn.parentElement.classList.toggle('open');
-  }));
-  document.addEventListener('click', () => $$('.nav-drop.open').forEach(x => x.classList.remove('open')));
-
-  $('#headerSearch')?.addEventListener('submit', e => {
-    e.preventDefault();
-    const q = $('#headerSearchInput').value.trim();
-    if(q) {
-      location.hash = 'products';
-      const heading = $('#productHeading');
-      if(heading) heading.textContent = `نتایج جستجو برای «${q}»`;
-    }
+  // Preload all images.
+  slides.forEach(s => {
+    const img = new Image();
+    img.src = s.img;
   });
 
-  $('#headerCart')?.addEventListener('click', () => location.hash = 'products');
-  $('#headerWishlist')?.addEventListener('click', () => location.hash = 'products');
+  function render(index) {
+    current = (index + slides.length) % slides.length;
 
-  $('.cta')?.addEventListener('click', () => $('#products')?.scrollIntoView({behavior:'smooth'}));
+    images.forEach((img, i) => {
+      img.classList.toggle('is-active', i === current);
+    });
 
-  syncCounts();
-  show(0);
-})();
-</script>
-<script>
-(() => {
-  const slides = [...document.querySelectorAll('.hero-slide-image')];
-  if (!slides.length) return;
-  const data = [
-    {brand:'ROLEX', title:'ترکیب اصالت<br><span>و قدرت</span>', sub:'سبکی فراتر از زمان برای کسانی که ماندگار بودن را انتخاب می‌کنند'},
-    {brand:'OMEGA', title:'دقت<br><span>در هر لحظه</span>', sub:'همراه شما در مسیر موفقیت و سبک زندگی خاص'},
-    {brand:'TISSOT', title:'همراه لحظات<br><span>واقعی</span>', sub:'کیفیت سوئیسی برای زندگی روزمره و ماجراجویی‌های بزرگ'}
-  ];
-  const title = document.querySelector('#heroTitle');
-  const sub = document.querySelector('#heroSubtitle');
-  const brand = document.querySelector('#heroBrand');
-  const dots = [...document.querySelectorAll('#sliderDots button, .hero-dots button')];
-  let current = 0;
-  let timer;
+    if (brand) brand.textContent = slides[current].brand;
+    if (title) title.innerHTML = slides[current].title;
+    if (subtitle) subtitle.textContent = slides[current].sub;
 
-  function show(n) {
-    current = (n + slides.length) % slides.length;
-    slides.forEach((el, i) => el.classList.toggle('is-active', i === current));
-    if (title) title.innerHTML = data[current].title;
-    if (sub) sub.textContent = data[current].sub;
-    if (brand) brand.textContent = data[current].brand;
-    dots.forEach((d,i) => d.classList.toggle('active', i === current));
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === current);
+    });
   }
 
-  function next(){ show(current + 1); }
-  function start(){ clearInterval(timer); timer = setInterval(next, 3000); }
+  function restart() {
+    clearInterval(timer);
+    timer = setInterval(() => render(current + 1), 3000);
+  }
 
-  dots.forEach((d,i) => d.addEventListener('click', () => { show(i); start(); }));
-  document.querySelector('#prevSlide')?.addEventListener('click', () => { show(current-1); start(); });
-  document.querySelector('#nextSlide')?.addEventListener('click', () => { show(current+1); start(); });
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      render(i);
+      restart();
+    });
+  });
 
-  show(0);
-  start();
+  prev?.addEventListener('click', () => {
+    render(current - 1);
+    restart();
+  });
+
+  next?.addEventListener('click', () => {
+    render(current + 1);
+    restart();
+  });
+
+  render(0);
+  restart();
 })();
 </script>
 

@@ -269,3 +269,50 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
 .hero-slide-image.is-active{opacity:1!important;visibility:visible!important}
 .hero > *:not(.hero-image-slider){position:relative!important;z-index:2!important}
 .hero::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(2,10,17,.92) 0%,rgba(2,10,17,.60) 30%,rgba(2,10,17,.12) 68%,rgba(2,10,17,.20) 100%),linear-gradient(0deg,rgba(2,10,17,.45),transparent 48%)}
+
+/* ===== AVAN V16 — CLEAN THREE-PHOTO HERO ===== */
+.hero{
+  position:relative!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:0!important;
+}
+.hero-image-slider{
+  position:absolute!important;
+  inset:0!important;
+  z-index:0!important;
+  overflow:hidden!important;
+}
+.hero-slide-image{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  display:block!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  transition:opacity .55s ease!important;
+}
+.hero-slide-image.is-active{
+  opacity:1!important;
+  visibility:visible!important;
+}
+.hero-shade{
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(90deg,rgba(1,8,14,.90) 0%,rgba(1,8,14,.62) 29%,rgba(1,8,14,.16) 68%,rgba(1,8,14,.10) 100%),
+    linear-gradient(0deg,rgba(1,7,12,.48),transparent 45%)!important;
+}
+.hero-copy,
+.slider,
+.hero-arrows,
+.hero-bottom{
+  position:relative!important;
+  z-index:3!important;
+}

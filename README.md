@@ -1,1 +1,6 @@
-AVAN GALLERY V7 — left-to-right header: logo first, navigation/categories/brands in middle, login/wishlist/cart at right; three local watch slides with automatic 3-second rotation.
+# AVAN GALLERY V9
+- هدر کاملاً راست‌به‌چپ: لوگو و نام آوان در سمت راست، سپس دسته‌بندی/برند/فروشگاه/وبلاگ/درباره/تماس، سپس ورود/علاقه‌مندی/سبد خرید و در سمت چپ جستجو.
+- عکس Hero بلافاصله زیر منوی اصلی و بدون فاصله قرار دارد.
+- سه تصویر متفاوت ساعت: watch-1.jpg / watch-2.jpg / watch-3.jpg
+- اسلاید خودکار هر ۳ ثانیه + کنترل 01/02/03 و فلش‌ها.
+- تصویرها داخل خود پروژه هستند.

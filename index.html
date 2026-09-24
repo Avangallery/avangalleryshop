@@ -113,59 +113,84 @@
 (() => {
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
-  let slide = 0;
+
   const slides = [
-    ['MORE THAN<br><span>JUST A WATCH</span>','انتخابی فراتر از زمان'],
-    ['TIME<br><span>DEFINES YOUR STYLE</span>','استایل خودت را با آوان انتخاب کن'],
-    ['WEAR<br><span>YOUR STORY</span>','هر ساعت، بخشی از داستان توست']
+    {img:'assets/watch-1.jpg', title:'TIME<br><span>DEFINES YOUR STYLE</span>', sub:'استایل خودت را با آوان انتخاب کن'},
+    {img:'assets/watch-2.jpg', title:'WEAR<br><span>YOUR STORY</span>', sub:'هر ساعت، بخشی از داستان توست'},
+    {img:'assets/watch-3.jpg', title:'MORE THAN<br><span>JUST A WATCH</span>', sub:'انتخابی برای ماندگار شدن'}
   ];
-  function render(n){
-    slide=(n+slides.length)%slides.length;
-    $('#heroTitle').innerHTML=slides[slide][0];
-    $('#heroSubtitle').textContent=slides[slide][1];
-    $$('.slide-number').forEach((b,i)=>b.classList.toggle('active',i===slide));
+
+  let current = 0;
+  let cart = Number(localStorage.getItem('avan_cart_count') || 0);
+  let wish = Number(localStorage.getItem('avan_wish_count') || 0);
+
+  const art = $('#heroArt');
+  const title = $('#heroTitle');
+  const sub = $('#heroSubtitle');
+  const dots = $$('#sliderDots button');
+
+  function syncCounts(){
+    $('#cartCount').textContent = cart;
+    $('#wishCount').textContent = wish;
+    localStorage.setItem('avan_cart_count', cart);
+    localStorage.setItem('avan_wish_count', wish);
   }
-  $('#prevSlide').onclick=()=>render(slide-1);
-  $('#nextSlide').onclick=()=>render(slide+1);
-  $$('.slide-number').forEach(b=>b.onclick=()=>render(+b.dataset.slide));
-  $$('.service-card,.slogan').forEach(b=>b.onclick=()=>{
-    const t={support:'پشتیبانی ۲۴ ساعته',shipping:'ارسال رایگان برای سفارش‌های بالای ۲ میلیون تومان',authenticity:'تضمین اصالت کالا',return:'۷ روز ضمانت بازگشت',about:'آوان گالری؛ انتخابی فراتر از زمان'};
-    alert(t[b.dataset.action]||t.about);
+
+  function show(i){
+    current = (i + slides.length) % slides.length;
+    art.style.opacity = '0';
+    setTimeout(() => {
+      art.style.backgroundImage = `url("${slides[current].img}")`;
+      title.innerHTML = slides[current].title;
+      sub.textContent = slides[current].sub;
+      dots.forEach((d,n) => d.classList.toggle('active', n === current));
+      art.style.opacity = '1';
+    }, 180);
+  }
+
+  $('#prevSlide')?.addEventListener('click', () => show(current - 1));
+  $('#nextSlide')?.addEventListener('click', () => show(current + 1));
+  dots.forEach(d => d.addEventListener('click', () => show(Number(d.dataset.slide))));
+
+  setInterval(() => show(current + 1), 3000);
+
+  const menu = $('#mainMenu');
+  $('#mobileMenu')?.addEventListener('click', () => menu?.classList.toggle('open'));
+
+  $$('.nav-drop > button').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    btn.parentElement.classList.toggle('open');
+  }));
+  document.addEventListener('click', () => $$('.nav-drop.open').forEach(x => x.classList.remove('open')));
+
+  $('#headerSearch')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const q = $('#headerSearchInput').value.trim();
+    if(q) {
+      location.hash = 'products';
+      const heading = $('#productHeading');
+      if(heading) heading.textContent = `نتایج جستجو برای «${q}»`;
+    }
   });
-  document.querySelector('.cta')?.addEventListener('click',()=>document.querySelector('#products')?.scrollIntoView({behavior:'smooth'}));
-  setInterval(()=>render(slide+1),7000);
-})();
-</script>
-<script>
-const menu=document.getElementById("mainMenu"),mobile=document.getElementById("mobileMenu");
-mobile.onclick=()=>menu.classList.toggle("open");
-document.querySelectorAll(".nav-drop>button").forEach(b=>b.onclick=e=>{e.stopPropagation();b.parentElement.classList.toggle("open")});
-document.addEventListener("click",()=>document.querySelectorAll(".nav-drop.open").forEach(x=>x.classList.remove("open")));
-document.getElementById("headerSearch").onsubmit=e=>{e.preventDefault();const q=document.getElementById("headerSearchInput").value.trim();if(q)location.hash="products"};
-let ccount=+localStorage.getItem("avan_cart_count")||0,wcount=+localStorage.getItem("avan_wish_count")||0;
-const sync=()=>{document.getElementById("cartCount").textContent=ccount;document.getElementById("wishCount").textContent=wcount;localStorage.setItem("avan_cart_count",ccount);localStorage.setItem("avan_wish_count",wcount)};
-document.getElementById("headerCart").onclick=()=>location.hash="products";
-document.getElementById("headerWishlist").onclick=()=>location.hash="products";sync();
-</script><script>
-(() => {
- const slides=[
-  {img:'assets/watch-1.jpg',title:'TIME<br><span>DEFINES YOUR STYLE</span>',sub:'استایل خودت را با آوان انتخاب کن'},
-  {img:'assets/watch-2.jpg',title:'WEAR<br><span>YOUR STORY</span>',sub:'هر ساعت، بخشی از داستان توست'},
-  {img:'assets/watch-3.jpg',title:'MORE THAN<br><span>JUST A WATCH</span>',sub:'انتخابی برای ماندگار شدن'}
- ];
- let current=0;
- const art=document.getElementById('heroArt'), title=document.getElementById('heroTitle'), sub=document.getElementById('heroSubtitle');
- const dots=[...document.querySelectorAll('#sliderDots button')];
- function show(i){current=(i+slides.length)%slides.length; art.style.backgroundImage=`url('${slides[current].img}')`; title.innerHTML=slides[current].title; sub.textContent=slides[current].sub; dots.forEach((d,n)=>d.classList.toggle('active',n===current));}
- dots.forEach(d=>d.addEventListener('click',()=>show(+d.dataset.slide)));
- document.querySelectorAll('.nav-drop>button').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();b.parentElement.classList.toggle('open')}));
- document.addEventListener('click',()=>document.querySelectorAll('.nav-drop.open').forEach(x=>x.classList.remove('open')));
- document.getElementById('mobileMenu')?.addEventListener('click',()=>document.getElementById('mainMenu').classList.toggle('open'));
- document.getElementById('headerSearch')?.addEventListener('submit',e=>{e.preventDefault(); if(document.getElementById('headerSearchInput').value.trim()) location.hash='products';});
- let cart=+localStorage.getItem('avan_cart_count')||0,wish=+localStorage.getItem('avan_wish_count')||0;
- const sync=()=>{document.getElementById('cartCount').textContent=cart;document.getElementById('wishCount').textContent=wish;};sync();
- document.getElementById('headerCart')?.addEventListener('click',()=>location.hash='products'); document.getElementById('headerWishlist')?.addEventListener('click',()=>location.hash='products');
- show(0); setInterval(()=>show(current+1),3000);
+
+  $('#headerCart')?.addEventListener('click', () => location.hash = 'products');
+  $('#headerWishlist')?.addEventListener('click', () => location.hash = 'products');
+
+  $$('.service-card,.slogan').forEach(btn => btn.addEventListener('click', () => {
+    const text = {
+      support:'پشتیبانی ۲۴ ساعته',
+      shipping:'ارسال رایگان برای سفارش‌های بالای ۲ میلیون تومان',
+      authenticity:'تضمین اصالت کالا',
+      return:'۷ روز ضمانت بازگشت',
+      about:'آوان گالری؛ انتخابی فراتر از زمان'
+    };
+    alert(text[btn.dataset.action] || text.about);
+  }));
+
+  $('.cta')?.addEventListener('click', () => $('#products')?.scrollIntoView({behavior:'smooth'}));
+
+  syncCounts();
+  show(0);
 })();
 </script></body>
 </html>

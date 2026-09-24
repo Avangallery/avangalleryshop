@@ -99,3 +99,109 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
 .slider button{border:0;background:none;color:#fff;cursor:pointer;font:11px Georgia,serif;opacity:.65;padding:0 0 8px!important;min-width:30px}.slider button.active{color:#f0c967;opacity:1;border-bottom:2px solid #f0c967}
 @media(max-width:1250px){.v7-nav{gap:14px!important;padding:0 2.5%!important}.v7-nav .logo{width:170px!important;flex-basis:170px!important}.v7-nav .desktop-menu{gap:14px!important}.v7-nav .desktop-menu a,.v7-nav .desktop-menu button{font-size:10px!important}.v7-nav .header-search{flex-basis:210px!important}}
 @media(max-width:980px){.v7-nav{flex-wrap:wrap;height:auto!important;min-height:76px!important;padding:10px 16px!important}.v7-nav .logo{margin-right:auto!important}.v7-nav .desktop-menu{display:none!important;order:6!important;flex-basis:100%!important;flex-direction:column!important;align-items:stretch!important}.v7-nav .desktop-menu.open{display:flex!important}.v7-nav .header-search{order:7!important;flex-basis:100%!important}.v7-nav .mobile-menu{display:block!important}.hero{height:calc(100vh - 130px)!important;min-height:600px!important}}
+
+/* ===== AVAN V8 ===== */
+/* Header order: LEFT -> RIGHT = logo, navigation, search, account/cart */
+.main-nav{
+  direction:ltr!important;
+  justify-content:flex-start!important;
+  gap:24px!important;
+}
+.main-nav .logo{
+  order:1!important;
+  text-align:left!important;
+}
+.main-nav > nav{
+  order:2!important;
+  direction:rtl!important;
+}
+.main-nav .header-search{
+  order:3!important;
+}
+.main-nav .header-actions{
+  order:4!important;
+}
+.main-nav .mobile-menu{
+  order:5!important;
+}
+.main-nav > nav a,
+.main-nav > nav button{
+  direction:rtl;
+}
+
+/* Hero is flush directly under the main navigation */
+.hero{
+  margin-top:0!important;
+  padding-top:0!important;
+  border-top:0!important;
+}
+.site-header{
+  margin-bottom:0!important;
+  padding-bottom:0!important;
+}
+.service-bar{direction:ltr!important}
+.service-card,.slogan{direction:rtl}
+
+@media(max-width:900px){
+  .main-nav{direction:ltr!important}
+  .main-nav > nav{direction:rtl!important}
+  .main-nav .logo{text-align:left!important}
+}
+
+/* ===== AVAN V9: FINAL RTL HEADER ===== */
+.main-nav{
+  direction:rtl!important;
+  justify-content:flex-start!important;
+  gap:22px!important;
+}
+.main-nav .logo{
+  order:1!important;
+  text-align:right!important;
+  direction:rtl!important;
+}
+.main-nav > nav{
+  order:2!important;
+  direction:rtl!important;
+}
+.main-nav .header-actions{
+  order:3!important;
+  direction:rtl!important;
+}
+.main-nav .header-search{
+  order:4!important;
+  direction:rtl!important;
+}
+.main-nav .mobile-menu{
+  order:5!important;
+}
+
+/* Hero starts immediately after the main navigation */
+.hero{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  height:calc(100vh - 160px)!important;
+  min-height:650px!important;
+}
+.hero-art{
+  inset:0!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  transition:opacity .18s ease!important;
+}
+.site-header{margin:0!important;padding:0!important}
+.main-nav{margin-bottom:0!important}
+
+/* Make the 3 watch images visibly distinct and premium */
+#heroArt{background-image:url("assets/watch-1.jpg")!important}
+
+@media(max-width:980px){
+  .main-nav{direction:rtl!important}
+  .main-nav .logo{order:1!important;margin-left:auto!important}
+  .main-nav .header-actions{order:2!important}
+  .main-nav .mobile-menu{order:3!important}
+  .main-nav > nav{order:6!important}
+  .main-nav .header-search{order:7!important}
+  .hero{height:calc(100vh - 130px)!important;min-height:600px!important}
+}

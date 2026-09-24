@@ -759,3 +759,80 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
 .hero-cta{display:inline-flex!important;align-items:center!important;gap:14px!important;background:#efc96d!important;color:#06111b!important;padding:14px 26px!important;border-radius:28px!important;text-decoration:none!important;font-family:Vazirmatn,sans-serif!important;font-weight:800!important}
 .hero .slider,.hero .hero-arrows,.hero .hero-dots,.hero .slide-number{display:none!important}
 @media(max-width:850px){.hero{height:600px!important;min-height:600px!important}.hero-copy{left:7%!important;top:23%!important;width:76%!important;max-width:76%!important}.hero-copy h1{font-size:42px!important}}
+
+/* =========================================================
+   AVAN V25 — SMALLER / MORE REFINED WATCH COMPOSITION
+   ========================================================= */
+
+/* Keep the hero clean and give the photo breathing room. */
+.hero{
+  background:#020a12!important;
+  height:620px!important;
+  overflow:hidden!important;
+}
+
+/* Shrink the photographic composition without stretching it.
+   The right edge remains aligned, so the watch feels smaller
+   and more premium instead of being aggressively zoomed. */
+.hero-single-image{
+  position:absolute!important;
+  inset:0!important;
+  overflow:hidden!important;
+  background:#020a12!important;
+}
+.hero-single-image img{
+  position:absolute!important;
+  top:50%!important;
+  right:0!important;
+  left:auto!important;
+  width:100%!important;
+  height:100%!important;
+  transform:translateY(-50%) scale(.84)!important;
+  transform-origin:right center!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+}
+
+/* A subtle dark falloff on the left keeps the copy readable
+   and visually separates the text from the watch. */
+.hero-overlay{
+  background:
+    linear-gradient(90deg,
+      rgba(1,8,14,.96) 0%,
+      rgba(1,8,14,.82) 22%,
+      rgba(1,8,14,.42) 48%,
+      rgba(1,8,14,.08) 76%,
+      rgba(1,8,14,.14) 100%)!important;
+}
+
+/* Slightly refine the copy position now that the watch is smaller. */
+.hero-copy{
+  left:5.5%!important;
+  top:25%!important;
+  width:400px!important;
+}
+.hero-copy h1{
+  font-size:50px!important;
+  line-height:1.06!important;
+}
+.hero-copy h2{
+  font-size:19px!important;
+  margin-bottom:22px!important;
+}
+
+@media(max-width:850px){
+  .hero{
+    height:600px!important;
+  }
+  .hero-single-image img{
+    transform:translateY(-50%) scale(.92)!important;
+  }
+  .hero-copy{
+    left:7%!important;
+    top:24%!important;
+    width:72%!important;
+  }
+  .hero-copy h1{
+    font-size:38px!important;
+  }
+}

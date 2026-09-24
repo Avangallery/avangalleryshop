@@ -42,6 +42,12 @@
 
 <main>
 <section class="hero" id="home">
+<div class="hero-image-slider" id="heroImageSlider" aria-label="گالری ساعت">
+  <img class="hero-slide-image is-active" src="assets/hero-brand-1.jpg" alt="ساعت لوکس رولکس">
+  <img class="hero-slide-image" src="assets/hero-brand-2.jpg" alt="ساعت لوکس امگا">
+  <img class="hero-slide-image" src="assets/hero-brand-3.jpg" alt="ساعت لوکس تیسوت">
+</div>
+
   <img class="hero-art" id="heroArt" src="assets/hero-1.jpg" alt="ساعت آوان گالری">
   <div class="hero-shade"></div>
 
@@ -184,5 +190,43 @@
   syncCounts();
   show(0);
 })();
-</script></body>
+</script>
+<script>
+(() => {
+  const slides = [...document.querySelectorAll('.hero-slide-image')];
+  if (!slides.length) return;
+  const data = [
+    {brand:'ROLEX', title:'ترکیب اصالت<br><span>و قدرت</span>', sub:'سبکی فراتر از زمان برای کسانی که ماندگار بودن را انتخاب می‌کنند'},
+    {brand:'OMEGA', title:'دقت<br><span>در هر لحظه</span>', sub:'همراه شما در مسیر موفقیت و سبک زندگی خاص'},
+    {brand:'TISSOT', title:'همراه لحظات<br><span>واقعی</span>', sub:'کیفیت سوئیسی برای زندگی روزمره و ماجراجویی‌های بزرگ'}
+  ];
+  const title = document.querySelector('#heroTitle');
+  const sub = document.querySelector('#heroSubtitle');
+  const brand = document.querySelector('#heroBrand');
+  const dots = [...document.querySelectorAll('#sliderDots button, .hero-dots button')];
+  let current = 0;
+  let timer;
+
+  function show(n) {
+    current = (n + slides.length) % slides.length;
+    slides.forEach((el, i) => el.classList.toggle('is-active', i === current));
+    if (title) title.innerHTML = data[current].title;
+    if (sub) sub.textContent = data[current].sub;
+    if (brand) brand.textContent = data[current].brand;
+    dots.forEach((d,i) => d.classList.toggle('active', i === current));
+  }
+
+  function next(){ show(current + 1); }
+  function start(){ clearInterval(timer); timer = setInterval(next, 3000); }
+
+  dots.forEach((d,i) => d.addEventListener('click', () => { show(i); start(); }));
+  document.querySelector('#prevSlide')?.addEventListener('click', () => { show(current-1); start(); });
+  document.querySelector('#nextSlide')?.addEventListener('click', () => { show(current+1); start(); });
+
+  show(0);
+  start();
+})();
+</script>
+
+</body>
 </html>

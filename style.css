@@ -261,3 +261,11 @@ nav{order:2;display:flex;align-items:center;gap:25px;white-space:nowrap}nav a,na
 .hero-copy,.slider,.hero-arrows{z-index:4!important;}
 .main-nav{margin:0!important;}
 .site-header{margin:0!important;}
+
+/* ===== AVAN V15: isolated three-brand hero slider ===== */
+.hero{position:relative!important;margin-top:0!important;padding-top:0!important;overflow:hidden!important}
+.hero-image-slider{position:absolute!important;inset:0!important;z-index:0!important;overflow:hidden!important}
+.hero-slide-image{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;object-fit:cover!important;object-position:center center!important;opacity:0!important;visibility:hidden!important;transition:opacity .55s ease!important}
+.hero-slide-image.is-active{opacity:1!important;visibility:visible!important}
+.hero > *:not(.hero-image-slider){position:relative!important;z-index:2!important}
+.hero::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(2,10,17,.92) 0%,rgba(2,10,17,.60) 30%,rgba(2,10,17,.12) 68%,rgba(2,10,17,.20) 100%),linear-gradient(0deg,rgba(2,10,17,.45),transparent 48%)}

@@ -20,17 +20,24 @@
     <button class="slogan" data-action="about">زمان تنها چیزیست که دوباره برنمی‌گردد ... <b>◇</b></button>
   </div>
 
-<div class="main-nav">
-<a class="logo" href="#home"><div><strong>آوان</strong><span>AVAN</span></div><small>A V A N&nbsp;&nbsp; G A L L E R Y</small></a>
-<nav id="mainMenu">
-<a class="active" href="#home">صفحه اصلی</a>
-<div class="nav-drop"><button type="button">دسته‌بندی‌ها <b>⌄</b></button><div class="drop-menu"><a href="#products">ساعت کلاسیک</a><a href="#products">ساعت لوکس</a><a href="#products">ساعت اسپرت</a><a href="#products">ساعت مردانه</a><a href="#products">ساعت زنانه</a></div></div>
-<div class="nav-drop"><button type="button">برندها <b>⌄</b></button><div class="drop-menu"><a href="#products">TISSOT</a><a href="#products">CITIZEN</a><a href="#products">CASIO</a><a href="#products">SEIKO</a></div></div>
-<a href="#products">فروشگاه</a><a href="#blog">وبلاگ</a><a href="#about">درباره ما</a><a href="#contact">تماس با ما</a>
-</nav>
-<form class="header-search" id="headerSearch"><button type="submit">⌕</button><input id="headerSearchInput" type="search" placeholder="جستجوی ساعت، برند یا مدل..."></form>
-<div class="header-actions"><a class="account-btn" href="#account">♙ <strong>ورود / ثبت‌نام</strong></a><button class="header-icon" id="headerWishlist">♡<em id="wishCount">0</em></button><button class="header-icon" id="headerCart">🛒<em id="cartCount">0</em></button></div>
-<button class="mobile-menu" id="mobileMenu">☰</button>
+<div class="main-nav v7-nav">
+  <a class="logo" href="#home" aria-label="AVAN GALLERY">
+    <div class="logo-main"><span class="logo-ring">AVAN</span><strong>آوان</strong></div>
+    <small>A V A N&nbsp;&nbsp; G A L L E R Y</small>
+  </a>
+  <nav id="mainMenu" class="desktop-menu">
+    <a class="active" href="#home">صفحه اصلی</a>
+    <div class="nav-drop"><button type="button">دسته‌بندی‌ها <b>⌄</b></button><div class="drop-menu"><a href="#products">ساعت کلاسیک</a><a href="#products">ساعت لوکس</a><a href="#products">ساعت اسپرت</a><a href="#products">مردانه</a><a href="#products">زنانه</a></div></div>
+    <div class="nav-drop"><button type="button">برندها <b>⌄</b></button><div class="drop-menu"><a href="#products">TISSOT</a><a href="#products">CITIZEN</a><a href="#products">CASIO</a><a href="#products">SEIKO</a></div></div>
+    <a href="#products">فروشگاه</a><a href="#blog">وبلاگ</a><a href="#about">درباره ما</a><a href="#contact">تماس با ما</a>
+  </nav>
+  <div class="header-actions">
+    <a class="account-btn" href="#account">♙ <strong>ورود / ثبت‌نام</strong></a>
+    <button class="header-icon" id="headerWishlist" type="button">♡<em id="wishCount">0</em></button>
+    <button class="header-icon" id="headerCart" type="button">🛒<em id="cartCount">0</em></button>
+  </div>
+  <form class="header-search" id="headerSearch"><input id="headerSearchInput" type="search" placeholder="جستجوی ساعت، برند یا مدل..."><button type="submit">⌕</button></form>
+  <button class="mobile-menu" id="mobileMenu" type="button">☰</button>
 </div>
 </header>
 
@@ -47,12 +54,7 @@
     <a class="cta" href="#products" id="productsBtn">مشاهده محصولات <span>←</span></a>
   </div>
 
-  <div class="slider">
-    <button class="slide-number active" data-slide="0">01</button>
-    <i></i>
-    <button class="slide-number" data-slide="1">02</button>
-    <button class="slide-number" data-slide="2">03</button>
-  </div>
+  <div class="slider" id="sliderDots"><button class="active" data-slide="0">01</button><button data-slide="1">02</button><button data-slide="2">03</button></div>
 
   <div class="hero-arrows">
     <button id="prevSlide" aria-label="اسلاید قبلی">‹</button>
@@ -91,7 +93,7 @@
   </div>
 </section>
 
-<section class="content-section compact" id="blog"><h2>وبلاگ آوان</h2><p>راهنمای انتخاب و نگهداری ساعت.</p></section>
+<section class="content-section compact" id="blog"><h2 id="heroSubtitle">استایل خودت را با آوان انتخاب کن</h2><p>راهنمای انتخاب و نگهداری ساعت.</p></section>
 <section class="content-section compact" id="about"><h2>درباره آوان گالری</h2><p>فروشگاه تخصصی ساعت‌های کلاسیک و لوکس.</p></section>
 <section class="content-section compact" id="contact"><h2>تماس با ما</h2><p>پشتیبانی و ارتباط با آوان گالری.</p></section>
 <section class="content-section compact" id="account"><h2>حساب کاربری</h2><p>ورود و ثبت‌نام مشتری.</p></section>
@@ -144,5 +146,26 @@ let ccount=+localStorage.getItem("avan_cart_count")||0,wcount=+localStorage.getI
 const sync=()=>{document.getElementById("cartCount").textContent=ccount;document.getElementById("wishCount").textContent=wcount;localStorage.setItem("avan_cart_count",ccount);localStorage.setItem("avan_wish_count",wcount)};
 document.getElementById("headerCart").onclick=()=>location.hash="products";
 document.getElementById("headerWishlist").onclick=()=>location.hash="products";sync();
+</script><script>
+(() => {
+ const slides=[
+  {img:'assets/watch-1.jpg',title:'TIME<br><span>DEFINES YOUR STYLE</span>',sub:'استایل خودت را با آوان انتخاب کن'},
+  {img:'assets/watch-2.jpg',title:'WEAR<br><span>YOUR STORY</span>',sub:'هر ساعت، بخشی از داستان توست'},
+  {img:'assets/watch-3.jpg',title:'MORE THAN<br><span>JUST A WATCH</span>',sub:'انتخابی برای ماندگار شدن'}
+ ];
+ let current=0;
+ const art=document.getElementById('heroArt'), title=document.getElementById('heroTitle'), sub=document.getElementById('heroSubtitle');
+ const dots=[...document.querySelectorAll('#sliderDots button')];
+ function show(i){current=(i+slides.length)%slides.length; art.style.backgroundImage=`url('${slides[current].img}')`; title.innerHTML=slides[current].title; sub.textContent=slides[current].sub; dots.forEach((d,n)=>d.classList.toggle('active',n===current));}
+ dots.forEach(d=>d.addEventListener('click',()=>show(+d.dataset.slide)));
+ document.querySelectorAll('.nav-drop>button').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();b.parentElement.classList.toggle('open')}));
+ document.addEventListener('click',()=>document.querySelectorAll('.nav-drop.open').forEach(x=>x.classList.remove('open')));
+ document.getElementById('mobileMenu')?.addEventListener('click',()=>document.getElementById('mainMenu').classList.toggle('open'));
+ document.getElementById('headerSearch')?.addEventListener('submit',e=>{e.preventDefault(); if(document.getElementById('headerSearchInput').value.trim()) location.hash='products';});
+ let cart=+localStorage.getItem('avan_cart_count')||0,wish=+localStorage.getItem('avan_wish_count')||0;
+ const sync=()=>{document.getElementById('cartCount').textContent=cart;document.getElementById('wishCount').textContent=wish;};sync();
+ document.getElementById('headerCart')?.addEventListener('click',()=>location.hash='products'); document.getElementById('headerWishlist')?.addEventListener('click',()=>location.hash='products');
+ show(0); setInterval(()=>show(current+1),3000);
+})();
 </script></body>
 </html>

@@ -1,3 +1,1 @@
-# AVAN GALLERY V6
-هدر قوی‌تر و Hero تمام‌عرض.
-عکس بزرگ ساعت دقیقاً بلافاصله زیر منوی اصلی شروع می‌شود و هیچ UI داخل تصویر نیست.
+AVAN GALLERY V7 — left-to-right header: logo first, navigation/categories/brands in middle, login/wishlist/cart at right; three local watch slides with automatic 3-second rotation.

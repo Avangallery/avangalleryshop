@@ -181,14 +181,6 @@
     location.hash = 'checkout';
   });
 
-  $('#addDemoProduct')?.addEventListener('click', () => {
-    const product = PRODUCTS['avan-luxury'];
-    const existing = cart.find(x => x.id === product.id);
-    if (existing) existing.qty += 1;
-    else cart.push({ ...product, qty: 1 });
-    openCart();
-  });
-
   searchInput?.addEventListener('input', () => {
     const q = searchInput.value.trim();
     if (!q) { closePopover(searchPop); return; }

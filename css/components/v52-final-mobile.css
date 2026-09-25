@@ -1,0 +1,47 @@
+/* AVAN GALLERY V52 — FINAL mobile utility/drawer/cart stabilization */
+html,body{width:100%;max-width:100%;overflow-x:hidden!important}
+body{overscroll-behavior-x:none}
+.site-header,.main-nav,.v7-nav{max-width:100vw!important}
+.v7-nav{position:relative!important;z-index:5000!important;overflow:visible!important}
+.avan-drawer-backdrop{position:fixed!important;inset:0!important;z-index:99998!important;pointer-events:none!important}
+.avan-drawer-backdrop.is-open{pointer-events:auto!important}
+.avan-side-drawer{position:fixed!important;top:0!important;bottom:0!important;left:0!important;right:auto!important;height:100dvh!important;max-height:100dvh!important;z-index:99999!important;width:min(380px,88vw)!important;max-width:380px!important;overflow:hidden!important;opacity:1!important;background:linear-gradient(180deg,#061d2d 0%,#03131f 100%)!important}
+.avan-side-drawer.is-open{transform:translateX(0)!important}
+.avan-side-drawer:not(.is-open){transform:translateX(-110%)!important}
+.drawer-nav{min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;flex:1 1 auto!important;overscroll-behavior:contain!important}
+.drawer-nav a{width:100%!important;max-width:100%!important;min-width:0!important;flex:0 0 auto!important}
+.drawer-social{flex:0 0 auto!important}
+.v49-cart-pop{z-index:99997!important;background:linear-gradient(180deg,#061e31 0%,#031522 100%)!important;color:#fff!important}
+.v49-cart-pop.is-open{opacity:1!important;visibility:visible!important;pointer-events:auto!important;transform:translateY(0)!important}
+@media(max-width:980px){
+  .v7-nav{display:grid!important;grid-template-columns:auto auto auto 1fr!important;grid-template-rows:56px 48px!important;gap:8px!important;padding:8px 10px 10px!important;min-height:112px!important;align-items:center!important;direction:ltr!important}
+  .v7-nav .logo,.v7-nav .desktop-menu{display:none!important}
+  .v7-nav .v43-utility{display:contents!important}
+  .v7-nav .v43-menu-btn{grid-column:1;grid-row:1!important;width:46px!important;height:46px!important;display:grid!important}
+  .v7-nav .v43-account{grid-column:2;grid-row:1!important;width:46px!important;height:46px!important;min-width:46px!important;padding:0!important;display:flex!important;justify-content:center!important}
+  .v7-nav .v43-account strong{display:none!important}
+  .v7-nav #headerCart{grid-column:3;grid-row:1!important;width:46px!important;height:46px!important}
+  .v7-nav .v43-search{grid-column:4;grid-row:1!important;min-width:0!important;width:100%!important;height:46px!important;flex:none!important;margin:0!important}
+  .v7-nav .v43-search input{min-width:0!important;width:100%!important;font-size:9px!important}
+  .v7-nav .v43-search-pop{position:absolute!important;top:calc(100% + 8px)!important;bottom:auto!important;left:0!important;right:0!important;width:100%!important;max-width:none!important;z-index:100000!important}
+  .v49-cart-pop{position:fixed!important;left:8px!important;right:8px!important;bottom:8px!important;top:auto!important;width:auto!important;max-width:none!important;max-height:min(76dvh,560px)!important;border-radius:18px!important;overflow:hidden!important}
+  .v49-cart-list{max-height:43dvh!important;overflow-y:auto!important;overflow-x:hidden!important}
+  .v49-cart-item{grid-template-columns:54px minmax(0,1fr) auto!important;min-width:0!important}
+  .v49-cart-item .meta{min-width:0!important}
+  .v49-cart-item .meta b,.v49-cart-item .meta small{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+}
+@media(max-width:600px){
+  .service-bar{display:none!important}
+  .v7-nav{grid-template-columns:46px 46px 46px minmax(0,1fr)!important;min-height:110px!important}
+  .v7-nav .v43-search{height:44px!important}
+  .avan-side-drawer{width:min(330px,calc(100vw - 18px))!important}
+  .drawer-head{padding-bottom:14px!important}
+  .drawer-nav a{min-height:52px!important}
+  .v49-cart-pop{left:6px!important;right:6px!important;bottom:6px!important;max-height:78dvh!important}
+}
+@media(max-width:380px){
+  .v7-nav{grid-template-columns:42px 42px 42px minmax(0,1fr)!important;gap:5px!important;padding-inline:7px!important}
+  .v7-nav .v43-menu-btn,.v7-nav .v43-account,#headerCart{width:42px!important;height:42px!important}
+  .v7-nav .v43-search{height:42px!important}
+  .avan-side-drawer{width:calc(100vw - 10px)!important;max-width:none!important}
+}

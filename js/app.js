@@ -37,6 +37,8 @@
   const $=s=>document.querySelector(s);
   const menuBtn=$('#mobileMenu'), drawer=$('#avanSideDrawer'), backdrop=$('#drawerBackdrop'), drawerClose=$('#drawerClose');
   const cartBtn=$('#headerCart'), cartPop=$('#cartPopover');
+  if(drawer && drawer.parentElement!==document.body) document.body.appendChild(drawer);
+  if(backdrop && backdrop.parentElement!==document.body) document.body.appendChild(backdrop);
   let cart=[
     {id:'tissot',name:'Tissot PRX',sub:'ساعت مجی مردانه',price:18500000,img:'assets/watch-1.jpg',qty:1},
     {id:'seiko',name:'Seiko 5 Sports',sub:'ساعت اسپرت',price:24600000,img:'assets/watch-2.jpg',qty:1},
@@ -51,12 +53,12 @@
     if(!cart.length){body.innerHTML='<div class="v43-empty"><strong>سبد خرید خالی است</strong><span>هنوز محصولی به سبد اضافه نکرده‌اید.</span></div>';return;}
     body.innerHTML='<div class="v49-cart-list">'+cart.map(x=>`<div class="v49-cart-item"><div class="thumb"><img src="${x.img}" alt="${x.name}"></div><div class="meta"><b>${x.name}</b><small>${x.sub}</small><div class="v49-qty"><button data-dec="${x.id}">−</button><span>${x.qty}</span><button data-inc="${x.id}">+</button></div></div><div><button class="remove" data-remove="${x.id}" aria-label="حذف">×</button><div class="v49-item-price">${fmt(x.price*x.qty)}</div></div></div>`).join('')+'</div>';
   }
-  function openDrawer(){drawer?.classList.add('is-open');backdrop?.classList.add('is-open');drawer?.setAttribute('aria-hidden','false');backdrop?.setAttribute('aria-hidden','false');document.body.classList.add('drawer-lock');menuBtn?.setAttribute('aria-expanded','true');menuBtn?.classList.add('is-active');}
+  function openDrawer(){document.querySelectorAll('.v43-popover').forEach(p=>{p.classList.remove('is-open');p.setAttribute('aria-hidden','true')});cartBtn?.classList.remove('is-active');document.body.classList.add('drawer-lock');drawer?.classList.add('is-open');backdrop?.classList.add('is-open');drawer?.setAttribute('aria-hidden','false');backdrop?.setAttribute('aria-hidden','false');menuBtn?.setAttribute('aria-expanded','true');menuBtn?.classList.add('is-active');}
   function closeDrawer(){drawer?.classList.remove('is-open');backdrop?.classList.remove('is-open');drawer?.setAttribute('aria-hidden','true');backdrop?.setAttribute('aria-hidden','true');document.body.classList.remove('drawer-lock');menuBtn?.setAttribute('aria-expanded','false');menuBtn?.classList.remove('is-active');}
   menuBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();drawer?.classList.contains('is-open')?closeDrawer():openDrawer();});
   drawerClose?.addEventListener('click',closeDrawer);backdrop?.addEventListener('click',closeDrawer);
   drawer?.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeDrawer));
-  cartBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();setTimeout(renderCart,0)});
+  cartBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(drawer?.classList.contains('is-open'))closeDrawer();setTimeout(()=>{renderCart();cartPop?.classList.add('is-open');cartPop?.setAttribute('aria-hidden','false');cartBtn?.classList.add('is-active')},0)});
   document.addEventListener('click',e=>{
     const inc=e.target.closest('[data-inc]'),dec=e.target.closest('[data-dec]'),rem=e.target.closest('[data-remove]');
     if(inc){const x=cart.find(x=>x.id===inc.dataset.inc);if(x)x.qty++;renderCart();}

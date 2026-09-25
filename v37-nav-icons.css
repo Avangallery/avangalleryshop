@@ -123,3 +123,7 @@
   .v7-nav .desktop-menu .brand-menu{grid-template-columns:1fr!important;width:auto!important;max-height:360px!important}
   .v7-nav .desktop-menu .brand-menu a{justify-content:flex-start!important}
 }
+
+/* V39 — local brand marks: no external CDN dependency */
+.v7-nav .desktop-menu .brand-menu a img{background:#061927;border-radius:6px;object-fit:contain!important;border:0!important;box-shadow:none!important;filter:none!important;width:30px!important;height:22px!important;flex:0 0 30px!important}
+.v7-nav .desktop-menu .brand-menu a span{letter-spacing:.1px}

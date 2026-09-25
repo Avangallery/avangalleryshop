@@ -77,3 +77,49 @@
   .v7-nav .desktop-menu .nav-real-icon{width:17px!important;height:17px!important}
   .v7-nav .desktop-menu .drop-menu{position:static!important;transform:none!important;width:auto!important;margin:0 8px!important}
 }
+
+/* V38 - expanded brand catalog with real vector brand marks */
+.v7-nav .desktop-menu .nav-brands-drop{position:relative!important}
+.v7-nav .desktop-menu .brand-menu{
+  width:360px!important;
+  max-height:430px!important;
+  overflow-y:auto!important;
+  padding:9px!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:3px!important;
+}
+.v7-nav .desktop-menu .brand-menu a{
+  min-height:40px!important;
+  padding:8px 9px!important;
+  border-radius:8px!important;
+  gap:9px!important;
+  white-space:nowrap!important;
+  direction:ltr!important;
+  justify-content:flex-start!important;
+}
+.v7-nav .desktop-menu .brand-menu a img{
+  width:24px!important;
+  height:24px!important;
+  object-fit:contain!important;
+  flex:0 0 24px!important;
+  filter:brightness(0) invert(1)!important;
+  opacity:.96!important;
+}
+.v7-nav .desktop-menu .brand-menu a span{
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:.35px!important;
+  color:#f1f4f7!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.v7-nav .desktop-menu .brand-menu a:hover img{filter:none!important}
+.v7-nav .desktop-menu .brand-menu a:hover span{color:#f1ca70!important}
+.v7-nav .desktop-menu .brand-menu::-webkit-scrollbar{width:5px!important}
+.v7-nav .desktop-menu .brand-menu::-webkit-scrollbar-thumb{background:rgba(232,188,92,.5)!important;border-radius:8px!important}
+.v7-nav .desktop-menu .brand-menu::-webkit-scrollbar-track{background:rgba(255,255,255,.03)!important}
+@media(max-width:980px){
+  .v7-nav .desktop-menu .brand-menu{grid-template-columns:1fr!important;width:auto!important;max-height:360px!important}
+  .v7-nav .desktop-menu .brand-menu a{justify-content:flex-start!important}
+}

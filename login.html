@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ورود به حساب کاربری | آوان گالری</title>
+<meta name="description" content="ورود به حساب کاربری آوان گالری">
+<link rel="icon" href="assets/avan-mark-clean.png">
+<link rel="stylesheet" href="login.css">
+</head>
+<body>
+<main class="login-page">
+  <a class="back-home" href="index.html">بازگشت به صفحه اصلی <span>←</span></a>
+  <section class="login-showcase" aria-label="آوان گالری">
+    <div class="showcase-overlay"></div>
+    <div class="showcase-content">
+      <img class="showcase-logo" src="assets/avan-logo.png" alt="AVAN GALLERY">
+      <span class="eyebrow">فراتر از یک ساعت ...</span>
+      <h1>سبک زندگی شما<br><b>در آوان گالری</b></h1>
+      <p>مجموعه‌ای از برندهای معتبر ساعت با تضمین اصالت کالا و تجربه‌ای متفاوت از خرید.</p>
+      <div class="trust-list">
+        <div><i>✓</i><span><strong>تضمین اصالت کالا</strong><small>تمامی محصولات اصل و معتبر</small></span></div>
+        <div><i>↗</i><span><strong>ارسال سریع و مطمئن</strong><small>ارسال به سراسر کشور</small></span></div>
+        <div><i>24</i><span><strong>پشتیبانی ۲۴ ساعته</strong><small>همیشه در کنار شما</small></span></div>
+        <div><i>↺</i><span><strong>۷ روز ضمانت بازگشت</strong><small>با خیال راحت خرید کنید</small></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="login-panel">
+    <div class="panel-inner">
+      <div class="brand-mark"><img src="assets/avan-mark-clean.png" alt="آوان"></div>
+      <div class="welcome">
+        <h2>ورود به حساب کاربری</h2>
+        <p>به آوان گالری خوش آمدید<br>برای دسترسی به حساب خود وارد شوید.</p>
+      </div>
+
+      <div class="auth-tabs" role="tablist">
+        <button class="active" type="button">ورود <span>♙</span></button>
+        <button type="button" id="registerTab">ثبت نام <span>♙+</span></button>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <label>شماره موبایل یا ایمیل</label>
+        <div class="field"><span class="field-icon">✉</span><input id="identity" type="text" autocomplete="username" placeholder="شماره موبایل یا ایمیل خود را وارد کنید"></div>
+        <p class="field-error" id="identityError"></p>
+
+        <label>رمز عبور</label>
+        <div class="field"><span class="field-icon">⌑</span><input id="password" type="password" autocomplete="current-password" placeholder="رمز عبور خود را وارد کنید"><button type="button" class="toggle-pass" id="togglePass" aria-label="نمایش رمز">◉</button></div>
+        <p class="field-error" id="passwordError"></p>
+
+        <div class="form-row">
+          <label class="remember"><input type="checkbox"> <span>مرا به خاطر بسپار</span></label>
+          <a href="#" id="forgotPassword">رمز عبور را فراموش کرده‌اید؟</a>
+        </div>
+
+        <button class="primary-btn" type="submit">ورود به حساب کاربری <span>↪</span></button>
+      </form>
+
+      <div class="divider"><span>یا</span></div>
+      <button class="google-btn" type="button" id="googleLogin"><span class="google-g">G</span><span>ورود با گوگل</span></button>
+      <p class="google-note">برای ورود با Google، اتصال OAuth حساب فروشگاه باید در Cloudflare تنظیم شود.</p>
+
+      <div class="signup-line">حساب کاربری ندارید؟ <button type="button" id="registerBottom">ثبت نام در آوان گالری <span>←</span></button></div>
+      <p class="security-note">اطلاعات ورود شما با اتصال امن منتقل می‌شود.</p>
+    </div>
+  </section>
+</main>
+<script>
+const pass=document.getElementById('password');
+document.getElementById('togglePass').addEventListener('click',()=>{pass.type=pass.type==='password'?'text':'password'});
+const form=document.getElementById('loginForm');
+form.addEventListener('submit',e=>{e.preventDefault();
+ const id=document.getElementById('identity'), err=document.getElementById('identityError'), pe=document.getElementById('passwordError');
+ err.textContent=''; pe.textContent='';
+ if(!id.value.trim()){err.textContent='شماره موبایل یا ایمیل را وارد کنید.';return;}
+ if(!pass.value){pe.textContent='رمز عبور را وارد کنید.';return;}
+ alert('اتصال ورود در نسخه بعدی به API حساب کاربری متصل می‌شود.');
+});
+document.getElementById('googleLogin').addEventListener('click',()=>alert('ورود با Google نیاز به Client ID و تنظیم OAuth دارد.'));
+function register(){alert('صفحه ثبت‌نام در مرحله بعدی فعال می‌شود.');}
+document.getElementById('registerTab').addEventListener('click',register);
+document.getElementById('registerBottom').addEventListener('click',register);
+document.getElementById('forgotPassword').addEventListener('click',e=>{e.preventDefault();alert('بازیابی رمز عبور در مرحله بعدی متصل می‌شود.');});
+</script>
+</body>
+</html>

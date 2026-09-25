@@ -1,3 +1,7 @@
-# Admin route: serve the admin dashboard without a browser redirect loop.
+# AVAN GALLERY admin routes
 /admin /admin/index.html 200
 /admin/ /admin/index.html 200
+/admin/dashboard /admin/dashboard.html 200
+/admin/dashboard/ /admin/dashboard.html 200
+/admin/admin /admin/dashboard.html 200
+/admin/admin/ /admin/dashboard.html 200

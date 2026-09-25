@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<script>if(sessionStorage.getItem("avan_admin_auth")!=="1"){location.replace("/admin");}</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>پنل مدیریت | AVAN GALLERY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-shell">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><img src="assets/avan-mark-clean.png"><div><b>آوان گالری</b><small>AVAN GALLERY</small></div></div>
+  <nav id="nav">
+    <button class="active" data-page="dashboard">▦ <span>داشبورد</span></button>
+    <button data-page="products">⌚ <span>محصولات</span><i id="productsBadge">۰</i></button>
+    <button data-page="orders">▣ <span>سفارش‌ها</span></button>
+    <button data-page="customers">♙ <span>مشتریان</span></button>
+    <button data-page="categories">◫ <span>دسته‌بندی‌ها</span></button>
+    <button data-page="brands">★ <span>برندها</span></button>
+    <button data-page="coupons">％ <span>کدهای تخفیف</span></button>
+    <button data-page="reviews">☆ <span>نظرات مشتریان</span></button>
+    <button data-page="content">▤ <span>محتوا و بنرها</span></button>
+    <button data-page="notifications">♢ <span>اعلان‌ها</span></button>
+    <button data-page="tickets">✉ <span>تیکت پشتیبانی</span></button>
+    <button data-page="wallet">◉ <span>کیف پول و وفاداری</span></button>
+    <button data-page="reports">▥ <span>گزارش‌ها</span></button>
+    <button data-page="admins">♟ <span>مدیران و دسترسی‌ها</span></button>
+    <button data-page="activity">◷ <span>گزارش فعالیت</span></button>
+    <button data-page="settings">⚙ <span>تنظیمات</span></button>
+  </nav>
+  <div class="side-foot"><a href="../index.html">← مشاهده فروشگاه</a><button id="logout">خروج از پنل</button></div>
+</aside>
+<main class="main">
+<header class="topbar"><button id="mobileMenu" class="mobile-menu">☰</button><div><small>مدیریت فروشگاه</small><h1 id="title">داشبورد</h1></div><div class="top-right"><span class="online">● سیستم آنلاین</span><button class="bell">♢</button><div class="admin-user"><img src="assets/avan-mark-clean.png"><span>مدیر فروشگاه</span></div></div></header>
+<section id="content" class="content"></section>
+</main></div>
+<div class="modal" id="modal" aria-hidden="true"><div class="modal-card" id="modalCard"></div></div>
+<script src="admin.js"></script>
+</body></html>

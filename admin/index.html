@@ -1,39 +1,44 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>پنل مدیریت | AVAN GALLERY</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="admin.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ورود مدیریت | AVAN GALLERY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap">
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Vazirmatn,Tahoma,sans-serif;background:#03131d;color:#eef6fa}body{min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at 50% 20%,rgba(20,77,104,.35),transparent 42%),#03131d}.login-wrap{width:min(430px,calc(100% - 32px));padding:34px;border:1px solid rgba(210,176,77,.25);border-radius:24px;background:linear-gradient(145deg,rgba(8,35,49,.98),rgba(3,22,32,.98));box-shadow:0 30px 80px rgba(0,0,0,.4);text-align:center}.logo{width:74px;height:74px;border-radius:50%;object-fit:contain;border:1px solid rgba(221,186,82,.5);padding:5px;margin-bottom:16px;background:#041827}.brand{font-size:22px;font-weight:800}.sub{color:#d8b65a;letter-spacing:2px;font-size:11px;margin-top:3px}.title{font-size:20px;margin:28px 0 8px}.hint{font-size:13px;color:#8fa9b7;margin:0 0 20px}.field{position:relative}.field input{width:100%;height:52px;border-radius:13px;border:1px solid #1b4254;background:#061e2b;color:#fff;padding:0 16px;font:inherit;outline:none;text-align:center;letter-spacing:2px}.field input:focus{border-color:#d8b65a;box-shadow:0 0 0 3px rgba(216,182,90,.1)}button{width:100%;height:52px;border:0;border-radius:13px;margin-top:14px;background:linear-gradient(135deg,#e7c35e,#b89232);color:#08151d;font:800 15px Vazirmatn;cursor:pointer}button:hover{filter:brightness(1.06)}.error{min-height:22px;color:#ff8c8c;font-size:12px;margin-top:12px}.back{display:inline-block;margin-top:18px;color:#8fa9b7;text-decoration:none;font-size:12px}.back:hover{color:#fff}@media(max-width:480px){.login-wrap{padding:26px 20px}}
+</style>
 </head>
 <body>
-<div class="admin-shell">
-<aside class="sidebar" id="sidebar">
-  <div class="brand"><img src="assets/avan-mark-clean.png"><div><b>آوان گالری</b><small>AVAN GALLERY</small></div></div>
-  <nav id="nav">
-    <button class="active" data-page="dashboard">▦ <span>داشبورد</span></button>
-    <button data-page="products">⌚ <span>محصولات</span><i id="productsBadge">۰</i></button>
-    <button data-page="orders">▣ <span>سفارش‌ها</span></button>
-    <button data-page="customers">♙ <span>مشتریان</span></button>
-    <button data-page="categories">◫ <span>دسته‌بندی‌ها</span></button>
-    <button data-page="brands">★ <span>برندها</span></button>
-    <button data-page="coupons">％ <span>کدهای تخفیف</span></button>
-    <button data-page="reviews">☆ <span>نظرات مشتریان</span></button>
-    <button data-page="content">▤ <span>محتوا و بنرها</span></button>
-    <button data-page="notifications">♢ <span>اعلان‌ها</span></button>
-    <button data-page="tickets">✉ <span>تیکت پشتیبانی</span></button>
-    <button data-page="wallet">◉ <span>کیف پول و وفاداری</span></button>
-    <button data-page="reports">▥ <span>گزارش‌ها</span></button>
-    <button data-page="admins">♟ <span>مدیران و دسترسی‌ها</span></button>
-    <button data-page="activity">◷ <span>گزارش فعالیت</span></button>
-    <button data-page="settings">⚙ <span>تنظیمات</span></button>
-  </nav>
-  <div class="side-foot"><a href="../index.html">← مشاهده فروشگاه</a><button id="logout">خروج از پنل</button></div>
-</aside>
-<main class="main">
-<header class="topbar"><button id="mobileMenu" class="mobile-menu">☰</button><div><small>مدیریت فروشگاه</small><h1 id="title">داشبورد</h1></div><div class="top-right"><span class="online">● سیستم آنلاین</span><button class="bell">♢</button><div class="admin-user"><img src="assets/avan-mark-clean.png"><span>مدیر فروشگاه</span></div></div></header>
-<section id="content" class="content"></section>
-</main></div>
-<div class="modal" id="modal" aria-hidden="true"><div class="modal-card" id="modalCard"></div></div>
-<script src="admin.js"></script>
-</body></html>
+<main class="login-wrap">
+  <img class="logo" src="assets/avan-mark-clean.png" alt="AVAN GALLERY">
+  <div class="brand">آوان گالری</div>
+  <div class="sub">AVAN GALLERY</div>
+  <h1 class="title">ورود به پنل مدیریت</h1>
+  <p class="hint">برای ورود، رمز مدیریت را وارد کنید.</p>
+  <form id="loginForm" autocomplete="off">
+    <div class="field"><input id="password" type="password" placeholder="رمز مدیریت" aria-label="رمز مدیریت" autofocus></div>
+    <button type="submit">ورود به پنل</button>
+    <div class="error" id="error"></div>
+  </form>
+  <a class="back" href="../index.html">← بازگشت به فروشگاه</a>
+</main>
+<script>
+const form=document.getElementById('loginForm');
+const input=document.getElementById('password');
+const error=document.getElementById('error');
+form.addEventListener('submit',e=>{
+  e.preventDefault();
+  if(input.value==='avan'){
+    sessionStorage.setItem('avan_admin_auth','1');
+    location.href='/admin/dashboard';
+  }else{
+    error.textContent='رمز واردشده صحیح نیست.';
+    input.value='';
+    input.focus();
+  }
+});
+</script>
+</body>
+</html>

@@ -1,1 +1,3 @@
+# Admin route: serve the admin dashboard without a browser redirect loop.
 /admin /admin/index.html 200
+/admin/ /admin/index.html 200

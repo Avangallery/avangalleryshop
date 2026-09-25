@@ -103,8 +103,8 @@ function setMode(mode){
   submitBtn.innerHTML=isRegister?'ساخت حساب کاربری <span>↪</span>':'ورود به حساب کاربری <span>↪</span>';
   title.textContent=isRegister?'ساخت حساب کاربری':'ورود به حساب کاربری';
   intro.innerHTML=isRegister?'در آوان گالری ثبت‌نام کنید<br>و خرید خود را سریع‌تر انجام دهید.':'به آوان گالری خوش آمدید<br>برای دسترسی به حساب خود وارد شوید.';
-  document.getElementById('googleLogin').style.display=isRegister?'none':'flex';
-  document.querySelector('.divider').style.display=isRegister?'none':'flex';
+  document.getElementById('googleLogin').style.display='flex';
+  document.querySelector('.divider').style.display='flex';
 }
 registerTab.addEventListener('click',()=>setMode('register'));
 loginTab.addEventListener('click',()=>setMode('login'));

@@ -26,9 +26,46 @@
   });
   searchForm?.addEventListener('submit',(e)=>{e.preventDefault();document.querySelector('#products')?.scrollIntoView({behavior:'smooth'});});
   document.querySelectorAll('[data-close-pop]').forEach(b=>b.addEventListener('click',()=>{const p=$('#'+b.dataset.closePop);p?.classList.remove('is-open');p?.setAttribute('aria-hidden','true');}));
-  mobileBtn?.addEventListener('click',(e)=>{e.stopPropagation();const open=mainMenu?.classList.toggle('open');mobileBtn.setAttribute('aria-expanded',open?'true':'false');mobileBtn.classList.toggle('is-active',!!open);});
   document.addEventListener('click',(e)=>{if(!e.target.closest('.v43-utility,.v43-search'))closeAll(null)});
   document.addEventListener('keydown',(e)=>{if(e.key==='Escape'){closeAll(null);mainMenu?.classList.remove('open');mobileBtn?.classList.remove('is-active');mobileBtn?.setAttribute('aria-expanded','false')}});
 })();
 
 (function(){const b=document.getElementById('cartCount'); if(b&&window.MutationObserver){new MutationObserver(function(){const n=parseInt(b.textContent||'0',10)||0;b.style.display=n>0?'block':'none';}).observe(b,{childList:true,characterData:true,subtree:true});}})();
+
+/* ===== AVAN V49 — hamburger drawer + premium cart ===== */
+(function(){
+  const $=s=>document.querySelector(s);
+  const menuBtn=$('#mobileMenu'), drawer=$('#avanSideDrawer'), backdrop=$('#drawerBackdrop'), drawerClose=$('#drawerClose');
+  const cartBtn=$('#headerCart'), cartPop=$('#cartPopover');
+  let cart=[
+    {id:'tissot',name:'Tissot PRX',sub:'ساعت مجی مردانه',price:18500000,img:'assets/watch-1.jpg',qty:1},
+    {id:'seiko',name:'Seiko 5 Sports',sub:'ساعت اسپرت',price:24600000,img:'assets/watch-2.jpg',qty:1},
+    {id:'avan',name:'ساعت کلاسیک آوان',sub:'مدل منتخب آوان',price:12900000,img:'assets/watch-3.jpg',qty:1}
+  ];
+  function fmt(n){return new Intl.NumberFormat('fa-IR').format(n)+' تومان'}
+  function renderCart(){
+    const body=$('#cartPopoverBody'), total=cart.reduce((s,x)=>s+x.price*x.qty,0), count=cart.reduce((s,x)=>s+x.qty,0);
+    $('#cartCount').textContent=count; $('#cartCount').style.display=count?'block':'none';
+    $('#cartTitleCount').textContent=new Intl.NumberFormat('fa-IR').format(count);
+    $('#cartTotal').textContent=fmt(total);
+    if(!cart.length){body.innerHTML='<div class="v43-empty"><strong>سبد خرید خالی است</strong><span>هنوز محصولی به سبد اضافه نکرده‌اید.</span></div>';return;}
+    body.innerHTML='<div class="v49-cart-list">'+cart.map(x=>`<div class="v49-cart-item"><div class="thumb"><img src="${x.img}" alt="${x.name}"></div><div class="meta"><b>${x.name}</b><small>${x.sub}</small><div class="v49-qty"><button data-dec="${x.id}">−</button><span>${x.qty}</span><button data-inc="${x.id}">+</button></div></div><div><button class="remove" data-remove="${x.id}" aria-label="حذف">×</button><div class="v49-item-price">${fmt(x.price*x.qty)}</div></div></div>`).join('')+'</div>';
+  }
+  function openDrawer(){drawer?.classList.add('is-open');backdrop?.classList.add('is-open');drawer?.setAttribute('aria-hidden','false');backdrop?.setAttribute('aria-hidden','false');document.body.classList.add('drawer-lock');menuBtn?.setAttribute('aria-expanded','true');menuBtn?.classList.add('is-active');}
+  function closeDrawer(){drawer?.classList.remove('is-open');backdrop?.classList.remove('is-open');drawer?.setAttribute('aria-hidden','true');backdrop?.setAttribute('aria-hidden','true');document.body.classList.remove('drawer-lock');menuBtn?.setAttribute('aria-expanded','false');menuBtn?.classList.remove('is-active');}
+  menuBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();drawer?.classList.contains('is-open')?closeDrawer():openDrawer();});
+  drawerClose?.addEventListener('click',closeDrawer);backdrop?.addEventListener('click',closeDrawer);
+  drawer?.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeDrawer));
+  cartBtn?.addEventListener('click',()=>setTimeout(renderCart,0));
+  document.addEventListener('click',e=>{
+    const inc=e.target.closest('[data-inc]'),dec=e.target.closest('[data-dec]'),rem=e.target.closest('[data-remove]');
+    if(inc){const x=cart.find(x=>x.id===inc.dataset.inc);if(x)x.qty++;renderCart();}
+    if(dec){const x=cart.find(x=>x.id===dec.dataset.dec);if(x){x.qty--;if(x.qty<=0)cart=cart.filter(y=>y.id!==x.id)}renderCart();}
+    if(rem){cart=cart.filter(x=>x.id!==rem.dataset.remove);renderCart();}
+  });
+  document.querySelectorAll('.add-cart').forEach((b,i)=>b.addEventListener('click',()=>{const x=cart[i%cart.length]||cart[0]; if(x)x.qty++;renderCart();}));
+  $('#addDemoProduct')?.addEventListener('click',()=>{cart.push({id:'demo-'+Date.now(),name:'ساعت لوکس آوان',sub:'مدل نمونه فروشگاه',price:18500000,img:'assets/watch-3.jpg',qty:1});renderCart();});
+  $('#checkoutCart')?.addEventListener('click',()=>{if(cart.length)location.hash='checkout';});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+  renderCart();
+})();

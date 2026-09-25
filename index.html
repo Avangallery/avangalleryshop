@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="v41-dropdown-lock.css?v=41">
 <link rel="stylesheet" href="v43-header-premium.css?v=43">
 <link rel="stylesheet" href="v44-utility-polish.css?v=44">
+<link rel="stylesheet" href="v49-menu-cart.css?v=49">
 </head>
 <body>
 
@@ -114,6 +115,24 @@
       <span>تماس با ما</span>
     </a>
   </nav>
+  <div class="avan-drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+  <aside class="avan-side-drawer" id="avanSideDrawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="drawer-brand"><img src="assets/avan-mark-clean.png" alt="آوان گالری"><div><strong>آوان گالری</strong><small>AVAN GALLERY</small></div></div>
+      <button class="drawer-close" id="drawerClose" type="button" aria-label="بستن">×</button>
+    </div>
+    <nav class="drawer-nav">
+      <a class="is-active" href="#home"><span class="drawer-ico">⌂</span><b>صفحه اصلی</b></a>
+      <a href="#products"><span class="drawer-ico">◷</span><b>ساعت‌های مردانه</b><i>›</i></a>
+      <a href="#products"><span class="drawer-ico">◷</span><b>ساعت‌های زنانه</b><i>›</i></a>
+      <a href="#products"><span class="drawer-ico">◇</span><b>برندها</b><i>›</i></a>
+      <a href="#products"><span class="drawer-ico">✦</span><b>اکسسوری‌ها</b><i>›</i></a>
+      <a href="#blog"><span class="drawer-ico">▤</span><b>مجله آوان</b><i>›</i></a>
+      <a href="#about"><span class="drawer-ico">♧</span><b>درباره ما</b></a>
+      <a href="#contact"><span class="drawer-ico">⌕</span><b>تماس با ما</b></a>
+    </nav>
+    <div class="drawer-social"><span>◎</span><span>✈</span><span>◈</span></div>
+  </aside>
   <div class="header-actions v43-utility">
     <button class="header-icon v43-icon-btn" id="headerCart" type="button" aria-label="سبد خرید" aria-expanded="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5.5h2l2.1 10.2h10.6l2-7.2H6.7"/><circle cx="9.3" cy="19.1" r="1.2"/><circle cx="17.3" cy="19.1" r="1.2"/></svg><em class="v43-badge" id="cartCount">0</em>
@@ -122,10 +141,11 @@
     <a class="account-btn v43-account" href="login.html" id="headerAccount" aria-label="ورود و ثبت نام">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.8 20c.7-4 2.8-6 6.2-6s5.5 2 6.2 6"/></svg><strong>ورود / ثبت‌نام</strong>
     </a>
-    <div class="v43-popover" id="cartPopover" aria-hidden="true">
-      <div class="v43-pop-title"><span>سبد خرید</span><button type="button" data-close-pop="cartPopover">×</button></div>
-      <div id="cartPopoverBody"><div class="v43-empty"><strong>سبد خرید خالی است</strong>هنوز محصولی به سبد اضافه نکرده‌اید.</div></div>
-      <div class="v43-cart-footer"><button type="button" onclick="document.querySelector('#products')?.scrollIntoView({behavior:'smooth'})">مشاهده محصولات</button></div>
+    <div class="v43-popover v49-cart-pop" id="cartPopover" aria-hidden="true">
+      <div class="v43-pop-title"><span>سبد خرید شما <em id="cartTitleCount">0</em></span><button type="button" data-close-pop="cartPopover">×</button></div>
+      <div id="cartPopoverBody"><div class="v43-empty"><strong>سبد خرید خالی است</strong><span>هنوز محصولی به سبد اضافه نکرده‌اید.</span></div></div>
+      <div class="v49-cart-summary"><span>مجموع کل</span><strong id="cartTotal">۰ تومان</strong></div>
+      <div class="v43-cart-footer"><button id="checkoutCart" type="button">تکمیل خرید <span>←</span></button></div>
     </div>
     <div class="v43-popover v43-account-menu" id="accountPopover" aria-hidden="true">
       <div class="v43-pop-title"><span>حساب کاربری</span><button type="button" data-close-pop="accountPopover">×</button></div>

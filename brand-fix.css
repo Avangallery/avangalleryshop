@@ -1,0 +1,73 @@
+/* AVAN GALLERY — exact brand lockup */
+.site-header .main-nav .avan-brand,
+.site-header .main-nav .avan-brand:link,
+.site-header .main-nav .avan-brand:visited{
+  display:flex!important;
+  flex-direction:row-reverse!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:14px!important;
+  width:auto!important;
+  min-width:260px!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  text-decoration:none!important;
+  direction:ltr!important;
+  overflow:visible!important;
+}
+.site-header .main-nav .avan-brand .avan-logo-image{
+  display:block!important;
+  width:58px!important;
+  height:58px!important;
+  min-width:58px!important;
+  max-width:58px!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  margin:0!important;
+  padding:0!important;
+  flex:none!important;
+}
+.site-header .main-nav .avan-brand .avan-brand-text{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  gap:5px!important;
+  width:auto!important;
+  margin:0!important;
+  padding:0!important;
+  direction:rtl!important;
+  flex:none!important;
+}
+.site-header .main-nav .avan-brand .avan-brand-fa{
+  display:block!important;
+  color:#fff!important;
+  font-family:Vazirmatn,Tahoma,Arial,sans-serif!important;
+  font-size:27px!important;
+  font-weight:800!important;
+  line-height:1.05!important;
+  white-space:nowrap!important;
+  margin:0!important;
+  padding:0!important;
+  letter-spacing:0!important;
+}
+.site-header .main-nav .avan-brand .avan-brand-en{
+  display:block!important;
+  color:#fff!important;
+  font-family:Georgia,'Times New Roman',serif!important;
+  font-size:8px!important;
+  font-weight:600!important;
+  line-height:1!important;
+  letter-spacing:6px!important;
+  white-space:nowrap!important;
+  direction:ltr!important;
+  margin:0!important;
+  padding:0!important;
+}
+@media(max-width:850px){
+ .site-header .main-nav .avan-brand{min-width:190px!important;gap:9px!important}
+ .site-header .main-nav .avan-brand .avan-logo-image{width:46px!important;height:46px!important;min-width:46px!important;max-width:46px!important}
+ .site-header .main-nav .avan-brand .avan-brand-fa{font-size:20px!important}
+ .site-header .main-nav .avan-brand .avan-brand-en{font-size:6px!important;letter-spacing:4px!important}
+}

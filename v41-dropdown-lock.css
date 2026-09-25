@@ -22,3 +22,67 @@
 .v7-nav .desktop-menu .nav-drop > button[aria-expanded="true"] b{
   transform:rotate(180deg)!important;
 }
+
+/* V42 — hover dropdowns for desktop, click only for touch/mobile */
+@media (min-width:981px){
+  .v7-nav .desktop-menu .nav-drop > .drop-menu{
+    top:calc(100% - 1px)!important;
+    pointer-events:none!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    display:block!important;
+    transform:translateX(50%) translateY(-5px)!important;
+    transition:opacity .16s ease,transform .16s ease,visibility .16s ease!important;
+  }
+  .v7-nav .desktop-menu .nav-drop:hover > .drop-menu,
+  .v7-nav .desktop-menu .nav-drop:focus-within > .drop-menu,
+  .v7-nav .desktop-menu .nav-drop.open > .drop-menu{
+    pointer-events:auto!important;
+    opacity:1!important;
+    visibility:visible!important;
+    transform:translateX(50%) translateY(0)!important;
+  }
+  .v7-nav .desktop-menu .nav-drop > button{cursor:default!important}
+}
+
+/* Category icons — proper watch/category symbols instead of generic diamonds */
+.v7-nav .desktop-menu .drop-menu:not(.brand-menu) a{
+  direction:rtl!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  min-height:42px!important;
+  font-weight:700!important;
+}
+.v7-nav .desktop-menu .category-icon{
+  width:28px!important;
+  height:28px!important;
+  flex:0 0 28px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:1px solid rgba(232,188,92,.48)!important;
+  border-radius:50%!important;
+  background:rgba(232,188,92,.035)!important;
+  color:#e8bc5c!important;
+}
+.v7-nav .desktop-menu .category-icon svg{
+  width:17px!important;
+  height:17px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.45!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.v7-nav .desktop-menu .drop-menu:not(.brand-menu) a:hover .category-icon{
+  color:#ffd875!important;
+  border-color:rgba(255,216,117,.8)!important;
+  background:rgba(232,188,92,.1)!important;
+  transform:scale(1.05)!important;
+}
+.v7-nav .desktop-menu .drop-menu:not(.brand-menu) a span:last-child{
+  flex:1!important;
+}
+@media(max-width:980px){
+  .v7-nav .desktop-menu .category-icon{width:27px!important;height:27px!important;flex-basis:27px!important}
+}

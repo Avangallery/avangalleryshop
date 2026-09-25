@@ -47,11 +47,11 @@
         <span>دسته‌بندی‌ها</span><b>⌄</b>
       </button>
       <div class="drop-menu">
-        <a href="#products"><span class="drop-dot">◈</span> ساعت کلاسیک</a>
-        <a href="#products"><span class="drop-dot">◈</span> ساعت لوکس</a>
-        <a href="#products"><span class="drop-dot">◈</span> ساعت اسپرت</a>
-        <a href="#products"><span class="drop-dot">◈</span> ساعت مردانه</a>
-        <a href="#products"><span class="drop-dot">◈</span> ساعت زنانه</a>
+        <a href="#products"><span class="category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.2"/><path d="M12 8.2v4l2.7 1.7"/><path d="M9 2.8h6M9 21.2h6"/></svg></span><span>ساعت کلاسیک</span></a>
+        <a href="#products"><span class="category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h10l1.4 4.2-6.4 13.5L5.6 7.2 7 3Z"/><path d="M5.8 7.2h12.4M8.2 3l3.8 4.2L15.8 3"/></svg></span><span>ساعت لوکس</span></a>
+        <a href="#products"><span class="category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4.5 7.2 7 8.5 12l-1.3 5L9 19.5h6l1.8-2.5-1.3-5 1.3-5L15 4.5"/><path d="M9 7h6M8.4 17h7.2"/></svg></span><span>ساعت اسپرت</span></a>
+        <a href="#products"><span class="category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.2"/><path d="M5.8 20c.7-4 2.8-6 6.2-6s5.5 2 6.2 6"/><path d="M9.2 3.4h5.6M9.2 20.6h5.6"/></svg></span><span>ساعت مردانه</span></a>
+        <a href="#products"><span class="category-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.2"/><path d="M6.3 20c.6-3.7 2.6-5.8 5.7-5.8s5.1 2.1 5.7 5.8"/><path d="M10 3.2h4M10 20.8h4"/><path d="M8.5 16.2h7"/></svg></span><span>ساعت زنانه</span></a>
       </div>
     </div>
 
@@ -178,39 +178,46 @@
 <script>
 (function(){
   var drops=document.querySelectorAll('.nav-drop');
-  /* V41: force every dropdown closed before any interaction. */
-  drops.forEach(function(x){
-    x.classList.remove('open');
-    var b=x.querySelector(':scope > button');
-    if(b){ b.setAttribute('aria-expanded','false'); }
-  });
-  function closeAll(except){
-    drops.forEach(function(x){
-      if(x!==except){
-        x.classList.remove('open');
-        var b=x.querySelector(':scope > button');
-        if(b)b.setAttribute('aria-expanded','false');
-      }
-    });
+  var desktop=window.matchMedia('(min-width: 981px)');
+  var timers=new WeakMap();
+  function setState(parent,open){
+    var btn=parent.querySelector(':scope > button');
+    parent.classList.toggle('open',!!open);
+    if(btn) btn.setAttribute('aria-expanded',open?'true':'false');
   }
+  function closeAll(except){
+    drops.forEach(function(x){ if(x!==except) setState(x,false); });
+  }
+  function openDrop(parent){
+    clearTimeout(timers.get(parent));
+    closeAll(parent);
+    setState(parent,true);
+  }
+  function scheduleClose(parent){
+    clearTimeout(timers.get(parent));
+    timers.set(parent,setTimeout(function(){ setState(parent,false); },90));
+  }
+  /* Always start closed. Desktop uses hover; touch/mobile keeps click behavior. */
   drops.forEach(function(parent){
+    setState(parent,false);
     var btn=parent.querySelector(':scope > button');
     if(!btn)return;
-    btn.setAttribute('aria-expanded','false');
+    parent.addEventListener('mouseenter',function(){
+      if(desktop.matches) openDrop(parent);
+    });
+    parent.addEventListener('mouseleave',function(){
+      if(desktop.matches) scheduleClose(parent);
+    });
     btn.addEventListener('click',function(e){
+      if(desktop.matches){ e.preventDefault(); return; }
       e.preventDefault(); e.stopPropagation();
       var open=btn.getAttribute('aria-expanded')!=='true';
-      closeAll(parent);
-      parent.classList.toggle('open',open);
-      btn.setAttribute('aria-expanded',open?'true':'false');
+      closeAll();
+      setState(parent,open);
     });
   });
-  document.addEventListener('click',function(e){
-    if(!e.target.closest('.nav-drop')) closeAll();
-  });
-  document.addEventListener('keydown',function(e){
-    if(e.key==='Escape') closeAll();
-  });
+  document.addEventListener('click',function(e){ if(!e.target.closest('.nav-drop')) closeAll(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeAll(); });
   document.querySelectorAll('.desktop-menu a[href^="#"]').forEach(function(a){
     a.addEventListener('click',function(){
       closeAll();
@@ -218,6 +225,7 @@
       if(a.classList.contains('nav-link')) a.classList.add('active');
     });
   });
+  window.addEventListener('resize',function(){ closeAll(); });
 })();
 </script>
 </body>

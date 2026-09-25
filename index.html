@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="v27-final.css">
 <link rel="stylesheet" href="brand-fix.css">
 <link rel="stylesheet" href="v36-brand-real-fix.css">
+<link rel="stylesheet" href="v37-nav-icons.css">
 </head>
 <body>
 
@@ -33,11 +34,58 @@
       <span class="avan-brand-en">AVAN GALLERY</span>
     </span>
   </a>
-  <nav id="mainMenu" class="desktop-menu">
-    <a class="active" href="#home">صفحه اصلی</a>
-    <div class="nav-drop"><button type="button">دسته‌بندی‌ها <b>⌄</b></button><div class="drop-menu"><a href="#products">ساعت کلاسیک</a><a href="#products">ساعت لوکس</a><a href="#products">ساعت اسپرت</a><a href="#products">مردانه</a><a href="#products">زنانه</a></div></div>
-    <div class="nav-drop"><button type="button">برندها <b>⌄</b></button><div class="drop-menu"><a href="#products">TISSOT</a><a href="#products">CITIZEN</a><a href="#products">CASIO</a><a href="#products">SEIKO</a></div></div>
-    <a href="#products">فروشگاه</a><a href="#blog">وبلاگ</a><a href="#about">درباره ما</a><a href="#contact">تماس با ما</a>
+  <nav id="mainMenu" class="desktop-menu" aria-label="منوی اصلی آوان گالری">
+    <a class="nav-link active" href="#home">
+      <svg class="nav-real-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9.5 21v-6h5v6"/></svg>
+      <span>صفحه اصلی</span>
+    </a>
+
+    <div class="nav-drop">
+      <button type="button" aria-expanded="false">
+        <svg class="nav-real-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span>دسته‌بندی‌ها</span><b>⌄</b>
+      </button>
+      <div class="drop-menu">
+        <a href="#products"><span class="drop-dot">◈</span> ساعت کلاسیک</a>
+        <a href="#products"><span class="drop-dot">◈</span> ساعت لوکس</a>
+        <a href="#products"><span class="drop-dot">◈</span> ساعت اسپرت</a>
+        <a href="#products"><span class="drop-dot">◈</span> ساعت مردانه</a>
+        <a href="#products"><span class="drop-dot">◈</span> ساعت زنانه</a>
+      </div>
+    </div>
+
+    <div class="nav-drop">
+      <button type="button" aria-expanded="false">
+        <svg class="nav-real-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 14.5 8.2 20 9l-4 3.9.9 5.5-4.9-2.7-4.9 2.7.9-5.5L4 9l5.5-.8L12 3Z"/></svg>
+        <span>برندها</span><b>⌄</b>
+      </button>
+      <div class="drop-menu">
+        <a href="#products"><span class="brand-mark">T</span> TISSOT</a>
+        <a href="#products"><span class="brand-mark">C</span> CITIZEN</a>
+        <a href="#products"><span class="brand-mark">C</span> CASIO</a>
+        <a href="#products"><span class="brand-mark">S</span> SEIKO</a>
+      </div>
+    </div>
+
+    <a class="nav-link" href="#products">
+      <svg class="nav-real-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l2 11h10l2-8H7"/><circle cx="10" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+      <span>فروشگاه</span>
+    </a>
+
+    <a class="nav-link" href="#blog">
+      <svg class="nav-real-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+      <span>وبلاگ</span>
+    </a>
+
+    <a class="nav-link" href="#about">
+      <svg class="nav-real-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 10v6"/><circle cx="12" cy="7" r=".8" fill="currentColor" stroke="none"/></svg>
+      <span>درباره ما</span>
+    </a>
+
+    <a class="nav-link" href="#contact">
+      <svg class="nav-real-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="m4 7 8 6 8-6"/></svg>
+      <span>تماس با ما</span>
+    </a>
   </nav>
   <div class="header-actions">
     <a class="account-btn" href="#account">♙ <strong>ورود / ثبت‌نام</strong></a>
@@ -101,5 +149,30 @@
 
 
 <script>/* AVAN static hero: no slider */</script>
+
+<script>
+(function(){
+  document.querySelectorAll('.nav-drop > button').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      var parent=btn.parentElement;
+      var open=parent.classList.toggle('open');
+      btn.setAttribute('aria-expanded',open?'true':'false');
+      document.querySelectorAll('.nav-drop').forEach(function(other){
+        if(other!==parent){ other.classList.remove('open'); var b=other.querySelector(':scope > button'); if(b)b.setAttribute('aria-expanded','false'); }
+      });
+    });
+  });
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('.nav-drop')) document.querySelectorAll('.nav-drop').forEach(function(x){x.classList.remove('open');var b=x.querySelector(':scope > button');if(b)b.setAttribute('aria-expanded','false');});
+  });
+  document.querySelectorAll('.desktop-menu a[href^="#"]').forEach(function(a){
+    a.addEventListener('click',function(){
+      document.querySelectorAll('.desktop-menu .nav-link').forEach(function(x){x.classList.remove('active');});
+      if(a.classList.contains('nav-link')) a.classList.add('active');
+    });
+  });
+})();
+</script>
 </body>
 </html>

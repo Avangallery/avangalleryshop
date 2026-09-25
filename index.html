@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="v36-brand-real-fix.css">
 <link rel="stylesheet" href="v37-nav-icons.css">
 <link rel="stylesheet" href="v41-dropdown-lock.css?v=41">
+<link rel="stylesheet" href="v43-header-premium.css?v=43">
 </head>
 <body>
 
@@ -112,13 +113,35 @@
       <span>تماس با ما</span>
     </a>
   </nav>
-  <div class="header-actions">
-    <a class="account-btn" href="#account">♙ <strong>ورود / ثبت‌نام</strong></a>
-    <button class="header-icon" id="headerWishlist" type="button">♡<em id="wishCount">0</em></button>
-    <button class="header-icon" id="headerCart" type="button">🛒<em id="cartCount">0</em></button>
+  <div class="header-actions v43-utility">
+    <button class="header-icon v43-icon-btn" id="headerCart" type="button" aria-label="سبد خرید" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5.5h2l2.1 10.2h10.6l2-7.2H6.7"/><circle cx="9.3" cy="19.1" r="1.2"/><circle cx="17.3" cy="19.1" r="1.2"/></svg><em class="v43-badge" id="cartCount">0</em>
+    </button>
+    <button class="mobile-menu v43-icon-btn v43-menu-btn" id="mobileMenu" type="button" aria-label="منوی اصلی" aria-expanded="false"><span></span></button>
+    <a class="account-btn v43-account" href="#account" id="headerAccount" aria-label="ورود و ثبت نام">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.8 20c.7-4 2.8-6 6.2-6s5.5 2 6.2 6"/></svg><strong>ورود / ثبت‌نام</strong>
+    </a>
+    <div class="v43-popover" id="cartPopover" aria-hidden="true">
+      <div class="v43-pop-title"><span>سبد خرید</span><button type="button" data-close-pop="cartPopover">×</button></div>
+      <div id="cartPopoverBody"><div class="v43-empty"><strong>سبد خرید خالی است</strong>هنوز محصولی به سبد اضافه نکرده‌اید.</div></div>
+      <div class="v43-cart-footer"><button type="button" onclick="document.querySelector('#products')?.scrollIntoView({behavior:'smooth'})">مشاهده محصولات</button></div>
+    </div>
+    <div class="v43-popover v43-account-menu" id="accountPopover" aria-hidden="true">
+      <div class="v43-pop-title"><span>حساب کاربری</span><button type="button" data-close-pop="accountPopover">×</button></div>
+      <a href="#account"><svg viewBox="0 0 24 24"><path d="M12 4v12M8 8l4-4 4 4"/><path d="M5 20h14"/></svg><span>ورود به حساب کاربری</span></a>
+      <a href="#account"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 20c.6-3.6 2.5-5.4 5.5-5.4s4.9 1.8 5.5 5.4"/><path d="M17 11v6M14 14h6"/></svg><span>ثبت نام در سایت</span></a>
+      <a href="#orders"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg><span>سفارش‌های من</span></a>
+      <a href="#favorites"><svg viewBox="0 0 24 24"><path d="M20 8.5c0 5-8 10-8 10s-8-5-8-10A4.5 4.5 0 0 1 12 6a4.5 4.5 0 0 1 8 2.5Z"/></svg><span>علاقه‌مندی‌ها</span></a>
+    </div>
   </div>
-  <form class="header-search" id="headerSearch"><input id="headerSearchInput" type="search" placeholder="جستجوی ساعت، برند یا مدل..."><button type="submit">⌕</button></form>
-  <button class="mobile-menu" id="mobileMenu" type="button">☰</button>
+  <form class="header-search v43-search" id="headerSearch">
+    <input id="headerSearchInput" type="search" placeholder="جستجوی ساعت، برند یا مدل..." autocomplete="off">
+    <button type="submit" aria-label="جستجو"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button>
+    <div class="v43-popover v43-search-pop" id="searchPopover" aria-hidden="true">
+      <div class="v43-pop-title"><span>نتایج جستجو</span><button type="button" data-close-pop="searchPopover">×</button></div>
+      <div id="searchResults"><div class="v43-empty"><strong>جستجو را شروع کنید</strong>نام ساعت، برند یا مدل را وارد کنید.</div></div>
+    </div>
+  </form>
 </div>
 </header>
 

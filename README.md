@@ -1,8 +1,8 @@
-AVAN GALLERY V33
-Exact header logo correction:
-- User-provided circular AVAN logo is used as the right-side mark.
-- The English text inside the logo was removed from the displayed mark so it does not duplicate the separate wordmark.
-- Separate Persian title: «آوان گالری»
-- Separate English line below: AVAN GALLERY
-- No overlap between logo and text.
-- Other site sections remain unchanged.
+AVAN GALLERY V34
+
+Header logo corrected exactly:
+- clean circular AVAN Persian mark with the embedded English line removed
+- logo sits on the right
+- Persian text «آوان گالری» sits to its left
+- AVAN GALLERY remains as a separate line underneath
+- no overlap or duplicate embedded English text

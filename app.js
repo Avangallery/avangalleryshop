@@ -6,7 +6,6 @@
   const cartBtn = $('#headerCart');
   const cartPop = $('#cartPopover');
   const accountBtn = $('#headerAccount');
-  const accountPop = $('#accountPopover');
   const searchForm = $('#headerSearch');
   const searchInput = $('#headerSearchInput');
   const searchPop = $('#searchPopover');
@@ -50,7 +49,7 @@
   }
 
   function closeAll(except) {
-    [[cartPop, cartBtn], [accountPop, accountBtn], [searchPop, null]].forEach(([pop, btn]) => {
+    [[cartPop, cartBtn], [searchPop, null]].forEach(([pop, btn]) => {
       if (pop && pop !== except) closePopover(pop, btn);
     });
   }
@@ -188,19 +187,6 @@
     if (existing) existing.qty += 1;
     else cart.push({ ...product, qty: 1 });
     openCart();
-  });
-
-  accountBtn?.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const open = accountPop.classList.contains('is-open');
-    closeAll(open ? null : accountPop);
-    if (!open) {
-      accountPop.classList.add('is-open');
-      accountPop.setAttribute('aria-hidden', 'false');
-      accountBtn.setAttribute('aria-expanded', 'true');
-      accountBtn.classList.add('is-active');
-    }
   });
 
   searchInput?.addEventListener('input', () => {

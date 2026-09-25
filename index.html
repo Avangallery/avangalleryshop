@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="brand-fix.css">
 <link rel="stylesheet" href="v36-brand-real-fix.css">
 <link rel="stylesheet" href="v37-nav-icons.css">
+<link rel="stylesheet" href="v41-dropdown-lock.css?v=41">
 </head>
 <body>
 
@@ -177,6 +178,12 @@
 <script>
 (function(){
   var drops=document.querySelectorAll('.nav-drop');
+  /* V41: force every dropdown closed before any interaction. */
+  drops.forEach(function(x){
+    x.classList.remove('open');
+    var b=x.querySelector(':scope > button');
+    if(b){ b.setAttribute('aria-expanded','false'); }
+  });
   function closeAll(except){
     drops.forEach(function(x){
       if(x!==except){
@@ -192,7 +199,7 @@
     btn.setAttribute('aria-expanded','false');
     btn.addEventListener('click',function(e){
       e.preventDefault(); e.stopPropagation();
-      var open=!parent.classList.contains('open');
+      var open=btn.getAttribute('aria-expanded')!=='true';
       closeAll(parent);
       parent.classList.toggle('open',open);
       btn.setAttribute('aria-expanded',open?'true':'false');

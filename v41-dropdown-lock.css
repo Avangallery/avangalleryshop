@@ -1,0 +1,24 @@
+/* V41 — hard-close dropdowns on initial load; aria-expanded is the only source of truth */
+.v7-nav .desktop-menu .nav-drop > .drop-menu,
+.v7-nav .desktop-menu .nav-drop.open > .drop-menu{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+.v7-nav .desktop-menu .nav-drop > button[aria-expanded="true"] + .drop-menu{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+.v7-nav .desktop-menu .nav-drop.nav-brands-drop > button[aria-expanded="true"] + .brand-menu{
+  display:grid!important;
+}
+.v7-nav .desktop-menu .nav-drop > button b{
+  display:inline-block!important;
+  transition:transform .22s ease!important;
+}
+.v7-nav .desktop-menu .nav-drop > button[aria-expanded="true"] b{
+  transform:rotate(180deg)!important;
+}

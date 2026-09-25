@@ -1,110 +1,14 @@
-// AVAN V24 static hero: no slider or auto-scroll.
-
-/* ===== AVAN V43 — header interactions ===== */
-(function(){
-  const $ = (s)=>document.querySelector(s);
-  const cartBtn=$('#headerCart'), cartPop=$('#cartPopover');
-  const accountBtn=$('#headerAccount'), accountPop=$('#accountPopover');
-  const searchForm=$('#headerSearch'), searchInput=$('#headerSearchInput'), searchPop=$('#searchPopover');
-  const mobileBtn=$('#mobileMenu'), mainMenu=$('#mainMenu');
-  const pops=[cartPop,accountPop,searchPop].filter(Boolean);
-  function syncCartBadge(){ const b=$('#cartCount'); if(!b)return; const n=parseInt(b.textContent||'0',10)||0; b.style.display=n>0?'block':'none'; }
-  syncCartBadge();
-  function closeAll(except){pops.forEach(p=>{if(p!==except){p.classList.remove('is-open');p.setAttribute('aria-hidden','true')}});[cartBtn,accountBtn].forEach(x=>x&&x.classList.remove('is-active'));}
-  function toggle(pop,btn){if(!pop)return; const open=pop.classList.contains('is-open'); closeAll(open?null:pop); if(!open){pop.classList.add('is-open');pop.setAttribute('aria-hidden','false');if(btn)btn.classList.add('is-active')}}
-  cartBtn?.addEventListener('click',(e)=>{e.stopPropagation();toggle(cartPop,cartBtn)});
-  accountBtn?.addEventListener('click',(e)=>{e.preventDefault();e.stopPropagation();toggle(accountPop,accountBtn)});
-  searchInput?.addEventListener('focus',()=>{if(searchInput.value.trim())toggle(searchPop,null)});
-  searchInput?.addEventListener('input',()=>{
-    const q=searchInput.value.trim();
-    if(!q){searchPop?.classList.remove('is-open');searchPop?.setAttribute('aria-hidden','true');return;}
-    const names=[['Tissot PRX Powermatic 80','TISSOT','assets/watch-1.jpg'],['Seiko 5 Sports','SEIKO','assets/watch-2.jpg'],['Classic Gold Watch','AVAN GALLERY','assets/watch-3.jpg']];
-    const filtered=names.filter(x=>(x[0]+' '+x[1]).toLowerCase().includes(q.toLowerCase()));
-    const list=filtered.length?filtered:names;
-    $('#searchResults').innerHTML=list.map(x=>`<a class="v43-result" href="#products"><img src="${x[2]}" alt=""><span><b>${x[0]}</b><small>${x[1]}</small></span></a>`).join('')+`<a class="v43-see-all" href="#products">نمایش همه نتایج برای «${q.replace(/</g,'&lt;')}» ←</a>`;
-    searchPop?.classList.add('is-open');searchPop?.setAttribute('aria-hidden','false');
-  });
-  searchForm?.addEventListener('submit',(e)=>{e.preventDefault();document.querySelector('#products')?.scrollIntoView({behavior:'smooth'});});
-  document.querySelectorAll('[data-close-pop]').forEach(b=>b.addEventListener('click',()=>{const p=$('#'+b.dataset.closePop);p?.classList.remove('is-open');p?.setAttribute('aria-hidden','true');}));
-  document.addEventListener('click',(e)=>{if(!e.target.closest('.v43-utility,.v43-search'))closeAll(null)});
-  document.addEventListener('keydown',(e)=>{if(e.key==='Escape'){closeAll(null);mainMenu?.classList.remove('open');mobileBtn?.classList.remove('is-active');mobileBtn?.setAttribute('aria-expanded','false')}});
-})();
-
-(function(){const b=document.getElementById('cartCount'); if(b&&window.MutationObserver){new MutationObserver(function(){const n=parseInt(b.textContent||'0',10)||0;b.style.display=n>0?'block':'none';}).observe(b,{childList:true,characterData:true,subtree:true});}})();
-
-/* ===== AVAN V49 — hamburger drawer + premium cart ===== */
-(function(){
-  const $=s=>document.querySelector(s);
-  const menuBtn=$('#mobileMenu'), drawer=$('#avanSideDrawer'), backdrop=$('#drawerBackdrop'), drawerClose=$('#drawerClose');
-  const cartBtn=$('#headerCart'), cartPop=$('#cartPopover');
-  if(drawer && drawer.parentElement!==document.body) document.body.appendChild(drawer);
-  if(backdrop && backdrop.parentElement!==document.body) document.body.appendChild(backdrop);
-  let cart=[
-    {id:'tissot',name:'Tissot PRX',sub:'ساعت مجی مردانه',price:18500000,img:'assets/watch-1.jpg',qty:1},
-    {id:'seiko',name:'Seiko 5 Sports',sub:'ساعت اسپرت',price:24600000,img:'assets/watch-2.jpg',qty:1},
-    {id:'avan',name:'ساعت کلاسیک آوان',sub:'مدل منتخب آوان',price:12900000,img:'assets/watch-3.jpg',qty:1}
-  ];
-  function fmt(n){return new Intl.NumberFormat('fa-IR').format(n)+' تومان'}
-  function renderCart(){
-    const body=$('#cartPopoverBody'), total=cart.reduce((s,x)=>s+x.price*x.qty,0), count=cart.reduce((s,x)=>s+x.qty,0);
-    $('#cartCount').textContent=count; $('#cartCount').style.display=count?'block':'none';
-    $('#cartTitleCount').textContent=new Intl.NumberFormat('fa-IR').format(count);
-    $('#cartTotal').textContent=fmt(total);
-    if(!cart.length){body.innerHTML='<div class="v43-empty"><strong>سبد خرید خالی است</strong><span>هنوز محصولی به سبد اضافه نکرده‌اید.</span></div>';return;}
-    body.innerHTML='<div class="v49-cart-list">'+cart.map(x=>`<div class="v49-cart-item"><div class="thumb"><img src="${x.img}" alt="${x.name}"></div><div class="meta"><b>${x.name}</b><small>${x.sub}</small><div class="v49-qty"><button data-dec="${x.id}">−</button><span>${x.qty}</span><button data-inc="${x.id}">+</button></div></div><div><button class="remove" data-remove="${x.id}" aria-label="حذف">×</button><div class="v49-item-price">${fmt(x.price*x.qty)}</div></div></div>`).join('')+'</div>';
-  }
-  function openDrawer(){document.querySelectorAll('.v43-popover').forEach(p=>{p.classList.remove('is-open');p.setAttribute('aria-hidden','true')});cartBtn?.classList.remove('is-active');document.body.classList.add('drawer-lock');drawer?.classList.add('is-open');backdrop?.classList.add('is-open');drawer?.setAttribute('aria-hidden','false');backdrop?.setAttribute('aria-hidden','false');menuBtn?.setAttribute('aria-expanded','true');menuBtn?.classList.add('is-active');}
-  function closeDrawer(){drawer?.classList.remove('is-open');backdrop?.classList.remove('is-open');drawer?.setAttribute('aria-hidden','true');backdrop?.setAttribute('aria-hidden','true');document.body.classList.remove('drawer-lock');menuBtn?.setAttribute('aria-expanded','false');menuBtn?.classList.remove('is-active');}
-  menuBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();drawer?.classList.contains('is-open')?closeDrawer():openDrawer();});
-  drawerClose?.addEventListener('click',closeDrawer);backdrop?.addEventListener('click',closeDrawer);
-  drawer?.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeDrawer));
-  cartBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(drawer?.classList.contains('is-open'))closeDrawer();setTimeout(()=>{renderCart();cartPop?.classList.add('is-open');cartPop?.setAttribute('aria-hidden','false');cartBtn?.classList.add('is-active')},0)});
-  document.addEventListener('click',e=>{
-    const inc=e.target.closest('[data-inc]'),dec=e.target.closest('[data-dec]'),rem=e.target.closest('[data-remove]');
-    if(inc){const x=cart.find(x=>x.id===inc.dataset.inc);if(x)x.qty++;renderCart();}
-    if(dec){const x=cart.find(x=>x.id===dec.dataset.dec);if(x){x.qty--;if(x.qty<=0)cart=cart.filter(y=>y.id!==x.id)}renderCart();}
-    if(rem){cart=cart.filter(x=>x.id!==rem.dataset.remove);renderCart();}
-  });
-  document.querySelectorAll('.add-cart').forEach((b,i)=>b.addEventListener('click',()=>{const x=cart[i%cart.length]||cart[0]; if(x)x.qty++;renderCart();}));
-  $('#addDemoProduct')?.addEventListener('click',()=>{cart.push({id:'demo-'+Date.now(),name:'ساعت لوکس آوان',sub:'مدل نمونه فروشگاه',price:18500000,img:'assets/watch-3.jpg',qty:1});renderCart();});
-  $('#checkoutCart')?.addEventListener('click',()=>{if(cart.length)location.hash='checkout';});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
-  renderCart();
-})();
-
-/* ===== AVAN V50 — product catalog ===== */
-(function(){
-  const grid=document.getElementById('productsGrid');
-  const filters=document.getElementById('productFilters');
-  const search=document.getElementById('productSearch');
-  const sort=document.getElementById('productSort');
-  const count=document.getElementById('productCount');
-  const empty=document.getElementById('productsEmpty');
-  if(!grid)return;
-  let active='all';
-  const faNum=n=>new Intl.NumberFormat('fa-IR').format(n);
-  function apply(){
-    const q=(search?.value||'').trim().toLowerCase();
-    const cards=[...grid.querySelectorAll('.avan-product-card')];
-    let visible=cards.filter(card=>{
-      const cats=card.dataset.category||'';
-      const hay=((card.dataset.name||'')+' '+(card.dataset.brand||'')).toLowerCase();
-      return (active==='all'||cats.split(' ').includes(active)) && (!q||hay.includes(q));
-    });
-    const mode=sort?.value||'featured';
-    visible.sort((a,b)=>{
-      if(mode==='low')return +a.dataset.price-+b.dataset.price;
-      if(mode==='high')return +b.dataset.price-+a.dataset.price;
-      if(mode==='name')return (a.dataset.name||'').localeCompare(b.dataset.name||'','fa');
-      return cards.indexOf(a)-cards.indexOf(b);
-    });
-    cards.forEach(c=>c.hidden=true); visible.forEach(c=>{c.hidden=false;grid.appendChild(c)});
-    if(count)count.textContent=faNum(visible.length)+' محصول';
-    if(empty)empty.hidden=visible.length!==0;
-  }
-  filters?.querySelectorAll('button[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{
-    active=btn.dataset.filter;filters.querySelectorAll('button').forEach(x=>x.classList.remove('is-active'));btn.classList.add('is-active');apply();
-  }));
-  search?.addEventListener('input',apply);sort?.addEventListener('change',apply);apply();
-  grid.addEventListener('click',e=>{const w=e.target.closest('.product-wish');if(w){w.classList.toggle('is-liked');w.textContent=w.classList.contains('is-liked')?'♥':'♡';w.style.color=w.classList.contains('is-liked')?'#efc763':'';}});
-})();
+const products=[
+{id:1,name:'Tissot PRX Powermatic 80',brand:'TISSOT',cat:'men luxury',price:18500000,img:'assets/products/tissot-prx.jpg'},
+{id:2,name:'Seiko 5 Sports',brand:'SEIKO',cat:'men sport',price:24600000,img:'assets/products/seiko-5.jpg'},
+{id:3,name:'ساعت کلاسیک آوان',brand:'AVAN',cat:'men luxury',price:12900000,img:'assets/products/avan-classic.jpg'},
+{id:4,name:'ساعت کلاسیک زنانه آوان',brand:'AVAN',cat:'women luxury',price:15900000,img:'assets/products/avan-women.jpg'}];
+const brands=['tissot','citizen','casio','seiko','rolex','omega','cartier','longines','rado','tag-heuer','certina','hamilton','orient','mido','fossil','swatch','bulova','timex','michael-kors','g-shock','movado','invicta','diesel','guess','frederique-constant','emporio-armani','tommy-hilfiger','daniel-wellington'];
+const brandBox=document.getElementById('brandDropdown'); brandBox.innerHTML=brands.map(x=>`<a href="#products"><img src="assets/brands/${x}.svg" onerror="this.style.display='none'" alt="${x}"><span>${x.replaceAll('-',' ').toUpperCase()}</span></a>`).join('');
+let cart=JSON.parse(localStorage.getItem('avan_cart')||'[]');
+const money=n=>new Intl.NumberFormat('fa-IR').format(n)+' تومان';
+function renderProducts(){let q=document.getElementById('productSearch').value.trim().toLowerCase(), f=document.querySelector('.filters .active')?.dataset.filter||'all', sort=document.getElementById('sort').value;let arr=products.filter(p=>(f==='all'||p.cat.includes(f))&&(!q||`${p.name} ${p.brand}`.toLowerCase().includes(q)));if(sort==='low')arr.sort((a,b)=>a.price-b.price);if(sort==='high')arr.sort((a,b)=>b.price-a.price);if(sort==='name')arr.sort((a,b)=>a.name.localeCompare(b.name));document.getElementById('productGrid').innerHTML=arr.map(p=>`<article class="card"><div class="card-media"><button class="wish">♡</button><img src="${p.img}" alt="${p.name}"></div><div class="card-body"><small>${p.brand}</small><h3>${p.name}</h3><p>ضمانت اصالت کالا • ارسال سریع</p><div class="price">${money(p.price)}</div><button class="add" data-add="${p.id}">افزودن به سبد 🛒</button></div></article>`).join('')||'<div class="empty">محصولی پیدا نشد.</div>';document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>add(+b.dataset.add));}
+function add(id){let p=products.find(x=>x.id===id),x=cart.find(x=>x.id===id);x?x.qty++:cart.push({...p,qty:1});save();openCart();}
+function save(){localStorage.setItem('avan_cart',JSON.stringify(cart));renderCart();}
+function renderCart(){let count=cart.reduce((s,x)=>s+x.qty,0),total=cart.reduce((s,x)=>s+x.qty*x.price,0);document.getElementById('cartBadge').textContent=count;document.getElementById('cartPanelCount').textContent=count;document.getElementById('cartTotal').textContent=money(total);document.getElementById('cartItems').innerHTML=cart.length?cart.map(x=>`<div class="cart-row"><img src="${x.img}"><div><h4>${x.name}</h4><small>${money(x.price)}</small><div class="qty"><button data-q="${x.id}" data-d="-1">−</button><b>${x.qty}</b><button data-q="${x.id}" data-d="1">+</button></div></div><button class="remove" data-r="${x.id}">×</button></div>`).join(''):'<div class="empty">سبد خرید شما خالی است.</div>';document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{let x=cart.find(x=>x.id==b.dataset.q);x.qty+=+b.dataset.d;if(x.qty<1)cart=cart.filter(y=>y.id!==x.id);save()});document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{cart=cart.filter(x=>x.id!=b.dataset.r);save()});}
+const drawer=document.getElementById('drawer'),cartPanel=document.getElementById('cartPanel'),backdrop=document.getElementById('backdrop');function closePanels(){drawer.classList.remove('open');cartPanel.classList.remove('open');backdrop.hidden=true;drawer.setAttribute('aria-hidden','true');cartPanel.setAttribute('aria-hidden','true');document.body.style.overflow=''}function openDrawer(){closePanels();drawer.classList.add('open');drawer.setAttribute('aria-hidden','false');backdrop.hidden=false;document.body.style.overflow='hidden'}function openCart(){closePanels();cartPanel.classList.add('open');cartPanel.setAttribute('aria-hidden','false');backdrop.hidden=false;document.body.style.overflow='hidden'}document.getElementById('menuBtn').onclick=openDrawer;document.getElementById('cartBtn').onclick=openCart;document.getElementById('drawerClose').onclick=closePanels;backdrop.onclick=closePanels;document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closePanels);document.addEventListener('keydown',e=>e.key==='Escape'&&closePanels());drawer.querySelectorAll('a').forEach(a=>a.onclick=closePanels);document.getElementById('filters').onclick=e=>{let b=e.target.closest('button');if(!b)return;document.querySelectorAll('.filters button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderProducts()};document.getElementById('productSearch').oninput=renderProducts;document.getElementById('sort').onchange=renderProducts;document.getElementById('searchForm').onsubmit=e=>{e.preventDefault();document.getElementById('productSearch').value=document.getElementById('searchInput').value;document.getElementById('products').scrollIntoView({behavior:'smooth'});renderProducts()};renderProducts();renderCart();

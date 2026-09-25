@@ -14,12 +14,12 @@
   const applyCoupon = $('#applyCoupon');
   const clearCartBtn = $('#clearCart');
 
-  const PRODUCTS = {
-    'avan-classic': { id: 'avan-classic', name: 'ساعت کلاسیک آوان', sub: 'مدل کلاسیک فروشگاه', price: 12900000, img: 'assets/watch-3.jpg' },
-    'avan-luxury': { id: 'avan-luxury', name: 'ساعت لوکس آوان', sub: 'مدل لوکس فروشگاه', price: 18500000, img: 'assets/watch-1.jpg' },
-    'tissot-prx': { id: 'tissot-prx', name: 'Tissot PRX', sub: 'ساعت مجی مردانه', price: 18500000, img: 'assets/watch-1.jpg' },
-    'seiko-5': { id: 'seiko-5', name: 'Seiko 5 Sports', sub: 'ساعت اسپرت', price: 24600000, img: 'assets/watch-2.jpg' }
-  };
+  const storedProducts = (() => {
+    try { return JSON.parse(localStorage.getItem('avan_admin_products_v62') || '[]'); } catch (_) { return []; }
+  })();
+  const PRODUCTS = Object.fromEntries(storedProducts.map(p => [String(p.id), {
+    id: String(p.id), name: p.name, sub: p.desc || p.brand || 'محصول آوان', price: Number(p.price)||0, img: p.image || 'assets/watch-1.jpg', brand: p.brand || '', category: p.category || 'all'
+  }]));
 
   let cart = [];
   try {
@@ -83,17 +83,17 @@
         <article class="v55-cart-item">
           <img src="${item.img}" alt="${item.name}">
           <div class="v55-cart-info">
+            <button type="button" class="v55-remove" data-cart-remove="${item.id}" aria-label="حذف">×</button>
             <strong>${item.name}</strong>
             <small>${item.sub}</small>
-            <div class="v55-qty">
-              <button type="button" data-cart-inc="${item.id}" aria-label="افزایش">+</button>
-              <span>${new Intl.NumberFormat('fa-IR').format(item.qty)}</span>
-              <button type="button" data-cart-dec="${item.id}" aria-label="کاهش">−</button>
+            <div class="v55-cart-row">
+              <div class="v55-qty">
+                <button type="button" data-cart-inc="${item.id}" aria-label="افزایش">+</button>
+                <span>${new Intl.NumberFormat('fa-IR').format(item.qty)}</span>
+                <button type="button" data-cart-dec="${item.id}" aria-label="کاهش">−</button>
+              </div>
+              <b class="v55-line-price">${formatPrice(item.price * item.qty)}</b>
             </div>
-          </div>
-          <div class="v55-cart-side">
-            <button type="button" class="v55-remove" data-cart-remove="${item.id}" aria-label="حذف">×</button>
-            <b>${formatPrice(item.price * item.qty)}</b>
           </div>
         </article>`).join('')}</div>`;
     }
@@ -209,6 +209,16 @@
   window.addEventListener('resize', positionCart);
   window.addEventListener('scroll', positionCart, { passive: true });
   renderCart();
+  // V62 dynamic catalog: products are supplied by the admin panel.
+  const productGrid = $('#productsGrid');
+  if (productGrid && Object.keys(PRODUCTS).length) {
+    productGrid.innerHTML = Object.values(PRODUCTS).map(p => `
+      <article class="avan-product-card" data-name="${p.name}" data-category="${p.category}" data-price="${p.price}">
+        <div class="product-media"><img src="${p.img}" alt="${p.name}"><button class="product-heart" type="button">♡</button></div>
+        <div class="product-body"><small>${p.brand}</small><h3>${p.name}</h3><p>${p.sub}</p><strong>${formatPrice(p.price)}</strong><button class="add-cart" data-product-id="${p.id}" type="button">افزودن به سبد ←</button></div>
+      </article>`).join('');
+  }
+  if ($('#productsEmpty')) $('#productsEmpty').hidden = Object.keys(PRODUCTS).length > 0;
   // V60 product catalog: local filtering, search, sorting and wishlist.
   let activeProductFilter = 'all';
   const productCards = () => [...document.querySelectorAll('.avan-product-card')];

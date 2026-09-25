@@ -1,12 +1,11 @@
-AVAN GALLERY V40
+# AVAN GALLERY V44
 
-- Brand dropdown opens only on click; it is closed on initial load.
-- Arrow rotates only while the dropdown is open.
-- Brand marks are local transparent SVG wordmarks/monograms with no external CDN dependency.
-- Existing RTL layout and Cloudflare-compatible static assets preserved.
+V44 refines the header utility controls from V43:
+- Premium cart/menu/account/search styling
+- Gold hover/focus treatment
+- Cleaner spacing and proportions
+- Zero cart badge hidden until cart has items
+- Responsive mobile sizing preserved
+- No external logo/CDN dependency added
 
-## V43 — Premium Utility Header
-- Premium cart, account and search interactions.
-- Gold/navy hover and focus states.
-- Cart popover, account menu and live search suggestions.
-- Mobile menu button retained and wired to the existing navigation.
+Deploy this folder/project as the next AVAN GALLERY version.

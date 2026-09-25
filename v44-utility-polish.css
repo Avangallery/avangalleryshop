@@ -1,0 +1,71 @@
+/* AVAN GALLERY V44 — refined utility controls */
+.v43-utility{
+  gap:10px!important;
+  align-items:center!important;
+}
+.v43-icon-btn{
+  width:50px!important;height:50px!important;
+  border:1px solid rgba(28,157,211,.78)!important;
+  background:linear-gradient(145deg,#082a43 0%,#031725 100%)!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+.v43-icon-btn:hover,.v43-icon-btn.is-active{
+  border-color:#efc96d!important;
+  background:linear-gradient(145deg,#123a53 0%,#061a2b 100%)!important;
+  box-shadow:0 0 0 3px rgba(239,201,109,.07),0 9px 24px rgba(0,0,0,.28),0 0 22px rgba(239,201,109,.13)!important;
+}
+.v43-icon-btn svg{width:22px!important;height:22px!important;stroke-width:1.65!important}
+.v43-menu-btn span,.v43-menu-btn span:before,.v43-menu-btn span:after{width:19px!important;height:1.8px!important}
+.v43-account{
+  height:50px!important;
+  min-width:124px!important;
+  padding:0 18px!important;
+  justify-content:center!important;
+  border:1px solid #efc96d!important;
+  background:linear-gradient(180deg,#0b2b43,#061a2a)!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.04)!important;
+}
+.v43-account:hover,.v43-account.is-active{
+  border-color:#f6d889!important;
+  background:linear-gradient(180deg,#123b55,#082239)!important;
+  box-shadow:0 0 0 3px rgba(239,201,109,.06),0 0 24px rgba(239,201,109,.12)!important;
+}
+.v43-account svg{width:18px!important;height:18px!important;stroke-width:1.55!important}
+.v43-account strong{font-size:10.5px!important;letter-spacing:-.15px}
+.v43-badge{
+  right:-3px!important;top:-4px!important;
+  min-width:20px!important;height:20px!important;
+  padding:0 5px!important;
+  border:2px solid #061a2a!important;
+  background:linear-gradient(180deg,#f6d982,#e9b94e)!important;
+  box-shadow:0 3px 10px rgba(0,0,0,.28)!important;
+  font-size:9px!important;line-height:16px!important;
+}
+.v43-search{
+  flex-basis:290px!important;
+  height:50px!important;
+  padding:0 10px 0 7px!important;
+  border:1px solid rgba(22,143,194,.9)!important;
+  background:linear-gradient(180deg,#07283f,#041b2b)!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+.v43-search:hover{border-color:#29a4d5!important}
+.v43-search:focus-within{
+  border-color:#efc96d!important;
+  box-shadow:0 0 0 3px rgba(239,201,109,.055),0 0 24px rgba(239,201,109,.12),inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+.v43-search input{font-size:10.5px!important;color:#fff!important}
+.v43-search input::placeholder{color:#718b9d!important;opacity:1!important}
+.v43-search button{width:38px!important;height:38px!important}
+.v43-search button svg{width:20px!important;height:20px!important;stroke-width:1.65!important}
+.v43-search:after{
+  content:'';position:absolute;right:58px;top:11px;bottom:11px;width:1px;
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.08),transparent);pointer-events:none;
+}
+/* More premium popovers */
+.v43-popover{border-color:rgba(239,201,109,.42)!important;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 28px rgba(239,201,109,.06)!important}
+.v43-cart-footer button{background:linear-gradient(100deg,#e9ba57,#f5d47f,#e9ba57)!important;background-size:200% 100%!important;transition:background-position .3s ease,transform .2s ease!important}
+.v43-cart-footer button:hover{background-position:100% 0!important;transform:translateY(-1px)}
+@media(max-width:1250px){.v43-search{flex-basis:255px!important}.v43-account{min-width:116px!important;padding:0 14px!important}}
+@media(max-width:980px){.v43-account{min-width:50px!important}.v43-search{flex-basis:100%!important}}
+@media(max-width:520px){.v43-icon-btn,.v43-account{width:45px!important;height:45px!important}.v43-search{height:45px!important}.v43-account{min-width:45px!important}}

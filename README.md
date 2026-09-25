@@ -1,11 +1,5 @@
-# AVAN GALLERY V53
-بازسازی پایه فرانت‌اند فروشگاه آوان گالری.
-- Header مستقل و Responsive
-- Hamburger Drawer واقعی
-- Cart Drawer واقعی با localStorage
-- Products/filter/search/sort
-- Login page
-- Admin dashboard پایه با افزودن محصول در localStorage
-- بدون R2 و بدون وابستگی به CDN برای لوگوهای برند
-
-برای اتصال داده‌ها به Cloudflare D1، API Worker و schema باید در مرحله بعد اضافه شوند.
+# AVAN GALLERY V45
+Login page added with premium Persian RTL design.
+- login.html / login.css
+- Google login visual button included; real OAuth requires Google Client ID and server-side callback configuration.
+- Header account links point to login.html.

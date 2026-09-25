@@ -56,7 +56,7 @@
   menuBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();drawer?.classList.contains('is-open')?closeDrawer():openDrawer();});
   drawerClose?.addEventListener('click',closeDrawer);backdrop?.addEventListener('click',closeDrawer);
   drawer?.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeDrawer));
-  cartBtn?.addEventListener('click',()=>setTimeout(renderCart,0));
+  cartBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();setTimeout(renderCart,0)});
   document.addEventListener('click',e=>{
     const inc=e.target.closest('[data-inc]'),dec=e.target.closest('[data-dec]'),rem=e.target.closest('[data-remove]');
     if(inc){const x=cart.find(x=>x.id===inc.dataset.inc);if(x)x.qty++;renderCart();}

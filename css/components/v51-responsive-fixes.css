@@ -1,0 +1,50 @@
+
+/* AVAN GALLERY V51 — mobile stability / overflow fixes */
+*,*::before,*::after{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden!important}
+body{width:100%;min-width:0}
+img,svg,video,canvas{max-width:100%}
+.main-nav,.v7-nav{max-width:100vw!important}
+.hero,.hero-art,.hero-copy{max-width:100vw!important}
+@media(max-width:980px){
+  .v7-nav{width:100%!important;overflow:visible!important;display:flex!important;align-items:center!important;gap:8px!important;padding:9px 12px!important;min-height:72px!important}
+  .v7-nav .logo{display:none!important}
+  .v7-nav .desktop-menu{display:none!important}
+  .v7-nav .v43-utility{order:1!important;display:flex!important;flex:0 0 auto!important;margin:0!important;gap:6px!important}
+  .v7-nav .v43-utility .v43-menu-btn{display:grid!important}
+  .v7-nav .v43-account{order:2!important;flex:0 0 48px!important;width:48px!important;min-width:48px!important;height:46px!important;padding:0!important}
+  .v7-nav .v43-account strong{display:none!important}
+  .v7-nav .v43-search{order:3!important;flex:1 1 auto!important;min-width:0!important;width:auto!important;height:46px!important}
+  .v7-nav .v43-search input{min-width:0!important}
+  .v43-utility .v43-icon-btn{width:46px!important;height:46px!important}
+  .avan-side-drawer{width:min(360px,88vw)!important;max-width:88vw!important;left:0!important;right:auto!important;padding:18px 14px!important;overflow:hidden!important}
+  .drawer-nav{min-width:0!important;overflow-y:auto!important;overflow-x:hidden!important}
+  .drawer-nav a{max-width:100%!important;min-width:0!important}
+  .v49-cart-pop{position:fixed!important;z-index:1300!important;right:8px!important;left:8px!important;bottom:8px!important;top:auto!important;width:auto!important;max-width:calc(100vw - 16px)!important;max-height:82dvh!important;border-radius:18px!important;overflow:hidden!important}
+  .v49-cart-list{max-height:48dvh!important;overflow-x:hidden!important;overflow-y:auto!important}
+  .v49-cart-item{grid-template-columns:52px minmax(0,1fr) auto!important;gap:8px!important;min-width:0!important}
+  .v49-cart-item .thumb{width:52px!important;height:52px!important}
+  .v49-cart-item .meta{min-width:0!important;overflow:hidden!important}
+  .v49-cart-item .meta b,.v49-cart-item .meta small{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .v49-item-price{font-size:9px!important}
+  .hero{width:100%!important;max-width:100%!important;overflow:hidden!important;height:calc(100svh - 72px)!important;min-height:560px!important}
+  .hero-copy{left:0!important;right:0!important;top:24%!important;width:auto!important;max-width:none!important;padding:0 22px!important;text-align:center!important;direction:rtl!important}
+  .hero-copy h1,.hero-copy h2,.hero-copy p{max-width:100%!important;overflow-wrap:anywhere!important}
+  .hero-copy h1{font-size:clamp(30px,9vw,48px)!important;line-height:1.12!important}
+  .hero-copy h2{font-size:clamp(16px,5vw,23px)!important}
+  .hero-copy p{font-size:12px!important;line-height:2!important}
+  .hero-copy .hero-btn{margin-inline:auto!important}
+  .hero-art{inset:0!important;width:100%!important;overflow:hidden!important}
+}
+@media(max-width:520px){
+  .service-bar{overflow:hidden!important}
+  .service-bar .service-card{min-width:0!important;padding:0 5px!important}
+  .v7-nav{padding:8px 9px!important;gap:6px!important}
+  .v7-nav .v43-search{height:44px!important}
+  .v7-nav .v43-account,.v43-utility .v43-icon-btn{width:44px!important;height:44px!important;flex-basis:44px!important}
+  .v49-cart-pop{right:6px!important;left:6px!important;bottom:6px!important;max-width:calc(100vw - 12px)!important}
+  .v49-cart-pop .v43-cart-footer button{width:100%!important}
+  .hero-copy{top:22%!important;padding:0 18px!important}
+  .hero-copy h1{font-size:31px!important}
+  .hero-copy h2{font-size:18px!important}
+}

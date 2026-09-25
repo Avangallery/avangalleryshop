@@ -33,3 +33,27 @@ form>label{margin-bottom:6px}.field{min-height:50px}.field-error{min-height:14px
   .login-showcase{order:2;display:none}
   .panel-inner{max-height:none;overflow:visible}
 }
+
+
+/* V47 register-only scroll polish */
+.login-panel{padding-top:88px;padding-bottom:22px}
+.back-home{top:18px}
+.panel-inner.register-mode{
+  max-height:calc(100vh - 112px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(66,97,116,.95) rgba(3,21,35,.72);
+}
+.panel-inner.register-mode::-webkit-scrollbar{width:8px}
+.panel-inner.register-mode::-webkit-scrollbar-track{background:rgba(3,21,35,.72);border-radius:12px;margin:12px 0}
+.panel-inner.register-mode::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#355466,#203b4b);border:1px solid rgba(243,199,94,.22);border-radius:12px}
+.panel-inner.register-mode::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#496a7c,#2a4859)}
+.panel-inner.register-mode .security-note{display:none}
+@media(max-width:950px){
+  .login-panel{padding-top:76px;padding-bottom:24px}
+  .panel-inner.register-mode{max-height:calc(100vh - 100px)}
+}
+@media(max-width:560px){
+  .panel-inner.register-mode{max-height:calc(100vh - 92px);padding-right:14px}
+}

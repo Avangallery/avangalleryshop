@@ -89,10 +89,12 @@ const title=document.querySelector('.welcome h2');
 const intro=document.querySelector('.welcome p');
 const loginTab=document.querySelector('.auth-tabs button.active');
 const registerTab=document.getElementById('registerTab');
+const panelInner=document.querySelector('.panel-inner');
 
 document.getElementById('togglePass').addEventListener('click',()=>{pass.type=pass.type==='password'?'text':'password';});
 function setMode(mode){
   const isRegister=mode==='register';
+  panelInner.classList.toggle('register-mode',isRegister);
   loginTab.classList.toggle('active',!isRegister);
   registerTab.classList.toggle('active',isRegister);
   registerFields.hidden=!isRegister;

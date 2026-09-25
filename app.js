@@ -217,4 +217,46 @@
   window.addEventListener('resize', positionCart);
   window.addEventListener('scroll', positionCart, { passive: true });
   renderCart();
+  // V60 product catalog: local filtering, search, sorting and wishlist.
+  let activeProductFilter = 'all';
+  const productCards = () => [...document.querySelectorAll('.avan-product-card')];
+  function refreshProducts() {
+    const q = ($('#productsLocalSearch')?.value || '').trim().toLowerCase();
+    const sort = $('#productsSort')?.value || 'featured';
+    const grid = $('#productsGrid');
+    if (!grid) return;
+    const cards = productCards();
+    cards.forEach(card => {
+      const category = (card.dataset.category || '').toLowerCase();
+      const name = (card.dataset.name || '').toLowerCase();
+      const matchesFilter = activeProductFilter === 'all' || category.includes(activeProductFilter);
+      const matchesSearch = !q || name.includes(q) || category.includes(q);
+      card.hidden = !(matchesFilter && matchesSearch);
+    });
+    const visible = cards.filter(c => !c.hidden);
+    visible.sort((a,b) => {
+      if (sort === 'low') return Number(a.dataset.price) - Number(b.dataset.price);
+      if (sort === 'high') return Number(b.dataset.price) - Number(a.dataset.price);
+      if (sort === 'name') return (a.dataset.name||'').localeCompare(b.dataset.name||'', 'fa');
+      return 0;
+    }).forEach(card => grid.appendChild(card));
+    const count = $('#productsCount');
+    if (count) count.textContent = `${new Intl.NumberFormat('fa-IR').format(visible.length)} محصول`;
+    const empty = $('#productsEmpty');
+    if (empty) empty.hidden = visible.length !== 0;
+  }
+  $$('.product-filter').forEach(btn => btn.addEventListener('click', () => {
+    $$('.product-filter').forEach(x => x.classList.remove('active'));
+    btn.classList.add('active');
+    activeProductFilter = btn.dataset.filter || 'all';
+    refreshProducts();
+  }));
+  $('#productsLocalSearch')?.addEventListener('input', refreshProducts);
+  $('#productsSort')?.addEventListener('change', refreshProducts);
+  $$('.product-heart').forEach(btn => btn.addEventListener('click', () => {
+    btn.classList.toggle('active');
+    btn.textContent = btn.classList.contains('active') ? '♥' : '♡';
+  }));
+  refreshProducts();
+
 })();

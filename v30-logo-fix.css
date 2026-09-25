@@ -1,0 +1,52 @@
+/* V30 — official AVAN logo + Persian brand name */
+.v7-nav .avan-brand{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  text-decoration:none!important;
+  direction:rtl!important;
+  min-width:190px!important;
+}
+.v7-nav .avan-logo-image{
+  width:56px!important;
+  height:56px!important;
+  flex:0 0 56px!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  border-radius:50%!important;
+  display:block!important;
+  box-shadow:0 0 0 1px rgba(239,201,109,.75)!important;
+}
+.v7-nav .avan-brand-text{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.v7-nav .avan-brand-fa{
+  display:block!important;
+  color:#fff!important;
+  font-family:Vazirmatn,Arial,sans-serif!important;
+  font-size:25px!important;
+  font-weight:800!important;
+  line-height:1.15!important;
+  margin:0 0 7px!important;
+}
+.v7-nav .avan-brand-en{
+  display:block!important;
+  color:#fff!important;
+  font-family:Arial,sans-serif!important;
+  font-size:7px!important;
+  font-weight:600!important;
+  letter-spacing:6px!important;
+  line-height:1!important;
+  direction:ltr!important;
+}
+@media(max-width:850px){
+  .v7-nav .avan-brand{min-width:auto!important;gap:7px!important}
+  .v7-nav .avan-logo-image{width:45px!important;height:45px!important;flex-basis:45px!important}
+  .v7-nav .avan-brand-fa{font-size:20px!important}
+  .v7-nav .avan-brand-en{font-size:6px!important;letter-spacing:4px!important}
+}

@@ -1,8 +1,6 @@
-AVAN GALLERY V34
+AVAN GALLERY V40
 
-Header logo corrected exactly:
-- clean circular AVAN Persian mark with the embedded English line removed
-- logo sits on the right
-- Persian text «آوان گالری» sits to its left
-- AVAN GALLERY remains as a separate line underneath
-- no overlap or duplicate embedded English text
+- Brand dropdown opens only on click; it is closed on initial load.
+- Arrow rotates only while the dropdown is open.
+- Brand marks are local transparent SVG wordmarks/monograms with no external CDN dependency.
+- Existing RTL layout and Cloudflare-compatible static assets preserved.

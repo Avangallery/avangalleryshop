@@ -127,3 +127,9 @@
 /* V39 — local brand marks: no external CDN dependency */
 .v7-nav .desktop-menu .brand-menu a img{background:#061927;border-radius:6px;object-fit:contain!important;border:0!important;box-shadow:none!important;filter:none!important;width:30px!important;height:22px!important;flex:0 0 30px!important}
 .v7-nav .desktop-menu .brand-menu a span{letter-spacing:.1px}
+
+/* V40 — dropdown opens only by click; arrow follows state */
+.v7-nav .desktop-menu .nav-brands-drop > button b{display:inline-block!important;transition:transform .22s ease!important}
+.v7-nav .desktop-menu .nav-brands-drop.open > button b{transform:rotate(180deg)!important}
+.v7-nav .desktop-menu .brand-menu a img{width:34px!important;height:24px!important;flex:0 0 34px!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;object-fit:contain!important}
+.v7-nav .desktop-menu .brand-menu a:hover img{filter:none!important;transform:scale(1.04)!important;transition:transform .18s ease!important}

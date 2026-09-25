@@ -10,6 +10,10 @@
   const searchForm = $('#headerSearch');
   const searchInput = $('#headerSearchInput');
   const searchPop = $('#searchPopover');
+  const cartBackdrop = $('#cartBackdrop');
+  const couponInput = $('#couponInput');
+  const applyCoupon = $('#applyCoupon');
+  const clearCartBtn = $('#clearCart');
 
   const PRODUCTS = {
     'avan-classic': { id: 'avan-classic', name: 'ساعت کلاسیک آوان', sub: 'مدل کلاسیک فروشگاه', price: 12900000, img: 'assets/watch-3.jpg' },
@@ -37,6 +41,12 @@
     pop.classList.remove('is-open');
     pop.setAttribute('aria-hidden', 'true');
     if (btn) btn.setAttribute('aria-expanded', 'false');
+    if (pop === cartPop) {
+      cartBackdrop?.classList.remove('is-open');
+      cartBackdrop?.setAttribute('aria-hidden','true');
+      document.documentElement.classList.remove('cart-open');
+      document.body.classList.remove('cart-open');
+    }
   }
 
   function closeAll(except) {
@@ -46,16 +56,7 @@
   }
 
   function positionCart() {
-    if (!cartPop || !cartBtn || !cartPop.classList.contains('is-open')) return;
-    const r = cartBtn.getBoundingClientRect();
-    const width = Math.min(460, window.innerWidth - 24);
-    const right = Math.max(12, window.innerWidth - r.right);
-    cartPop.style.position = 'fixed';
-    cartPop.style.top = `${Math.round(r.bottom + 12)}px`;
-    cartPop.style.right = `${Math.round(right)}px`;
-    cartPop.style.left = 'auto';
-    cartPop.style.width = `${width}px`;
-    cartPop.style.maxHeight = `${Math.max(260, window.innerHeight - r.bottom - 24)}px`;
+    // The cart is a fixed full-height drawer; no viewport positioning is needed.
   }
 
   function renderCart() {
@@ -75,8 +76,10 @@
     if (totalEl) totalEl.textContent = formatPrice(total);
 
     if (!cart.length) {
-      body.innerHTML = '<div class="v43-empty"><strong>سبد خرید خالی است</strong><span>هنوز محصولی به سبد اضافه نکرده‌اید.</span></div>';
+      body.innerHTML = '<div class="v43-empty"><strong>سبد خرید شما خالی است.</strong><span>محصولی به سبد خرید اضافه نشده است.</span></div>';
+      if (clearCartBtn) clearCartBtn.disabled = true;
     } else {
+      if (clearCartBtn) clearCartBtn.disabled = false;
       body.innerHTML = `<div class="v55-cart-list">${cart.map(item => `
         <article class="v55-cart-item">
           <img src="${item.img}" alt="${item.name}">
@@ -96,6 +99,7 @@
         </article>`).join('')}</div>`;
     }
     saveCart();
+    if (cartBackdrop) cartBackdrop.classList.toggle('is-open', cartPop?.classList.contains('is-open'));
     positionCart();
   }
 
@@ -105,6 +109,10 @@
     cartPop.setAttribute('aria-hidden', 'false');
     cartBtn.setAttribute('aria-expanded', 'true');
     cartBtn.classList.add('is-active');
+    cartBackdrop?.classList.add('is-open');
+    cartBackdrop?.setAttribute('aria-hidden','false');
+    document.documentElement.classList.add('cart-open');
+    document.body.classList.add('cart-open');
     renderCart();
     requestAnimationFrame(positionCart);
   }
@@ -153,6 +161,22 @@
     if (!event.target.closest('.v43-utility,.v43-search')) closeAll(null);
   });
 
+  applyCoupon?.addEventListener('click', () => {
+    const code = (couponInput?.value || '').trim();
+    if (!code) {
+      couponInput?.focus();
+      return;
+    }
+    applyCoupon.textContent = 'اعمال شد';
+    setTimeout(() => { if (applyCoupon) applyCoupon.textContent = 'اعمال'; }, 1200);
+  });
+
+  clearCartBtn?.addEventListener('click', () => {
+    if (!cart.length) return;
+    cart = [];
+    renderCart();
+  });
+
   $('#checkoutCart')?.addEventListener('click', () => {
     if (!cart.length) return;
     location.hash = 'checkout';
@@ -197,6 +221,8 @@
   document.querySelectorAll('[data-close-pop]').forEach(button => button.addEventListener('click', () => {
     closePopover($('#' + button.dataset.closePop), button.closest('.v43-popover')?.id === 'cartPopover' ? cartBtn : null);
   }));
+
+  cartBackdrop?.addEventListener('click', () => closePopover(cartPop, cartBtn));
 
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') closeAll(null);

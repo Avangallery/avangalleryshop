@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="v44-utility-polish.css?v=44">
 <link rel="stylesheet" href="v49-menu-cart.css?v=49">
 <link rel="stylesheet" href="v55-cart-clean.css?v=55">
+<link rel="stylesheet" href="v56-cart-drawer.css?v=56">
 </head>
 <body>
 
@@ -123,12 +124,20 @@
     <a class="account-btn v43-account" href="login.html" id="headerAccount" aria-label="ورود و ثبت نام">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.8 20c.7-4 2.8-6 6.2-6s5.5 2 6.2 6"/></svg><strong>ورود / ثبت‌نام</strong>
     </a>
-    <div class="v43-popover v49-cart-pop" id="cartPopover" aria-hidden="true">
-      <div class="v43-pop-title"><span>سبد خرید شما <em id="cartTitleCount">0</em></span><button type="button" data-close-pop="cartPopover">×</button></div>
-      <div id="cartPopoverBody"><div class="v43-empty"><strong>سبد خرید خالی است</strong><span>هنوز محصولی به سبد اضافه نکرده‌اید.</span></div></div>
-      <div class="v49-cart-summary"><span>مجموع کل</span><strong id="cartTotal">۰ تومان</strong></div>
-      <div class="v43-cart-footer"><button id="checkoutCart" type="button">تکمیل خرید <span>←</span></button></div>
-    </div>
+    <div class="v55-cart-backdrop" id="cartBackdrop" aria-hidden="true"></div>
+    <aside class="v43-popover v49-cart-pop" id="cartPopover" aria-hidden="true" aria-label="سبد خرید">
+      <div class="v55-cart-head">
+        <button class="v55-cart-close" type="button" data-close-pop="cartPopover" aria-label="بستن">×</button>
+        <div><span>سبد خرید</span><small><b id="cartTitleCount">۰</b> کالا در سبد</small></div>
+      </div>
+      <div class="v55-cart-main" id="cartPopoverBody"><div class="v43-empty"><strong>سبد خرید شما خالی است.</strong><span>محصولی به سبد خرید اضافه نشده است.</span></div></div>
+      <div class="v55-cart-bottom">
+        <div class="v55-coupon"><input id="couponInput" type="text" placeholder="کد تخفیف" autocomplete="off"><button id="applyCoupon" type="button">اعمال</button></div>
+        <div class="v55-total"><span>مجموع:</span><strong id="cartTotal">۰ تومان</strong></div>
+        <button class="v55-checkout" id="checkoutCart" type="button">ثبت سفارش <span>←</span></button>
+        <button class="v55-clear" id="clearCart" type="button">خالی کردن سبد</button>
+      </div>
+    </aside>
     <div class="v43-popover v43-account-menu" id="accountPopover" aria-hidden="true">
       <div class="v43-pop-title"><span>حساب کاربری</span><button type="button" data-close-pop="accountPopover">×</button></div>
       <a href="login.html"><svg viewBox="0 0 24 24"><path d="M12 4v12M8 8l4-4 4 4"/><path d="M5 20h14"/></svg><span>ورود به حساب کاربری</span></a>

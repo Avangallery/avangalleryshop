@@ -1,0 +1,51 @@
+
+/* V31 — clean official AVAN brand lockup */
+.brand{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:14px!important;
+  direction:rtl!important;
+  min-width:250px!important;
+  height:100%!important;
+  white-space:nowrap!important;
+}
+.brand-logo{
+  width:58px!important;
+  height:58px!important;
+  object-fit:contain!important;
+  display:block!important;
+  flex:0 0 58px!important;
+}
+.brand-copy{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  line-height:1!important;
+}
+.brand-fa{
+  font-family:Tahoma, Arial, sans-serif!important;
+  font-size:26px!important;
+  font-weight:800!important;
+  color:#fff!important;
+  letter-spacing:0!important;
+  line-height:1.15!important;
+}
+.brand-en{
+  margin-top:8px!important;
+  font-family:Georgia, "Times New Roman", serif!important;
+  font-size:9px!important;
+  font-weight:600!important;
+  color:#fff!important;
+  letter-spacing:7px!important;
+  direction:ltr!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+@media(max-width:850px){
+  .brand{min-width:180px!important;gap:8px!important}
+  .brand-logo{width:44px!important;height:44px!important;flex-basis:44px!important}
+  .brand-fa{font-size:20px!important}
+  .brand-en{font-size:7px!important;letter-spacing:4px!important;margin-top:5px!important}
+}

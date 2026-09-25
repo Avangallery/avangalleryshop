@@ -1,0 +1,58 @@
+
+/* V32 — exact logo lockup, no overlap */
+.main-nav .avan-brand{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  flex-direction:row!important;
+  gap:12px!important;
+  width:255px!important;
+  min-width:255px!important;
+  height:82px!important;
+  text-decoration:none!important;
+  direction:rtl!important;
+  overflow:visible!important;
+}
+.main-nav .avan-logo-image{
+  width:62px!important;
+  height:62px!important;
+  min-width:62px!important;
+  object-fit:contain!important;
+  display:block!important;
+  margin:0!important;
+}
+.main-nav .avan-brand-text{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  gap:5px!important;
+  width:auto!important;
+  min-width:0!important;
+}
+.main-nav .avan-brand-fa{
+  display:block!important;
+  font-family:Tahoma,Arial,sans-serif!important;
+  font-size:24px!important;
+  font-weight:800!important;
+  line-height:1.05!important;
+  color:#fff!important;
+  white-space:nowrap!important;
+}
+.main-nav .avan-brand-en{
+  display:block!important;
+  font-family:Arial,sans-serif!important;
+  font-size:7px!important;
+  font-weight:600!important;
+  letter-spacing:5px!important;
+  line-height:1!important;
+  color:#fff!important;
+  direction:ltr!important;
+  white-space:nowrap!important;
+}
+@media(max-width:850px){
+ .main-nav .avan-brand{width:205px!important;min-width:205px!important;gap:8px!important}
+ .main-nav .avan-logo-image{width:50px!important;height:50px!important;min-width:50px!important}
+ .main-nav .avan-brand-fa{font-size:20px!important}
+ .main-nav .avan-brand-en{font-size:6px!important;letter-spacing:3px!important}
+}

@@ -18,7 +18,8 @@
 <link rel="stylesheet" href="v41-dropdown-lock.css?v=41">
 <link rel="stylesheet" href="v43-header-premium.css?v=43">
 <link rel="stylesheet" href="v44-utility-polish.css?v=44">
-<link rel="stylesheet" href="v49-menu-cart.css?v=49">
+<link rel="stylesheet" href="css/components/menu-cart.css?v=50">
+<link rel="stylesheet" href="css/components/products.css?v=50">
 </head>
 <body>
 
@@ -179,27 +180,66 @@
   </div>
 </section>
 
-<section class="content-section" id="products">
-  <div class="section-head">
-    <div><span>AVAN GALLERY</span><h2 id="productHeading">محصولات منتخب</h2></div>
-    <button id="addDemoProduct">＋ افزودن ساعت نمونه به سبد</button>
-  </div>
-  <div class="product-demo">
-    <article class="product-card">
-      <div class="watch-placeholder">AVAN</div>
-      <h3>ساعت کلاسیک آوان</h3>
-      <p>مدل نمونه فروشگاه</p>
-      <div><strong>12,900,000 تومان</strong><button class="add-cart">افزودن به سبد</button><button class="add-wish">♡</button></div>
-    </article>
-    <article class="product-card">
-      <div class="watch-placeholder">AVAN</div>
-      <h3>ساعت لوکس آوان</h3>
-      <p>مدل نمونه فروشگاه</p>
-      <div><strong>18,500,000 تومان</strong><button class="add-cart">افزودن به سبد</button><button class="add-wish">♡</button></div>
-    </article>
+<section class="avan-products" id="products" aria-labelledby="productHeading">
+  <div class="products-shell">
+    <div class="products-head">
+      <div class="products-title">
+        <span>AVAN GALLERY</span>
+        <h2 id="productHeading">محصولات منتخب</h2>
+        <p>ساعت‌های منتخب آوان با طراحی کلاسیک و اصالت کالا</p>
+      </div>
+      <button class="products-add-demo" id="addDemoProduct" type="button">＋ افزودن ساعت نمونه به سبد</button>
+    </div>
+
+    <div class="products-filters" role="toolbar" aria-label="فیلتر محصولات">
+      <div class="filter-tabs" id="productFilters">
+        <button class="is-active" type="button" data-filter="all">همه محصولات</button>
+        <button type="button" data-filter="men">ساعت مردانه</button>
+        <button type="button" data-filter="women">ساعت زنانه</button>
+        <button type="button" data-filter="sport">اسپرت</button>
+        <button type="button" data-filter="luxury">لوکس</button>
+      </div>
+      <label class="products-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+        <input id="productSearch" type="search" placeholder="جستجوی محصول، برند یا مدل..." autocomplete="off">
+      </label>
+      <label class="products-sort">
+        <span>مرتب‌سازی</span>
+        <select id="productSort">
+          <option value="featured">منتخب آوان</option>
+          <option value="low">ارزان‌ترین</option>
+          <option value="high">گران‌ترین</option>
+          <option value="name">نام محصول</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="products-meta"><span id="productCount">۴ محصول</span><span>ارسال سریع • ضمانت اصالت</span></div>
+
+    <div class="products-grid" id="productsGrid">
+      <article class="avan-product-card" data-category="men luxury" data-name="ساعت کلاسیک آوان" data-brand="AVAN" data-price="12900000">
+        <div class="product-media"><span class="product-badge">منتخب</span><button class="product-wish" type="button" aria-label="افزودن به علاقه‌مندی">♡</button><img src="assets/watch-3.jpg" alt="ساعت کلاسیک آوان"></div>
+        <div class="product-body"><span class="product-brand">AVAN GALLERY</span><h3>ساعت کلاسیک آوان</h3><p>مدل کلاسیک • صفحه سرمه‌ای</p><div class="product-price-row"><strong>۱۲,۹۰۰,۰۰۰ تومان</strong><span>موجود</span></div><div class="product-actions"><button class="add-cart" type="button">افزودن به سبد <span>🛒</span></button><a href="#product-detail" class="product-view">جزئیات</a></div></div>
+      </article>
+
+      <article class="avan-product-card" data-category="men sport" data-name="Seiko 5 Sports" data-brand="SEIKO" data-price="24600000">
+        <div class="product-media"><span class="product-badge dark">اسپرت</span><button class="product-wish" type="button" aria-label="افزودن به علاقه‌مندی">♡</button><img src="assets/watch-2.jpg" alt="Seiko 5 Sports"></div>
+        <div class="product-body"><span class="product-brand">SEIKO</span><h3>Seiko 5 Sports</h3><p>مدل اسپرت • موتور اتوماتیک</p><div class="product-price-row"><strong>۲۴,۶۰۰,۰۰۰ تومان</strong><span>موجود</span></div><div class="product-actions"><button class="add-cart" type="button">افزودن به سبد <span>🛒</span></button><a href="#product-detail" class="product-view">جزئیات</a></div></div>
+      </article>
+
+      <article class="avan-product-card" data-category="men luxury" data-name="Tissot PRX Powermatic 80" data-brand="TISSOT" data-price="18500000">
+        <div class="product-media"><span class="product-badge">ویژه</span><button class="product-wish" type="button" aria-label="افزودن به علاقه‌مندی">♡</button><img src="assets/watch-1.jpg" alt="Tissot PRX Powermatic 80"></div>
+        <div class="product-body"><span class="product-brand">TISSOT</span><h3>Tissot PRX Powermatic 80</h3><p>مدل لوکس • صفحه آبی</p><div class="product-price-row"><strong>۱۸,۵۰۰,۰۰۰ تومان</strong><span>موجود</span></div><div class="product-actions"><button class="add-cart" type="button">افزودن به سبد <span>🛒</span></button><a href="#product-detail" class="product-view">جزئیات</a></div></div>
+      </article>
+
+      <article class="avan-product-card" data-category="women luxury" data-name="ساعت کلاسیک زنانه آوان" data-brand="AVAN" data-price="15900000">
+        <div class="product-media"><span class="product-badge dark">زنانه</span><button class="product-wish" type="button" aria-label="افزودن به علاقه‌مندی">♡</button><img src="assets/watch-hero-2.jpg" alt="ساعت کلاسیک زنانه آوان"></div>
+        <div class="product-body"><span class="product-brand">AVAN GALLERY</span><h3>ساعت کلاسیک زنانه آوان</h3><p>مدل ظریف • طراحی مینیمال</p><div class="product-price-row"><strong>۱۵,۹۰۰,۰۰۰ تومان</strong><span>موجود</span></div><div class="product-actions"><button class="add-cart" type="button">افزودن به سبد <span>🛒</span></button><a href="#product-detail" class="product-view">جزئیات</a></div></div>
+      </article>
+    </div>
+    <div class="products-empty" id="productsEmpty" hidden>محصولی مطابق جستجو یا فیلتر شما پیدا نشد.</div>
   </div>
 </section>
-
 <section class="content-section compact" id="blog"><h2>استایل خودت را با آوان انتخاب کن</h2><p>راهنمای انتخاب و نگهداری ساعت.</p></section>
 <section class="content-section compact" id="about"><h2>درباره آوان گالری</h2><p>فروشگاه تخصصی ساعت‌های کلاسیک و لوکس.</p></section>
 <section class="content-section compact" id="contact"><h2>تماس با ما</h2><p>پشتیبانی و ارتباط با آوان گالری.</p></section>
@@ -217,6 +257,7 @@
 <div class="toast" id="toast"></div>
 
 
+<script src="js/app.js?v=50"></script>
 <script>/* AVAN static hero: no slider */</script>
 
 <script>

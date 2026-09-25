@@ -1,1 +1,54 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ورود | آوان گالری</title><link rel="stylesheet" href="css/login.css"></head><body><a class="back" href="index.html">← بازگشت به صفحه اصلی</a><main><section class="login-side"><img src="assets/avan-mark-clean.png"><h1>ورود به حساب کاربری</h1><p>به آوان گالری خوش آمدید<br>برای دسترسی به حساب خود وارد شوید.</p><div class="tabs"><button class="active">ورود</button><button>ثبت نام</button></div><label>شماره موبایل یا ایمیل<input placeholder="شماره موبایل یا ایمیل خود را وارد کنید"></label><label>رمز عبور<input type="password" placeholder="رمز عبور خود را وارد کنید"></label><div class="row"><a>رمز عبور را فراموش کرده‌اید؟</a><span>□ مرا به خاطر بسپار</span></div><button class="primary">ورود به حساب کاربری ←</button><div class="or">یا</div><button class="google">G &nbsp; ورود با گوگل</button></section><section class="visual"><img src="assets/avan-mark-clean.png"><span>فراتر از یک ساعت ...</span><h2>سبک زندگی شما<br><em>در آوان گالری</em></h2><p>مجموعه‌ای از برندهای معتبر ساعت با تضمین اصالت کالا و تجربه‌ای متفاوت از خرید.</p><div>✓ تضمین اصالت کالا</div><div>↗ ارسال سریع و مطمئن</div><div>24 پشتیبانی ۲۴ ساعته</div></section></main></body></html>
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ورود | آوان گالری</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+<a class="back" href="index.html">← بازگشت به صفحه اصلی</a>
+<main class="auth-page">
+  <section class="visual" aria-label="معرفی آوان گالری">
+    <img src="assets/avan-mark-clean.png" alt="آوان گالری">
+    <span>فراتر از یک ساعت ...</span>
+    <h2>سبک زندگی شما<br><em>در آوان گالری</em></h2>
+    <p>مجموعه‌ای از برندهای معتبر ساعت با تضمین اصالت کالا و تجربه‌ای متفاوت از خرید.</p>
+    <div>✓ <b>تضمین اصالت کالا</b><small>تمامی محصولات اصل و معتبر</small></div>
+    <div>↗ <b>ارسال سریع و مطمئن</b><small>ارسال به سراسر کشور</small></div>
+    <div>24 <b>پشتیبانی ۲۴ ساعته</b><small>همیشه در کنار شما</small></div>
+  </section>
+
+  <section class="login-side" id="authCard">
+    <img class="auth-logo" src="assets/avan-mark-clean.png" alt="آوان">
+    <h1 id="authTitle">ورود به حساب کاربری</h1>
+    <p id="authSubtitle">به آوان گالری خوش آمدید<br>برای دسترسی به حساب خود وارد شوید.</p>
+
+    <div class="tabs" role="tablist">
+      <button type="button" class="active" id="loginTab">ورود</button>
+      <button type="button" id="registerTab">ثبت نام</button>
+    </div>
+
+    <form id="authForm" novalidate>
+      <div id="registerFields" class="register-fields" hidden>
+        <label>نام و نام خانوادگی<input name="name" autocomplete="name" placeholder="نام و نام خانوادگی خود را وارد کنید"></label>
+      </div>
+      <div class="form-fields">
+        <label>شماره موبایل یا ایمیل<input name="identifier" autocomplete="username" placeholder="شماره موبایل یا ایمیل خود را وارد کنید" required></label>
+        <label>رمز عبور<input name="password" type="password" autocomplete="current-password" placeholder="رمز عبور خود را وارد کنید" required></label>
+        <div id="confirmField" hidden><label>تکرار رمز عبور<input name="confirm" type="password" autocomplete="new-password" placeholder="رمز عبور را دوباره وارد کنید"></label></div>
+      </div>
+      <div class="row"><a href="#" id="forgot">رمز عبور را فراموش کرده‌اید؟</a><label class="remember"><input type="checkbox" name="remember"> مرا به خاطر بسپار</label></div>
+      <button class="primary" id="submitBtn" type="submit">ورود به حساب کاربری ←</button>
+    </form>
+
+    <div class="or">یا</div>
+    <button class="google" type="button" id="googleBtn"><span class="google-g">G</span> ورود با گوگل</button>
+  </section>
+</main>
+<script src="js/login.js"></script>
+</body>
+</html>

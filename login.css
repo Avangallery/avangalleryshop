@@ -57,3 +57,29 @@ form>label{margin-bottom:6px}.field{min-height:50px}.field-error{min-height:14px
 @media(max-width:560px){
   .panel-inner.register-mode{max-height:calc(100vh - 92px);padding-right:14px}
 }
+
+/* V58 — login page isolation */
+html:has(.login-page), body:has(.login-page){
+  width:100%;
+  max-width:100%;
+  margin:0;
+  overflow-x:hidden !important;
+}
+.login-page,
+.login-page *{max-width:100%;}
+.login-page img{display:block;}
+.login-page button,.login-page input{font-family:Vazirmatn,Tahoma,sans-serif;}
+@media(min-width:951px){
+  html:has(.login-page),body:has(.login-page){height:100%;overflow:hidden !important;}
+  .login-page{height:100vh !important;min-height:0 !important;overflow:hidden !important;}
+  .login-panel{height:100vh !important;min-height:0 !important;overflow:hidden !important;}
+  .panel-inner:not(.register-mode){max-height:calc(100vh - 112px);overflow:hidden !important;}
+  .panel-inner.register-mode{max-height:calc(100vh - 112px);overflow-y:auto !important;overflow-x:hidden !important;}
+}
+@media(max-width:950px){
+  html:has(.login-page),body:has(.login-page){overflow-x:hidden !important;}
+  .login-page{width:100%;max-width:100%;}
+  .login-panel{width:100%;max-width:100%;}
+  .panel-inner{width:100%;max-width:590px;}
+  .panel-inner.register-mode{overflow-y:auto !important;overflow-x:hidden !important;max-height:calc(100vh - 100px);}
+}

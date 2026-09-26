@@ -1,0 +1,134 @@
+/* AVAN GALLERY — V72 RESPONSIVE SYSTEM
+   Mobile-first responsive layer. No desktop scaling on phones. */
+:root{--avan-navy:#031522;--avan-navy-2:#061e30;--avan-gold:#efc96d;--avan-border:rgba(239,201,109,.18)}
+html{width:100%;min-width:0!important;max-width:100%!important;overflow-x:hidden!important;-webkit-text-size-adjust:100%!important}
+body{width:100%;min-width:0!important;max-width:none!important;margin:0!important;overflow-x:hidden!important;background:#020b13!important;color:#fff!important}
+*,*:before,*:after{box-sizing:border-box!important}
+img{max-width:100%;height:auto}
+.site-header,main,.site-header>*{width:100%!important;max-width:none!important;min-width:0!important}
+
+/* ===== HEADER ===== */
+.service-bar{display:flex!important;width:100%!important;height:58px!important;min-height:58px!important;padding:0 18px!important;gap:0!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;background:#041522!important;border-bottom:1px solid rgba(255,255,255,.08)!important;scrollbar-width:none!important}
+.service-bar::-webkit-scrollbar{display:none!important}
+.service-bar .slogan,.service-bar .service-card{flex:0 0 auto!important;min-width:170px!important;height:100%!important;padding:0 14px!important;border-left:1px solid rgba(255,255,255,.07)!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important}
+.service-bar .slogan{min-width:250px!important}
+.service-bar .service-card strong{font-size:10px!important;white-space:nowrap!important}
+.service-bar .service-card small{font-size:8px!important;white-space:nowrap!important}
+.service-bar .slogan-text{font-size:9px!important;white-space:nowrap!important}
+
+.main-nav.v7-nav,.main-nav{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"brand actions" "search search" "menu menu"!important;align-items:center!important;width:100%!important;height:auto!important;min-height:0!important;padding:12px 18px 10px!important;gap:10px 12px!important;background:#031522!important;border-bottom:1px solid rgba(239,201,109,.18)!important;direction:rtl!important;overflow:visible!important}
+.main-nav .avan-brand{grid-area:brand!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:9px!important;min-width:0!important;width:auto!important;margin:0!important;order:unset!important;text-decoration:none!important}
+.main-nav .avan-logo-image{width:44px!important;height:44px!important;flex:0 0 44px!important;object-fit:contain!important;border-radius:50%!important}
+.main-nav .avan-brand-text{display:flex!important;flex-direction:column!important;min-width:0!important;line-height:1!important}
+.main-nav .avan-brand-fa{font-size:22px!important;white-space:nowrap!important;color:#fff!important;font-weight:800!important}
+.main-nav .avan-brand-en{font-size:7px!important;letter-spacing:.34em!important;margin-top:5px!important;color:#eec76a!important;white-space:nowrap!important;direction:ltr!important}
+.main-nav .header-actions{grid-area:actions!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:7px!important;direction:rtl!important;order:unset!important;margin:0!important;min-width:0!important}
+.main-nav .header-icon,.main-nav .account-btn{width:42px!important;height:42px!important;min-width:42px!important;padding:0!important;border-radius:50%!important;display:grid!important;place-items:center!important}
+.main-nav .account-btn strong{display:none!important}
+.main-nav .account-btn svg,.main-nav .header-icon svg{width:19px!important;height:19px!important}
+.main-nav .header-search{grid-area:search!important;width:100%!important;max-width:none!important;min-width:0!important;height:44px!important;margin:0!important;order:unset!important}
+.main-nav .header-search input{width:100%!important;min-width:0!important;font-size:11px!important}
+.main-nav>.desktop-menu{grid-area:menu!important;order:unset!important;display:flex!important;align-items:stretch!important;justify-content:flex-start!important;gap:0!important;width:100%!important;min-width:0!important;max-width:none!important;overflow-x:auto!important;overflow-y:visible!important;white-space:nowrap!important;padding:2px 0 3px!important;scrollbar-width:none!important;direction:rtl!important}
+.main-nav>.desktop-menu::-webkit-scrollbar{display:none!important}
+.main-nav>.desktop-menu>a.nav-link,.main-nav>.desktop-menu>.nav-drop>button{flex:0 0 auto!important;min-height:40px!important;padding:0 13px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;border:0!important;background:transparent!important;color:#e8edf0!important;font:700 10px/1 Vazirmatn,Tahoma,sans-serif!important;text-decoration:none!important}
+.main-nav>.desktop-menu .nav-real-icon{width:15px!important;height:15px!important;flex:0 0 15px!important}
+.main-nav>.desktop-menu .nav-link.active{color:#efc96d!important}
+.main-nav>.desktop-menu .nav-link.active:after{display:none!important}
+.main-nav>.desktop-menu .nav-drop{position:static!important;flex:0 0 auto!important}
+.main-nav>.desktop-menu .nav-drop>.drop-menu{position:absolute!important;top:100%!important;right:12px!important;left:12px!important;width:auto!important;max-width:calc(100vw - 24px)!important;z-index:1000!important}
+
+/* ===== HERO ===== */
+main>.hero#home,.hero{position:relative!important;width:100%!important;max-width:none!important;min-width:0!important;height:clamp(500px,78vh,700px)!important;min-height:500px!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#020a12!important}
+.hero-main-image{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;object-fit:cover!important;object-position:center center!important;display:block!important;margin:0!important}
+.hero-main-overlay{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;background:linear-gradient(90deg,rgba(2,10,18,.94) 0%,rgba(2,10,18,.66) 46%,rgba(2,10,18,.20) 100%)!important}
+.hero-main-copy{position:absolute!important;left:clamp(22px,7vw,110px)!important;right:auto!important;top:50%!important;width:min(560px,45vw)!important;max-width:calc(100% - 44px)!important;transform:translateY(-50%)!important;text-align:left!important;direction:ltr!important}
+.hero-main-eyebrow{font-size:clamp(8px,.75vw,12px)!important;letter-spacing:.4em!important;margin-bottom:clamp(12px,2vw,22px)!important}
+.hero-main-title{font-size:clamp(36px,4.4vw,68px)!important;line-height:1.02!important}
+.hero-main-line{width:clamp(38px,4vw,58px)!important;margin:clamp(14px,2vw,25px) 0!important}
+.hero-main-subtitle{font-size:clamp(13px,1.35vw,20px)!important;margin-bottom:clamp(15px,2vw,25px)!important}
+.hero-main-cta{font-size:clamp(10px,.9vw,14px)!important;padding:clamp(11px,1vw,15px) clamp(17px,1.8vw,28px)!important}
+
+/* ===== PRODUCTS ===== */
+.avan-products{width:100%!important;max-width:none!important;min-width:0!important;padding:56px 18px!important;overflow:hidden!important}
+.products-shell{width:100%!important;max-width:1440px!important;min-width:0!important;margin:0 auto!important}
+.products-head{width:100%!important;min-width:0!important}
+.products-tools{width:100%!important;min-width:0!important;display:flex!important;flex-wrap:wrap!important}
+.products-search{flex:1 1 240px!important;min-width:0!important;max-width:none!important}
+.products-tools select{flex:0 1 180px!important;min-width:140px!important}
+.products-grid{width:100%!important;min-width:0!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.product-media{width:100%!important;aspect-ratio:1/1.08!important}
+.product-media img{width:100%!important;height:100%!important;object-fit:cover!important}
+
+/* ===== CART ===== */
+.v49-cart-pop{max-width:min(420px,calc(100vw - 24px))!important;width:min(420px,calc(100vw - 24px))!important}
+
+/* ===== PHONE ===== */
+@media (max-width:600px){
+  .service-bar{height:50px!important;min-height:50px!important;padding:0 8px!important}
+  .service-bar .slogan{display:none!important}
+  .service-bar .service-card{min-width:150px!important;padding:0 10px!important}
+  .service-bar .service-card strong{font-size:9px!important}
+  .service-bar .service-card small{display:none!important}
+  .service-bar .service-icon{width:25px!important;height:25px!important;flex-basis:25px!important}
+
+  .main-nav.v7-nav,.main-nav{grid-template-columns:minmax(0,1fr) auto!important;padding:10px 14px 8px!important;gap:9px 10px!important}
+  .main-nav .avan-logo-image{width:40px!important;height:40px!important;flex-basis:40px!important}
+  .main-nav .avan-brand-fa{font-size:19px!important}
+  .main-nav .avan-brand-en{font-size:6px!important}
+  .main-nav .header-icon,.main-nav .account-btn{width:40px!important;height:40px!important;min-width:40px!important}
+  .main-nav .header-search{height:42px!important}
+  .main-nav>.desktop-menu>a.nav-link,.main-nav>.desktop-menu>.nav-drop>button{min-height:38px!important;padding:0 12px!important;font-size:9px!important}
+  .main-nav>.desktop-menu .nav-real-icon{width:14px!important;height:14px!important}
+
+  main>.hero#home,.hero{height:clamp(500px,calc(100svh - 180px),620px)!important;min-height:500px!important}
+  .hero-main-image{object-position:center center!important}
+  .hero-main-overlay{background:linear-gradient(90deg,rgba(2,10,18,.92) 0%,rgba(2,10,18,.63) 58%,rgba(2,10,18,.30) 100%)!important}
+  .hero-main-copy{left:22px!important;top:52%!important;width:auto!important;max-width:calc(100% - 44px)!important}
+  .hero-main-eyebrow{font-size:8px!important;letter-spacing:.28em!important;margin-bottom:13px!important}
+  .hero-main-title{font-size:clamp(35px,10.5vw,46px)!important;line-height:1.02!important}
+  .hero-main-line{margin:14px 0!important;width:40px!important}
+  .hero-main-subtitle{font-size:13px!important;line-height:1.8!important;margin-bottom:17px!important;white-space:nowrap!important}
+  .hero-main-cta{font-size:10px!important;padding:11px 17px!important}
+
+  .avan-products{padding:42px 14px!important}
+  .products-head{display:block!important}
+  .products-tools{margin-top:18px!important;gap:8px!important}
+  .products-search{flex:1 1 100%!important;width:100%!important}
+  .products-tools select{flex:1 1 calc(50% - 4px)!important;width:calc(50% - 4px)!important;min-width:0!important}
+  .products-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+  .product-body{padding:11px!important}
+  .product-body h3{font-size:12px!important}
+  .product-body p{font-size:9px!important}
+  .product-body strong{font-size:13px!important}
+  .product-add{padding:10px 7px!important;font-size:10px!important}
+  .product-heart{width:32px!important;height:32px!important;top:8px!important;left:8px!important}
+}
+
+@media (max-width:380px){
+  .main-nav .avan-brand-fa{font-size:17px!important}
+  .main-nav .avan-brand-en{display:none!important}
+  .main-nav>.desktop-menu>a.nav-link,.main-nav>.desktop-menu>.nav-drop>button{padding:0 10px!important;font-size:8px!important}
+  .hero-main-copy{left:18px!important;max-width:calc(100% - 36px)!important}
+  .hero-main-title{font-size:34px!important}
+  .hero-main-subtitle{font-size:11px!important}
+  .products-grid{grid-template-columns:1fr!important}
+}
+
+/* Tablet */
+@media (min-width:601px) and (max-width:980px){
+  .main-nav.v7-nav,.main-nav{grid-template-columns:auto minmax(0,1fr) auto!important;grid-template-areas:"brand search actions" "menu menu menu"!important;padding:12px 24px 9px!important}
+  .main-nav .header-search{width:100%!important}
+  .main-nav>.desktop-menu{justify-content:center!important}
+  .products-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+
+/* Desktop */
+@media (min-width:981px){
+  .main-nav.v7-nav,.main-nav{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;grid-template-areas:"brand menu actions" "brand search actions"!important;align-items:center!important;padding:16px clamp(28px,4vw,72px)!important;gap:10px clamp(20px,2.5vw,44px)!important}
+  .main-nav .avan-brand{justify-self:start!important}
+  .main-nav>.desktop-menu{justify-content:center!important;overflow:visible!important}
+  .main-nav .header-search{max-width:410px!important;justify-self:end!important}
+  .main-nav .header-actions{justify-self:end!important}
+  main>.hero#home,.hero{height:clamp(600px,calc(100svh - 180px),780px)!important;min-height:600px!important}
+  .products-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))!important}
+}

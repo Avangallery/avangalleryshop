@@ -1858,3 +1858,68 @@ img{max-width:100%}
   .products-grid{grid-template-columns:1fr!important}
   .product-media{aspect-ratio:1.08/1!important}
 }
+
+/* =========================================================
+   AVAN GALLERY V70 — DEFINITIVE HERO / RESPONSIVE OVERRIDE
+   Fixes legacy .hero > img rules that had higher selector specificity
+   and were forcing the hero image to 72% width.
+   ========================================================= */
+.hero{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important;position:relative!important}
+.hero > img.hero-main-image{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  max-width:none!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  display:block!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  transform:none!important;
+  opacity:1!important;
+  margin:0!important;
+  z-index:1!important;
+}
+.hero > .hero-main-overlay{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  z-index:2!important;
+}
+.hero > #avanHeroCopy{
+  position:absolute!important;
+  z-index:3!important;
+}
+
+/* Keep the desktop hero genuinely fluid; don't use viewport-height as width. */
+@media(min-width:851px){
+  .hero{height:clamp(520px,calc(100vh - 238px),760px)!important;min-height:520px!important}
+  .hero > img.hero-main-image{object-fit:cover!important;object-position:center center!important}
+  .hero-main-copy{left:clamp(40px,6vw,100px)!important;top:50%!important;width:min(560px,42vw)!important;max-width:calc(100% - 80px)!important;transform:translateY(-50%)!important}
+}
+
+/* Tablet */
+@media(max-width:850px){
+  .hero{height:clamp(520px,calc(100svh - 190px),680px)!important;min-height:520px!important}
+  .hero > img.hero-main-image{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center center!important;opacity:1!important}
+  .hero-main-copy{left:7%!important;top:50%!important;width:82%!important;max-width:82%!important;transform:translateY(-50%)!important}
+}
+
+/* Phone */
+@media(max-width:600px){
+  .hero{height:clamp(500px,calc(100svh - 190px),640px)!important;min-height:500px!important}
+  .hero > img.hero-main-image{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center center!important}
+  .hero-main-copy{left:6%!important;top:50%!important;width:88%!important;max-width:88%!important}
+}
+
+/* Very small phones */
+@media(max-width:380px){
+  .hero{height:520px!important;min-height:520px!important}
+  .hero-main-title{font-size:30px!important}
+}
+
+/* Product media: defeat legacy fixed-height rules. */
+.product-media{width:100%!important;height:auto!important;aspect-ratio:1/1!important;min-height:0!important;overflow:hidden!important}
+.product-media img{width:100%!important;height:100%!important;max-width:none!important;display:block!important;object-fit:cover!important}

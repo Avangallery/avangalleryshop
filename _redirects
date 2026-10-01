@@ -1,3 +1,5 @@
 # AVAN GALLERY admin routes
 /admin /admin/index.html 200
 /admin/ /admin/index.html 200
+/admin/dashboard /admin/dashboard.html 200
+/admin/dashboard/ /admin/dashboard.html 200

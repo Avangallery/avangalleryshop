@@ -3,3 +3,6 @@
 /admin/ /admin/index.html 200
 /admin/dashboard /admin/dashboard.html 200
 /admin/dashboard/ /admin/dashboard.html 200
+
+/admin/admin /admin/index.html 200
+/admin/admin/ /admin/index.html 200

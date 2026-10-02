@@ -12,7 +12,7 @@
 </head>
 <body>
 <main class="login-wrap">
-  <img class="logo" src="/admin/assets/avan-mark-clean.png" alt="AVAN GALLERY">
+  <img class="logo" src="../assets/avan-mark-clean.png" alt="AVAN GALLERY">
   <div class="brand">آوان گالری</div>
   <div class="sub">AVAN GALLERY</div>
   <h1 class="title">ورود به پنل مدیریت</h1>
@@ -22,7 +22,7 @@
     <button type="submit">ورود به پنل</button>
     <div class="error" id="error"></div>
   </form>
-  <a class="back" href="/index.html">← بازگشت به فروشگاه</a>
+  <a class="back" href="../../index.html">← بازگشت به فروشگاه</a>
 </main>
 <script>
 const form=document.getElementById('loginForm');
@@ -32,7 +32,7 @@ form.addEventListener('submit',e=>{
   e.preventDefault();
   if(input.value==='avan'){
     sessionStorage.setItem('avan_admin_auth','1');
-    location.href='/admin/dashboard/index.html';
+    location.href='/admin/dashboard.html';
   }else{
     error.textContent='رمز واردشده صحیح نیست.';
     input.value='';

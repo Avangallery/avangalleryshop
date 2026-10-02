@@ -32,7 +32,7 @@ form.addEventListener('submit',e=>{
   e.preventDefault();
   if(input.value==='avan'){
     sessionStorage.setItem('avan_admin_auth','1');
-    location.href='/admin/dashboard';
+    location.href='/admin/dashboard.html';
   }else{
     error.textContent='رمز واردشده صحیح نیست.';
     input.value='';

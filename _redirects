@@ -1,5 +1,2 @@
-# AVAN GALLERY admin routes
-/admin /admin/index.html 200
-/admin/ /admin/index.html 200
-/admin/dashboard /admin/dashboard.html 200
-/admin/dashboard/ /admin/dashboard.html 200
+# No /admin redirect rule here.
+# /admin is a real directory containing index.html, so the static asset router can resolve it naturally.

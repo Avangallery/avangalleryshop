@@ -28,16 +28,16 @@
 const form=document.getElementById('loginForm');
 const input=document.getElementById('password');
 const error=document.getElementById('error');
-form.addEventListener('submit',e=>{
+form.addEventListener('submit',async e=>{
   e.preventDefault();
-  if(input.value==='avan'){
-    sessionStorage.setItem('avan_admin_auth','1');
-    location.href='/admin/dashboard.html';
-  }else{
-    error.textContent='رمز واردشده صحیح نیست.';
-    input.value='';
-    input.focus();
-  }
+  error.textContent='';
+  try{
+    const r=await fetch('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:input.value})});
+    const d=await r.json().catch(()=>({}));
+    if(r.ok&&d.ok){location.href='/admin/dashboard.html';return;}
+    error.textContent=d.error||'ورود انجام نشد.';
+    input.value=''; input.focus();
+  }catch(_){error.textContent='ارتباط با سرور برقرار نشد.';}
 });
 </script>
 </body>

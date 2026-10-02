@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-<script>fetch("/api/admin/me").then(r=>r.json()).then(d=>{if(!d.ok) location.replace("/admin");}).catch(()=>location.replace("/admin"));</script>
+<script>if(sessionStorage.getItem("avan_admin_auth")!=="1"){location.replace("/admin");}</script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>پنل مدیریت | AVAN GALLERY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap">

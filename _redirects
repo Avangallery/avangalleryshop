@@ -1,0 +1,2 @@
+# No /admin redirect rule here.
+# /admin is a real directory containing index.html, so the static asset router can resolve it naturally.

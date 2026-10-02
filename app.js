@@ -14,14 +14,9 @@
   const applyCoupon = $('#applyCoupon');
   const clearCartBtn = $('#clearCart');
 
-  let storedProducts = [];
-  try { storedProducts = JSON.parse(localStorage.getItem('avan_admin_products_v62') || '[]'); } catch (_) { storedProducts = []; }
-  fetch('/api/products',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
-    if(!d || !Array.isArray(d.products)) return;
-    const next = JSON.stringify(d.products);
-    const prev = localStorage.getItem('avan_admin_products_v62') || '[]';
-    if(next !== prev){ localStorage.setItem('avan_admin_products_v62', next); window.location.reload(); }
-  }).catch(()=>{});
+  const storedProducts = (() => {
+    try { return JSON.parse(localStorage.getItem('avan_admin_products_v62') || '[]'); } catch (_) { return []; }
+  })();
   const PRODUCTS = Object.fromEntries(storedProducts.map(p => [String(p.id), {
     id: String(p.id), name: p.name, sub: p.desc || p.brand || 'محصول آوان', price: Number(p.price)||0, img: p.image || 'assets/watch-1.jpg', brand: p.brand || '', category: p.category || 'all'
   }]));

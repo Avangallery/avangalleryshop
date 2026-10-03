@@ -475,3 +475,26 @@ img{max-width:100%}
 
 /* V96 — Real brand/social SVG icons */
 .contact-icon svg,.avan-socials svg{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.avan-socials svg{width:17px;height:17px}.icon-instagram .fill-dot,.avan-socials .fill-dot{fill:currentColor;stroke:none}.avan-socials a{display:grid;place-items:center}.avan-contact-row-v94 .contact-icon{display:grid;place-items:center}
+
+/* V97 — support modal + stable anchor navigation */
+html{scroll-behavior:smooth}
+#about,#contact{scroll-margin-top:18px}
+.avan-support-icon.avan-support-logo{overflow:hidden;padding:5px;box-sizing:border-box}
+.avan-support-logo img{width:100%;height:100%;object-fit:contain;display:block;border-radius:50%}
+.avan-support-btn-v94{border:0;cursor:pointer;font-family:inherit}
+.online-support-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:18px;direction:rtl}
+.online-support-modal.is-open{display:flex}
+.online-support-backdrop{position:absolute;inset:0;background:rgba(0,5,9,.78);backdrop-filter:blur(7px)}
+.online-support-dialog{position:relative;width:min(620px,100%);border:1px solid rgba(236,193,91,.45);border-radius:24px;background:linear-gradient(145deg,#092334,#020d14);box-shadow:0 30px 100px rgba(0,0,0,.55);padding:30px;box-sizing:border-box;color:#eef3f5}
+.online-support-close{position:absolute;left:18px;top:16px;width:38px;height:38px;border:1px solid rgba(236,193,91,.3);border-radius:11px;background:rgba(236,193,91,.05);color:#efc35d;font-size:24px;cursor:pointer}
+.online-support-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.online-support-brand img{width:52px;height:52px;object-fit:contain;border-radius:50%;background:#041a27;border:1px solid rgba(236,193,91,.4);padding:4px}
+.online-support-brand strong{display:block;color:#efc35d;font-size:18px}.online-support-brand small{display:block;color:#748892;font-size:8px;letter-spacing:3px;margin-top:4px}
+.online-support-dialog h3{margin:0 0 10px;color:#fff;font-size:26px}.online-support-dialog>p{margin:0 0 22px;color:#9cafb8;font-size:11px;line-height:2}
+.online-support-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.online-support-actions a{display:grid;grid-template-columns:auto 1fr;column-gap:11px;align-items:center;padding:13px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(3,22,32,.72);text-decoration:none;transition:.2s}
+.online-support-actions a:hover{border-color:rgba(236,193,91,.4);transform:translateY(-2px);background:rgba(12,38,51,.9)}
+.support-action-icon{grid-row:1/3;width:38px;height:38px;display:grid;place-items:center;border:1px solid rgba(236,193,91,.3);border-radius:10px;color:#efc35d}.support-action-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.support-action-icon .fill-dot{fill:currentColor;stroke:none}
+.online-support-actions b{color:#e8edef;font-size:11px}.online-support-actions small{color:#70858f;font-size:8px;margin-top:3px}
+body.online-support-open{overflow:hidden}
+@media(max-width:520px){.online-support-dialog{padding:24px 18px;border-radius:20px}.online-support-actions{grid-template-columns:1fr}.online-support-dialog h3{font-size:22px}.online-support-brand img{width:46px;height:46px}}

@@ -245,10 +245,10 @@
     <div class="avan-footer-main">
       <aside class="avan-support-card-v94">
         <span class="avan-support-kicker">نیاز به راهنمایی دارید؟</span>
-        <div class="avan-support-icon">✉</div>
+        <div class="avan-support-icon avan-support-logo"><img src="assets/avan-mark-clean.png" alt="آوان گالری"></div>
         <h3>با ما در تماس باشید</h3>
         <p>برای انتخاب ساعت، پیگیری سفارش و دریافت مشاوره، کارشناسان آوان گالری در کنار شما هستند.</p>
-        <a href="#contact" class="avan-support-btn-v94">پشتیبانی آنلاین <span>←</span></a>
+        <button type="button" class="avan-support-btn-v94" id="openOnlineSupport">پشتیبانی آنلاین <span>←</span></button>
       </aside>
 
       <section class="avan-footer-column avan-about-column-v94">
@@ -310,6 +310,22 @@
     <button class="modal-ok" id="modalOk">متوجه شدم</button>
   </div>
 </div>
+<div class="online-support-modal" id="onlineSupportModal" aria-hidden="true">
+  <div class="online-support-backdrop" data-close-support></div>
+  <div class="online-support-dialog" role="dialog" aria-modal="true" aria-labelledby="onlineSupportTitle">
+    <button type="button" class="online-support-close" data-close-support aria-label="بستن">×</button>
+    <div class="online-support-brand"><img src="assets/avan-mark-clean.png" alt="آوان گالری"><div><strong>پشتیبانی آوان</strong><small>AVAN GALLERY</small></div></div>
+    <h3 id="onlineSupportTitle">چطور کمکتون کنیم؟</h3>
+    <p>برای انتخاب ساعت، پیگیری سفارش یا دریافت مشاوره، یکی از راه‌های ارتباطی زیر را انتخاب کنید.</p>
+    <div class="online-support-actions">
+      <a href="tel:09123456789"><span class="support-action-icon"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.7 19.7 0 0 1-8.6-3.1 19.3 19.3 0 0 1-6-6A19.7 19.7 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7A2 2 0 0 1 22 16.9Z"/></svg></span><b>تماس تلفنی</b><small>0912 345 6789</small></a>
+      <a href="https://instagram.com/avan.gallery" target="_blank" rel="noopener"><span class="support-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.5" cy="6.5" r="1" class="fill-dot"/></svg></span><b>اینستاگرام</b><small>@avan.gallery</small></a>
+      <a href="https://t.me/avan_gallery" target="_blank" rel="noopener"><span class="support-action-icon"><svg viewBox="0 0 24 24"><path d="m21 4-3.1 16.1c-.2 1.1-.8 1.4-1.6.9l-4.6-3.4-2.2 2.1c-.2.2-.4.4-.8.4l.3-4.7 8.5-7.7c.4-.4-.1-.6-.6-.2L6.4 13.9 1.8 12.5c-1-.3-1-1 .2-1.5L20 4.1c.8-.3 1.5.2 1 0Z"/></svg></span><b>تلگرام</b><small>@avan_gallery</small></a>
+      <a href="mailto:info@avan.gallery"><span class="support-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg></span><b>ایمیل</b><small>info@avan.gallery</small></a>
+    </div>
+  </div>
+</div>
+
 <div class="style-guide-modal" id="styleGuideModal" aria-hidden="true">
   <div class="style-guide-modal-backdrop" data-close-style-guide></div>
   <div class="style-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="styleGuideModalTitle">

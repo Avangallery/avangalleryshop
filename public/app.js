@@ -267,3 +267,37 @@
   refreshProducts();
 
 })();
+
+// V97 — stable internal navigation + online support
+(function(){
+  const supportModal = document.getElementById('onlineSupportModal');
+  const openSupport = document.getElementById('openOnlineSupport');
+  function openSupportModal(){
+    if(!supportModal) return;
+    supportModal.classList.add('is-open');
+    supportModal.setAttribute('aria-hidden','false');
+    document.body.classList.add('online-support-open');
+  }
+  function closeSupportModal(){
+    if(!supportModal) return;
+    supportModal.classList.remove('is-open');
+    supportModal.setAttribute('aria-hidden','true');
+    document.body.classList.remove('online-support-open');
+  }
+  openSupport?.addEventListener('click', openSupportModal);
+  supportModal?.querySelectorAll('[data-close-support]').forEach(el=>el.addEventListener('click', closeSupportModal));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSupportModal();});
+
+  // Prevent hash links from jumping to an unexpected scroll position.
+  document.addEventListener('click', function(e){
+    const a=e.target.closest('a[href^="#"]');
+    if(!a) return;
+    const href=a.getAttribute('href');
+    if(!href || href==='#' || href==='#privacy' || href==='#faq') return;
+    const target=document.querySelector(href);
+    if(!target) return;
+    e.preventDefault();
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+    if(history.replaceState) history.replaceState(null,'',href);
+  });
+})();

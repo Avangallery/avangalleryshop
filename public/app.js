@@ -330,3 +330,41 @@
     }
   }, true);
 })();
+
+
+// V101 — FAQ + privacy modals + stable footer links
+(function(){
+  const faq = document.getElementById('faqModal');
+  const privacy = document.getElementById('privacyModal');
+  let active = null;
+  let savedY = 0;
+  function openInfo(modal){
+    if(!modal) return;
+    savedY = window.scrollY || document.documentElement.scrollTop || 0;
+    active = modal;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden','false');
+    document.body.classList.add('avan-info-open');
+    document.body.style.position='fixed';
+    document.body.style.top=`-${savedY}px`;
+    document.body.style.left='0'; document.body.style.right='0'; document.body.style.width='100%';
+  }
+  function closeInfo(){
+    if(!active) return;
+    active.classList.remove('is-open');
+    active.setAttribute('aria-hidden','true');
+    active=null;
+    document.body.classList.remove('avan-info-open');
+    document.body.style.position=''; document.body.style.top=''; document.body.style.left=''; document.body.style.right=''; document.body.style.width='';
+    window.scrollTo(0,savedY);
+  }
+  document.querySelectorAll('[data-close-info]').forEach(el=>el.addEventListener('click',closeInfo));
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeInfo(); });
+  document.addEventListener('click',function(e){
+    const a=e.target.closest('a[href="#faq"],a[href="#privacy"]');
+    if(!a) return;
+    e.preventDefault();
+    const href=a.getAttribute('href');
+    openInfo(href==='#faq' ? faq : privacy);
+  },true);
+})();

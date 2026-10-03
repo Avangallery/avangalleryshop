@@ -268,36 +268,65 @@
 
 })();
 
-// V97 — stable internal navigation + online support
+// V98 — stable internal navigation + online support
 (function(){
   const supportModal = document.getElementById('onlineSupportModal');
   const openSupport = document.getElementById('openOnlineSupport');
+  let savedScrollY = 0;
   function openSupportModal(){
     if(!supportModal) return;
+    savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
     supportModal.classList.add('is-open');
     supportModal.setAttribute('aria-hidden','false');
     document.body.classList.add('online-support-open');
+    document.body.style.position='fixed';
+    document.body.style.top=`-${savedScrollY}px`;
+    document.body.style.left='0';
+    document.body.style.right='0';
+    document.body.style.width='100%';
   }
   function closeSupportModal(){
     if(!supportModal) return;
     supportModal.classList.remove('is-open');
     supportModal.setAttribute('aria-hidden','true');
     document.body.classList.remove('online-support-open');
+    document.body.style.position='';
+    document.body.style.top='';
+    document.body.style.left='';
+    document.body.style.right='';
+    document.body.style.width='';
+    window.scrollTo(0, savedScrollY);
   }
   openSupport?.addEventListener('click', openSupportModal);
   supportModal?.querySelectorAll('[data-close-support]').forEach(el=>el.addEventListener('click', closeSupportModal));
   document.addEventListener('keydown',e=>{if(e.key==='Escape') closeSupportModal();});
 
-  // Prevent hash links from jumping to an unexpected scroll position.
+  function headerOffset(){
+    const header=document.querySelector('.site-header');
+    return Math.max(12, Math.min(header?.getBoundingClientRect().height || 0, 110));
+  }
+  function navigateToHash(href){
+    const target=document.querySelector(href);
+    if(!target) return false;
+    const rect=target.getBoundingClientRect();
+    const vh=window.innerHeight || document.documentElement.clientHeight;
+    // If the target is already visible, don't move the page at all.
+    if(rect.top >= 0 && rect.bottom <= vh) return true;
+    const y=Math.max(0, window.scrollY + rect.top - headerOffset() - 10);
+    window.scrollTo({top:y,behavior:'smooth'});
+    // replaceState updates the URL without triggering native hash scrolling.
+    if(history.replaceState) history.replaceState(null,'',href);
+    return true;
+  }
+
   document.addEventListener('click', function(e){
     const a=e.target.closest('a[href^="#"]');
     if(!a) return;
     const href=a.getAttribute('href');
     if(!href || href==='#' || href==='#privacy' || href==='#faq') return;
-    const target=document.querySelector(href);
-    if(!target) return;
-    e.preventDefault();
-    target.scrollIntoView({behavior:'smooth',block:'start'});
-    if(history.replaceState) history.replaceState(null,'',href);
-  });
+    if(document.querySelector(href)){
+      e.preventDefault();
+      navigateToHash(href);
+    }
+  }, true);
 })();

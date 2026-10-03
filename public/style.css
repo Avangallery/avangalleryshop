@@ -498,3 +498,29 @@ html{scroll-behavior:smooth}
 .online-support-actions b{color:#e8edef;font-size:11px}.online-support-actions small{color:#70858f;font-size:8px;margin-top:3px}
 body.online-support-open{overflow:hidden}
 @media(max-width:520px){.online-support-dialog{padding:24px 18px;border-radius:20px}.online-support-actions{grid-template-columns:1fr}.online-support-dialog h3{font-size:22px}.online-support-brand img{width:46px;height:46px}}
+
+/* V98 — exact footer navigation + real local brand icons */
+html{scroll-behavior:auto}
+body{scroll-behavior:auto}
+#about,#contact{scroll-margin-top:0}
+.contact-icon img{width:20px;height:20px;display:block;object-fit:contain}
+.avan-socials a img{width:18px;height:18px;display:block;object-fit:contain}
+.support-action-icon img{width:20px;height:20px;display:block;object-fit:contain}
+.avan-support-icon.avan-support-logo{overflow:hidden;padding:0;background:#041a27}
+.avan-support-icon.avan-support-logo img{width:100%;height:100%;object-fit:contain;padding:6px}
+.avan-footer-links-v94 a i{width:20px;height:20px;display:grid;place-items:center;font-size:0;border:1px solid rgba(236,193,91,.22);border-radius:7px}
+.avan-footer-links-v94 a:nth-of-type(1) i::before{content:'⌂';font-size:12px;color:#efc35d}
+.avan-footer-links-v94 a:nth-of-type(2) i::before{content:'▣';font-size:11px;color:#efc35d}
+.avan-footer-links-v94 a:nth-of-type(3) i::before{content:'i';font-size:12px;font-weight:900;color:#efc35d}
+.avan-footer-links-v94 a:nth-of-type(4) i::before{content:'✉';font-size:11px;color:#efc35d}
+.avan-footer-links-v94 a:nth-of-type(5) i::before{content:'?';font-size:12px;font-weight:900;color:#efc35d}
+.avan-trust-strip-v94>div>span{font-size:0}
+.avan-trust-strip-v94>div:nth-child(1)>span::before{content:'◇';font-size:20px}
+.avan-trust-strip-v94>div:nth-child(2)>span::before{content:'▱';font-size:19px}
+.avan-trust-strip-v94>div:nth-child(3)>span::before{content:'✓';font-size:19px}
+.avan-trust-strip-v94>div:nth-child(4)>span::before{content:'◉';font-size:17px}
+
+/* No-jump anchor navigation: exact target position, no hash scroll side effects. */
+@media (prefers-reduced-motion: no-preference){.avan-no-jump-scroll{scroll-behavior:smooth}}
+.online-support-modal{overscroll-behavior:contain}
+.online-support-dialog{max-height:min(760px,calc(100vh - 36px));overflow:auto;overscroll-behavior:contain}

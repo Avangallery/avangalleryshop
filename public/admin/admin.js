@@ -193,10 +193,27 @@ async function openProduct(id=''){
       </section>
       <section class="form-pane" data-pane="images">
         <div class="form-section-title"><b>گالری تصاویر</b><small>R2 استفاده نمی‌شود؛ آدرس فایل محلی یا URL تصویر را وارد کنید.</small></div>
-        <div class="image-main-field"><label>تصویر اصلی<input name="image" id="mainImage" value="${esc(p?.image||gallery[0]||'assets/watch-1.jpg')}" placeholder="assets/watch-1.jpg یا https://..."></label><div class="main-image-preview"><img id="mainImagePreview" src="${productImage(p?.image||gallery[0]||'assets/watch-1.jpg')}" alt="پیش‌نمایش"></div></div>
-        <label class="full">تصاویر گالری <small>هر آدرس را در یک خط وارد کنید.</small><textarea name="gallery" id="galleryInput" rows="6" placeholder="assets/watch-1.jpg\nassets/watch-2.jpg\nhttps://...">${esc(gallery.join('\n'))}</textarea></label>
-        <div class="gallery-preview" id="galleryPreview">${gallery.map(src=>`<div class="gallery-thumb"><img src="${productImage(src)}" alt=""><button type="button" data-remove-image="${esc(src)}">×</button></div>`).join('')}</div>
-        <div class="image-tip">پیشنهاد: تصویر اصلی، نمای نزدیک، پشت ساعت، جعبه و تصویر روی دست را وارد کنید.</div>
+        <div class="image-manager-grid">
+          <div class="image-manager-main">
+            <div class="image-main-field"><label>تصویر اصلی<input name="image" id="mainImage" value="${esc(p?.image||gallery[0]||'assets/watch-1.jpg')}" placeholder="assets/watch-1.jpg یا https://..."></label><div class="main-image-preview"><img id="mainImagePreview" src="${productImage(p?.image||gallery[0]||'assets/watch-1.jpg')}" alt="پیش‌نمایش"></div></div>
+            <label class="full">تصاویر گالری <small>هر آدرس را در یک خط وارد کنید.</small><textarea name="gallery" id="galleryInput" rows="6" placeholder="assets/watch-1.jpg\nassets/watch-2.jpg\nhttps://...">${esc(gallery.join('\n'))}</textarea></label>
+            <div class="gallery-preview" id="galleryPreview">${gallery.map(src=>`<div class="gallery-thumb"><img src="${productImage(src)}" alt=""><button type="button" data-remove-image="${esc(src)}">×</button></div>`).join('')}</div>
+          </div>
+          <aside class="device-image-panel">
+            <div class="device-image-head"><span class="device-image-icon">✦</span><div><b>تصاویر از دستگاه</b><small>برای پیش‌نمایش سریع تصاویر محصول</small></div></div>
+            <label class="device-drop" id="deviceDrop">
+              <input type="file" id="deviceImageInput" accept="image/*" multiple hidden>
+              <span class="device-upload-icon">↑</span>
+              <strong>انتخاب تصویر از دستگاه</strong>
+              <small>PNG / JPG / WEBP · چند تصویر همزمان</small>
+              <span class="device-select-btn">انتخاب فایل</span>
+            </label>
+            <div class="device-selected" id="deviceSelected"><span>هیچ فایلی انتخاب نشده</span></div>
+            <button type="button" class="device-clear ghost" id="deviceClear">پاک کردن</button>
+            <div class="device-note">تصاویر انتخاب‌شده فعلاً برای پیش‌نمایش هستند. برای ذخیره دائمی، URL یا مسیر فایل پروژه را در گالری ثبت کنید.</div>
+          </aside>
+        </div>
+        <div class="image-tip">پیشنهاد آوان: تصویر اصلی، نمای نزدیک صفحه، پشت ساعت، جعبه و تصویر روی دست را وارد کنید.</div>
       </section>
       <section class="form-pane" data-pane="specs">
         <div class="form-section-title"><b>مشخصات تخصصی ساعت</b><small>این مشخصات در معرفی محصول قابل نمایش هستند.</small></div>
@@ -231,6 +248,20 @@ async function openProduct(id=''){
   form.price.oninput=updateDiscount; form.oldPrice.oninput=updateDiscount; updateDiscount();
   const refreshGallery=()=>{const urls=form.gallery.value.split(/\n+/).map(x=>x.trim()).filter(Boolean);$('#galleryPreview').innerHTML=urls.map(src=>`<div class="gallery-thumb"><img src="${productImage(src)}" alt=""><button type="button" data-remove-image="${esc(src)}">×</button></div>`).join('')||'<div class="gallery-empty">هنوز تصویری اضافه نشده است.</div>';};
   form.gallery.oninput=refreshGallery;
+  const deviceInput=$('#deviceImageInput'), deviceDrop=$('#deviceDrop'), deviceSelected=$('#deviceSelected'), deviceClear=$('#deviceClear');
+  let deviceObjectUrls=[];
+  const clearDeviceUrls=()=>{deviceObjectUrls.forEach(u=>URL.revokeObjectURL(u));deviceObjectUrls=[];};
+  const renderDeviceFiles=(files)=>{
+    clearDeviceUrls();
+    const list=Array.from(files||[]).filter(f=>f.type.startsWith('image/'));
+    if(!list.length){deviceSelected.innerHTML='<span>هیچ فایل تصویری انتخاب نشده است</span>';return;}
+    deviceSelected.innerHTML=list.map((f,i)=>{const u=URL.createObjectURL(f);deviceObjectUrls.push(u);return `<div class="device-file-card"><img src="${u}" alt=""><span>${esc(f.name)}</span></div>`;}).join('');
+  };
+  deviceInput?.addEventListener('change',e=>renderDeviceFiles(e.target.files));
+  deviceDrop?.addEventListener('dragover',e=>{e.preventDefault();deviceDrop.classList.add('dragover');});
+  deviceDrop?.addEventListener('dragleave',()=>deviceDrop.classList.remove('dragover'));
+  deviceDrop?.addEventListener('drop',e=>{e.preventDefault();deviceDrop.classList.remove('dragover');renderDeviceFiles(e.dataTransfer.files);});
+  deviceClear?.addEventListener('click',()=>{if(deviceInput)deviceInput.value='';clearDeviceUrls();if(deviceSelected)deviceSelected.innerHTML='<span>هیچ فایلی انتخاب نشده است</span>';});
   form.image.oninput=()=>{$('#mainImagePreview').src=productImage(form.image.value)};
   $('#galleryPreview').onclick=e=>{const b=e.target.closest('[data-remove-image]');if(!b)return;const val=b.dataset.removeImage;form.gallery.value=form.gallery.value.split(/\n+/).filter(x=>x.trim()!==val).join('\n');refreshGallery();};
   $('.preview-before-save').onclick=()=>{

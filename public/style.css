@@ -525,3 +525,9 @@ body{scroll-behavior:auto}
 .avan-trust-strip-v94>div>span{width:42px;height:42px;display:grid;place-items:center;flex:0 0 42px;border:1px solid rgba(236,193,91,.3);border-radius:12px;background:rgba(236,193,91,.035)}
 .avan-trust-strip-v94>div>span img{width:21px;height:21px;display:block;object-fit:contain}
 @media(max-width:700px){.avan-footer-links-v94 a i{width:32px;height:32px;flex-basis:32px}.avan-trust-strip-v94>div>span{width:40px;height:40px;flex-basis:40px}}
+
+/* V100 — single real icon per trust item */
+.avan-trust-strip-v94>div>span::before,
+.avan-trust-strip-v94>div>span::after{content:none !important;display:none !important}
+.avan-trust-strip-v94>div>span img{display:block !important;width:22px;height:22px;object-fit:contain}
+.avan-trust-strip-v94>div>span{font-size:0;line-height:0}

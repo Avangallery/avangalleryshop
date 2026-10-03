@@ -113,6 +113,83 @@ async function api(request, env, url) {
     return json({ ok: await validSession(request, env.ADMIN_PASSWORD) });
   }
 
+  // Customer support: D1-backed tickets and live chat
+  if (url.pathname === '/api/support/ticket' && request.method === 'POST') {
+    if (!env.DB) return json({ ok:false, error:'D1 binding DB is not configured.' },500);
+    const body = await request.json().catch(()=>({}));
+    const name=String(body.name||'').trim(), phone=String(body.phone||'').trim(), subject=String(body.subject||'').trim(), message=String(body.message||'').trim();
+    if(!name||!phone||!subject||!message) return json({ok:false,error:'لطفاً همه فیلدهای تیکت را کامل کنید.'},400);
+    const id='AV-'+crypto.randomUUID().split('-')[0].toUpperCase();
+    await env.DB.prepare(`INSERT INTO support_tickets (id,name,phone,subject,message,status,admin_reply,created_at,updated_at) VALUES (?,?,?,?,?,'open','',datetime('now'),datetime('now'))`).bind(id,name,phone,subject,message).run();
+    return json({ok:true,ticket:{id,name,phone,subject,message,status:'open'}} ,201);
+  }
+  if (url.pathname === '/api/support/chat' && request.method === 'POST') {
+    if (!env.DB) return json({ok:false,error:'D1 binding DB is not configured.'},500);
+    const body=await request.json().catch(()=>({}));
+    const visitorId=String(body.visitorId||'').trim() || crypto.randomUUID();
+    const message=String(body.message||'').trim();
+    const name=String(body.name||'').trim(), phone=String(body.phone||'').trim();
+    if(!message) return json({ok:false,error:'پیام خالی است.'},400);
+    let chat=await env.DB.prepare(`SELECT * FROM support_chats WHERE visitor_id=?`).bind(visitorId).first();
+    if(!chat){ const id=crypto.randomUUID(); await env.DB.prepare(`INSERT INTO support_chats (id,visitor_id,name,phone,status,created_at,updated_at) VALUES (?,?,?,?,'open',datetime('now'),datetime('now'))`).bind(id,visitorId,name,phone).run(); chat={id,visitor_id:visitorId}; }
+    await env.DB.prepare(`INSERT INTO support_messages (id,chat_id,sender_type,message,created_at) VALUES (?,?, 'customer',?,datetime('now'))`).bind(crypto.randomUUID(),chat.id,message).run();
+    await env.DB.prepare(`UPDATE support_chats SET status='open',updated_at=datetime('now'),name=CASE WHEN ?<>'' THEN ? ELSE name END,phone=CASE WHEN ?<>'' THEN ? ELSE phone END WHERE id=?`).bind(name,name,phone,phone,chat.id).run();
+    return json({ok:true,visitorId,chatId:chat.id});
+  }
+  if (url.pathname === '/api/support/chat' && request.method === 'GET') {
+    if (!env.DB) return json({ok:false,error:'D1 binding DB is not configured.'},500);
+    const visitorId=String(url.searchParams.get('visitor_id')||'').trim();
+    if(!visitorId) return json({ok:true,messages:[]});
+    const chat=await env.DB.prepare(`SELECT * FROM support_chats WHERE visitor_id=?`).bind(visitorId).first();
+    if(!chat) return json({ok:true,messages:[]});
+    const {results}=await env.DB.prepare(`SELECT id,sender_type,message,created_at FROM support_messages WHERE chat_id=? ORDER BY created_at ASC`).bind(chat.id).all();
+    return json({ok:true,chat,messages:results||[]});
+  }
+  if (url.pathname === '/api/admin/support/tickets' && request.method === 'GET') {
+    if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
+    const status=url.searchParams.get('status');
+    const q=status && status!=='all' ? ` WHERE status=?` : '';
+    const stmt=q?env.DB.prepare(`SELECT * FROM support_tickets${q} ORDER BY created_at DESC`):env.DB.prepare(`SELECT * FROM support_tickets ORDER BY created_at DESC`);
+    const {results}=q?await stmt.bind(status).all():await stmt.all();
+    return json({ok:true,tickets:results||[]});
+  }
+  if (url.pathname === '/api/admin/support/chats' && request.method === 'GET') {
+    if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
+    const {results}=await env.DB.prepare(`SELECT c.*, (SELECT COUNT(*) FROM support_messages m WHERE m.chat_id=c.id) AS message_count FROM support_chats c ORDER BY c.updated_at DESC`).all();
+    return json({ok:true,chats:results||[]});
+  }
+  const ticketReply=url.pathname.match(/^\/api\/admin\/support\/tickets\/([^/]+)$/);
+  if(ticketReply && request.method==='PUT'){
+    if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
+    const id=decodeURIComponent(ticketReply[1]); const body=await request.json().catch(()=>({}));
+    const reply=String(body.reply||'').trim(); const status=String(body.status||'open');
+    await env.DB.prepare(`UPDATE support_tickets SET admin_reply=?,status=?,updated_at=datetime('now') WHERE id=?`).bind(reply,status,id).run();
+    return json({ok:true});
+  }
+  const chatAdmin=url.pathname.match(/^\/api\/admin\/support\/chats\/([^/]+)$/);
+  if(chatAdmin && request.method==='GET'){
+    if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
+    const chatId=decodeURIComponent(chatAdmin[1]);
+    const {results}=await env.DB.prepare(`SELECT id,sender_type,message,created_at FROM support_messages WHERE chat_id=? ORDER BY created_at ASC`).bind(chatId).all();
+    return json({ok:true,messages:results||[]});
+  }
+  if(chatAdmin && request.method==='POST'){
+    if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
+    const chatId=decodeURIComponent(chatAdmin[1]); const body=await request.json().catch(()=>({})); const message=String(body.message||'').trim();
+    if(!message) return json({ok:false,error:'پیام خالی است.'},400);
+    await env.DB.batch([
+      env.DB.prepare(`INSERT INTO support_messages (id,chat_id,sender_type,message,created_at) VALUES (?,?, 'admin',?,datetime('now'))`).bind(crypto.randomUUID(),chatId,message),
+      env.DB.prepare(`UPDATE support_chats SET status='open',updated_at=datetime('now') WHERE id=?`).bind(chatId)
+    ]);
+    return json({ok:true});
+  }
+  if (url.pathname === '/api/admin/support/unread' && request.method === 'GET') {
+    if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
+    const t=await env.DB.prepare(`SELECT COUNT(*) AS n FROM support_tickets WHERE status='open'`).first();
+    const c=await env.DB.prepare(`SELECT COUNT(*) AS n FROM support_chats WHERE status='open'`).first();
+    return json({ok:true,tickets:Number(t?.n||0),chats:Number(c?.n||0)});
+  }
+
   if (!url.pathname.startsWith('/api/products')) return json({ ok: false, error: 'Not found' }, 404);
   if (!env.DB) return json({ ok: false, error: 'D1 binding DB is not configured.' }, 500);
   const isAdmin = await validSession(request, env.ADMIN_PASSWORD);

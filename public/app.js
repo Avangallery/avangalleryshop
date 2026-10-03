@@ -369,44 +369,23 @@
   },true);
 })();
 
-// V102 — premium support tabs, chat and ticket UI
+// V103 — D1-backed live support, chat and tickets
 (function(){
-  const modal=document.getElementById('onlineSupportModal');
-  if(!modal) return;
-  const openers=document.querySelectorAll('#openOnlineSupport,[data-open-support]');
-  const tabs=modal.querySelectorAll('[data-support-tab]');
-  const panels=modal.querySelectorAll('[data-support-panel]');
-  const chatForm=document.getElementById('avanChatForm');
-  const chatInput=document.getElementById('avanChatInput');
-  const messages=document.getElementById('avanChatMessages');
-  const ticketForm=document.getElementById('avanTicketForm');
-  const ticketSuccess=document.getElementById('ticketSuccess');
-  function setTab(name){
-    tabs.forEach(t=>{const active=t.dataset.supportTab===name;t.classList.toggle('is-active',active);t.setAttribute('aria-selected',active?'true':'false')});
-    panels.forEach(p=>{p.hidden=p.dataset.supportPanel!==name;p.classList.toggle('is-active',!p.hidden)});
-  }
+  const modal=document.getElementById('onlineSupportModal'); if(!modal)return;
+  const openers=document.querySelectorAll('#openOnlineSupport,[data-open-support],#avanFloatingSupport');
+  const tabs=modal.querySelectorAll('[data-support-tab]'), panels=modal.querySelectorAll('[data-support-panel]');
+  const chatForm=document.getElementById('avanChatForm'), chatInput=document.getElementById('avanChatInput'), messages=document.getElementById('avanChatMessages');
+  const ticketForm=document.getElementById('avanTicketForm'), ticketSuccess=document.getElementById('ticketSuccess');
+  const visitorKey='avan_support_visitor_id_v103';
+  let visitorId=localStorage.getItem(visitorKey); if(!visitorId){visitorId=crypto.randomUUID?crypto.randomUUID():'v-'+Date.now()+'-'+Math.random().toString(16).slice(2);localStorage.setItem(visitorKey,visitorId)}
+  let lastChatSignature='';
+  function setTab(name){tabs.forEach(t=>{const a=t.dataset.supportTab===name;t.classList.toggle('is-active',a);t.setAttribute('aria-selected',a?'true':'false')});panels.forEach(p=>{p.hidden=p.dataset.supportPanel!==name;p.classList.toggle('is-active',!p.hidden)});if(name==='chat')loadChat();}
   tabs.forEach(t=>t.addEventListener('click',()=>setTab(t.dataset.supportTab)));
-  function addMessage(text,type){
-    const el=document.createElement('div');el.className='chat-bubble '+type;el.textContent=text;messages?.appendChild(el);if(messages)messages.scrollTop=messages.scrollHeight;
-  }
-  chatForm?.addEventListener('submit',e=>{
-    e.preventDefault();const text=(chatInput?.value||'').trim();if(!text)return;addMessage(text,'user');chatInput.value='';
-    setTimeout(()=>addMessage('پیامتون دریافت شد. پشتیبان آوان به‌زودی پاسخ می‌دهد. برای پاسخ فوری می‌توانید با 09965799499 تماس بگیرید.','agent'),450);
-  });
-  ticketForm?.addEventListener('submit',e=>{
-    e.preventDefault();
-    const data=new FormData(ticketForm);const id='AV-'+Date.now().toString().slice(-8);
-    const ticket={id,name:data.get('name'),phone:data.get('phone'),subject:data.get('subject'),message:data.get('message'),createdAt:new Date().toISOString()};
-    try{const old=JSON.parse(localStorage.getItem('avan_support_tickets')||'[]');old.unshift(ticket);localStorage.setItem('avan_support_tickets',JSON.stringify(old.slice(0,30)));}catch{}
-    if(ticketSuccess){ticketSuccess.hidden=false;ticketSuccess.textContent=`تیکت شما با موفقیت ثبت شد. شماره پیگیری: ${id} — برای ادامه پیگیری، این شماره را نزد خود نگه دارید.`;}
-    ticketForm.reset();
-  });
-  document.addEventListener('click',e=>{
-    const opener=e.target.closest('#openOnlineSupport,[data-open-support]');
-    if(!opener)return;
-    e.preventDefault();
-    // The existing V98 handler opens the modal; this only resets the default tab.
-    setTab('chat');
-  });
-  setTab('chat');
+  function addMessage(text,type,stamp){const el=document.createElement('div');el.className='chat-bubble '+type;el.textContent=text;if(stamp){const s=document.createElement('small');s.textContent=new Date(stamp).toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit'});el.appendChild(s)}messages?.appendChild(el)}
+  function renderChat(list){if(!messages)return;const sig=JSON.stringify(list||[]);if(sig===lastChatSignature)return;lastChatSignature=sig;messages.innerHTML='';if(!list?.length)addMessage('سلام 👋 به آوان گالری خوش آمدید. پیام خود را بنویسید تا پشتیبان پاسخ دهد.','agent');(list||[]).forEach(m=>addMessage(m.message,m.sender_type==='admin'?'agent':'user',m.created_at));messages.scrollTop=messages.scrollHeight;}
+  async function loadChat(){try{const r=await fetch('/api/support/chat?visitor_id='+encodeURIComponent(visitorId),{cache:'no-store'});const d=await r.json();if(d.ok)renderChat(d.messages||[]);}catch(_){} }
+  openers.forEach(o=>o.addEventListener('click',e=>{e.preventDefault();document.getElementById('openOnlineSupport')?.click();setTab('chat')}));
+  chatForm?.addEventListener('submit',async e=>{e.preventDefault();const text=(chatInput?.value||'').trim();if(!text)return;const btn=chatForm.querySelector('button');if(btn)btn.disabled=true;try{const r=await fetch('/api/support/chat',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({visitorId,message:text})});const d=await r.json();if(!r.ok)throw new Error(d.error||'خطا');chatInput.value='';await loadChat();}catch(err){alert(err.message)}finally{if(btn)btn.disabled=false}});
+  ticketForm?.addEventListener('submit',async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(ticketForm));const btn=ticketForm.querySelector('button[type=submit]');if(btn)btn.disabled=true;try{const r=await fetch('/api/support/ticket',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const d=await r.json();if(!r.ok)throw new Error(d.error||'خطا');localStorage.setItem('avan_last_ticket_id',d.ticket.id);if(ticketSuccess){ticketSuccess.hidden=false;ticketSuccess.textContent=`تیکت شما ثبت شد. شماره پیگیری: ${d.ticket.id}`;}ticketForm.reset();}catch(err){alert(err.message)}finally{if(btn)btn.disabled=false}});
+  setTab('chat'); loadChat(); setInterval(loadChat,5000);
 })();

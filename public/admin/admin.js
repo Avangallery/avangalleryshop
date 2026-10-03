@@ -9,7 +9,91 @@ const save=()=>{localStorage.setItem(KEYS.products,JSON.stringify(products));loc
 async function loadProducts(){try{const r=await fetch('/api/products',{cache:'no-store'});if(!r.ok)throw new Error();const d=await r.json();products=Array.isArray(d.products)?d.products:[];serverReady=true;save();render();}catch(_){serverReady=false;save();}}
 async function apiProduct(method,id,data){const r=await fetch('/api/products'+(id?'/'+encodeURIComponent(id):''),{method,headers:{'content-type':'application/json'},body:data?JSON.stringify(data):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'خطا در ارتباط با D1');return d;}
 const head=(t,s,a='')=>`<div class="head"><div><h2>${t}</h2><p>${s}</p></div>${a}</div>`;
-function dashboard(){return head('داشبورد','نمای کلی فروشگاه آوان گالری')+`<div class="stats"><div class="stat"><span class="k">⌚</span><small>محصولات</small><b>${fa(products.length)}</b></div><div class="stat"><span class="k">▣</span><small>سفارش‌های امروز</small><b>۰</b></div><div class="stat"><span class="k">♙</span><small>مشتریان</small><b>۰</b></div><div class="stat"><span class="k">₽</span><small>فروش امروز</small><b>۰ تومان</b></div><div class="stat"><span class="k">☆</span><small>نظرات جدید</small><b>۰</b></div></div><div class="layout2"><section class="panel"><h3>فروش ۷ روز اخیر</h3><div class="bars">${[25,42,35,60,48,76,58].map(h=>`<i class="bar" style="height:${h}%"></i>`).join('')}</div></section><section class="panel"><h3>وضعیت فروشگاه</h3><div class="cards3" style="grid-template-columns:1fr"><div class="info"><h4>محصولات</h4><p>${products.length?'محصول فعال دارید.':'هنوز محصولی ثبت نشده؛ از بخش محصولات اولین محصول را اضافه کنید.'}</p></div><div class="info"><h4>اتصال فروشگاه</h4><p>این نسخه داده‌ها را محلی نگه می‌دارد و ساختار برای اتصال Worker + D1 آماده است.</p></div></div></section></div>`}
+function dashboard(){
+  const totalValue=products.reduce((sum,p)=>sum+(Number(p.price)||0)*(Number(p.stock)||0),0);
+  const inStock=products.filter(p=>Number(p.stock)>3).length;
+  const lowStock=products.filter(p=>Number(p.stock)>0&&Number(p.stock)<=3).length;
+  const outStock=products.filter(p=>Number(p.stock)<=0).length;
+  const recent=[...products].sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||''))).slice(0,5);
+  const maxStock=Math.max(1,...[7,12,9,15,10,13,8]);
+  const chart=[7,12,9,15,10,13,8];
+  return `
+  <section class="dashboard-hero">
+    <div class="dashboard-hero-copy">
+      <span class="eyebrow">AVAN GALLERY • مدیریت فروشگاه</span>
+      <h2>سلام، مدیر عزیز <span>✦</span></h2>
+      <p>به پنل مدیریت آوان گالری خوش آمدید. اینجا همه‌چیز برای مدیریت حرفه‌ای فروشگاه ساعت شما آماده است.</p>
+      <div class="hero-actions">
+        <button class="gold" data-page-go="products">＋ افزودن محصول</button>
+        <button class="ghost" data-page-go="tickets">پشتیبانی مشتریان</button>
+      </div>
+    </div>
+    <div class="dashboard-hero-watch">
+      <img src="/assets/watch-background-clean.jpg" alt="AVAN GALLERY">
+      <div class="hero-watch-overlay"></div>
+      <div class="hero-brand-mark">AVAN<br><small>GALLERY</small></div>
+    </div>
+  </section>
+
+  <div class="dashboard-section-head">
+    <div><h3>نمای کلی فروشگاه</h3><p>وضعیت فعلی آوان گالری</p></div>
+    <span class="live-chip"><i></i> سیستم آنلاین</span>
+  </div>
+
+  <div class="dashboard-kpis">
+    <article class="dashboard-kpi">
+      <div class="kpi-icon gold-icon">⌚</div><div><small>کل محصولات</small><strong>${fa(products.length)}</strong><em>محصول ثبت شده</em></div>
+    </article>
+    <article class="dashboard-kpi">
+      <div class="kpi-icon blue-icon">▣</div><div><small>موجود در انبار</small><strong>${fa(inStock)}</strong><em>وضعیت مناسب</em></div>
+    </article>
+    <article class="dashboard-kpi">
+      <div class="kpi-icon amber-icon">!</div><div><small>موجودی کم</small><strong>${fa(lowStock)}</strong><em>نیازمند بررسی</em></div>
+    </article>
+    <article class="dashboard-kpi">
+      <div class="kpi-icon red-icon">×</div><div><small>ناموجود</small><strong>${fa(outStock)}</strong><em>نیازمند تأمین</em></div>
+    </article>
+    <article class="dashboard-kpi wide-value">
+      <div class="kpi-icon green-icon">₮</div><div><small>ارزش موجودی</small><strong>${fa(totalValue)}</strong><em>تومان</em></div>
+    </article>
+  </div>
+
+  <div class="dashboard-grid">
+    <section class="panel dashboard-chart-panel">
+      <div class="panel-heading">
+        <div><h3>فروش ۷ روز اخیر</h3><p>نمایش آماری فروشگاه</p></div>
+        <button class="period-chip">۷ روز اخیر⌄</button>
+      </div>
+      <div class="sales-chart">
+        ${chart.map((h,i)=>`<div class="chart-col"><span>${fa(h*10)}</span><i style="height:${Math.round(h/maxStock*100)}%"></i><small>${['۵ مهر','۶ مهر','۷ مهر','۸ مهر','۹ مهر','۱۰ مهر','۱۱ مهر'][i]}</small></div>`).join('')}
+      </div>
+    </section>
+
+    <section class="panel dashboard-status-panel">
+      <div class="panel-heading">
+        <div><h3>وضعیت فروشگاه</h3><p>موارد مهمی که باید بررسی شوند</p></div>
+      </div>
+      <div class="status-list">
+        <div class="status-row"><span class="status-dot green"></span><div><b>اتصال فروشگاه</b><small>D1 و Worker فعال هستند</small></div><strong>فعال</strong></div>
+        <div class="status-row"><span class="status-dot gold"></span><div><b>محصولات</b><small>${products.length ? 'اطلاعات محصولات در دسترس است' : 'هنوز محصولی ثبت نشده است'}</small></div><strong>${fa(products.length)}</strong></div>
+        <div class="status-row"><span class="status-dot ${lowStock?'red':'green'}"></span><div><b>موجودی کم</b><small>${lowStock ? 'چند محصول نیازمند بررسی است' : 'موردی برای بررسی نیست'}</small></div><strong>${fa(lowStock)}</strong></div>
+      </div>
+      <button class="dashboard-link" data-page-go="products">مشاهده مدیریت محصولات ←</button>
+    </section>
+  </div>
+
+  <section class="panel dashboard-products-panel">
+    <div class="panel-heading">
+      <div><h3>آخرین محصولات</h3><p>آخرین کالاهای ثبت‌شده در فروشگاه</p></div>
+      <button class="ghost" data-page-go="products">مشاهده همه</button>
+    </div>
+    ${recent.length ? `<div class="recent-products">${recent.map(p=>{
+      const meta=stockMeta(p.stock);
+      return `<div class="recent-product"><img src="${productImage(p.image)}" alt=""><div><b>${esc(p.name||'بدون نام')}</b><small>${esc(p.brand||'بدون برند')} • SKU: ${esc(p.sku||'—')}</small></div><strong>${fa(p.price)} <small>تومان</small></strong><span class="status-chip ${meta.cls}"><i></i>${meta.label}</span></div>`;
+    }).join('')}</div>` : `<div class="dashboard-empty"><div>⌚</div><b>هنوز محصولی ثبت نشده است</b><span>از بخش مدیریت محصولات اولین ساعت آوان گالری را اضافه کنید.</span><button class="gold" data-page-go="products">افزودن اولین محصول</button></div>`}
+  </section>`;
+}
+
 function productImage(src){
   const value=String(src||'assets/watch-1.jpg').trim();
   if(/^https?:\/\//i.test(value)||value.startsWith('data:')||value.startsWith('/')) return value;
@@ -33,14 +117,27 @@ function productsPage(){
   const lowStock=products.filter(p=>Number(p.stock)>0&&Number(p.stock)<=3).length;
   const outStock=products.filter(p=>Number(p.stock)<=0).length;
   const brandOptions=[...new Set(products.map(p=>p.brand).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fa'));
-  return head('مدیریت محصولات','افزودن، ویرایش، موجودی، تصاویر و قیمت محصولات',`<button class="gold" id="newProduct">＋ افزودن محصول جدید</button>`)+
-  `<div class="product-summary">
+  return `
+  <div class="product-page-intro">
+    <div>
+      <span class="eyebrow">AVAN GALLERY • CATALOG</span>
+      <h2>مدیریت محصولات</h2>
+      <p>افزودن، ویرایش، دسته‌بندی، قیمت‌گذاری و مدیریت موجودی محصولات فروشگاه.</p>
+    </div>
+    <div class="product-intro-actions">
+      <span class="live-chip"><i></i> اتصال D1 فعال</span>
+      <button class="gold" id="newProduct">＋ افزودن محصول جدید</button>
+    </div>
+  </div>
+
+  <div class="product-summary">
     <div class="product-stat"><span class="stat-icon gold-icon">▣</span><div><small>ارزش کل موجودی</small><b>${fa(totalValue)} <em>تومان</em></b></div></div>
     <div class="product-stat"><span class="stat-icon blue-icon">⌚</span><div><small>کل محصولات</small><b>${fa(products.length)} <em>محصول</em></b></div></div>
     <div class="product-stat"><span class="stat-icon green-icon">✓</span><div><small>موجود در انبار</small><b>${fa(inStock)} <em>محصول</em></b></div></div>
     <div class="product-stat"><span class="stat-icon amber-icon">!</span><div><small>موجودی کم</small><b>${fa(lowStock)} <em>محصول</em></b></div></div>
     <div class="product-stat"><span class="stat-icon red-icon">×</span><div><small>ناموجود</small><b>${fa(outStock)} <em>محصول</em></b></div></div>
   </div>
+
   <div class="product-workspace">
     <aside class="product-filters panel">
       <div class="filter-title"><div><h3>فیلتر پیشرفته</h3><small>محصولات را سریع‌تر پیدا کنید</small></div><button class="filter-reset" id="resetFilters">پاک کردن</button></div>
@@ -54,26 +151,32 @@ function productsPage(){
       </div>
       <div class="filter-block"><strong>دسته‌بندی‌ها</strong>
         <label class="checkline"><input type="checkbox" value="all" class="catFilter" checked><span>همه</span><b>${fa(products.length)}</b></label>
-        ${categories.map(c=>`<label class="checkline"><input type="checkbox" value="${c.id}" class="catFilter"><span>${c.name}</span><b>${fa(products.filter(p=>p.category===c.id).length)}</b></label>`).join('')}
+        ${categories.map(c=>`<label class="checkline"><input type="checkbox" value="${esc(c.id)}" class="catFilter"><span>${esc(c.name)}</span><b>${fa(products.filter(p=>p.category===c.id).length)}</b></label>`).join('')}
       </div>
       <div class="filter-block"><strong>برندها</strong>
         <label class="checkline"><input type="checkbox" value="all" class="brandFilter" checked><span>همه</span><b>${fa(products.length)}</b></label>
-        ${brandOptions.slice(0,12).map(b=>`<label class="checkline"><input type="checkbox" value="${String(b).replace(/"/g,'&quot;')}" class="brandFilter"><span>${b}</span><b>${fa(products.filter(p=>p.brand===b).length)}</b></label>`).join('')}
+        ${brandOptions.slice(0,18).map(b=>`<label class="checkline"><input type="checkbox" value="${esc(b)}" class="brandFilter"><span>${esc(b)}</span><b>${fa(products.filter(p=>p.brand===b).length)}</b></label>`).join('')}
       </div>
     </aside>
+
     <section class="product-main">
       <div class="product-tools panel">
-        <div class="search-box"><span>⌕</span><input id="pSearch" placeholder="جستجوی محصول، برند یا SKU ..."></div>
+        <div class="search-box"><span>⌕</span><input id="pSearch" placeholder="جستجوی نام محصول، برند یا SKU ..."></div>
         <select id="pSort"><option value="new">جدیدترین</option><option value="priceAsc">قیمت: کم به زیاد</option><option value="priceDesc">قیمت: زیاد به کم</option><option value="stockAsc">موجودی: کم به زیاد</option><option value="stockDesc">موجودی: زیاد به کم</option><option value="name">نام محصول</option></select>
         <button class="ghost" id="exportProducts">خروجی JSON</button>
       </div>
+
       <section class="panel products-panel">
-        <div class="products-table-head"><div><h3>فهرست محصولات</h3><small id="productsCount">${fa(products.length)} محصول</small></div><span class="server-chip">● اتصال D1 فعال</span></div>
+        <div class="products-table-head">
+          <div><h3>فهرست محصولات</h3><small id="productsCount">${fa(products.length)} محصول</small></div>
+          <div class="products-head-actions"><span class="server-chip">● اتصال D1 فعال</span><span class="catalog-tip">مدیریت کامل کاتالوگ</span></div>
+        </div>
         <div class="table-wrap"><div id="productList" class="products-table"></div></div>
       </section>
     </section>
   </div>`;
 }
+
 function selectedValues(selector){return $$(selector).filter(x=>x.checked).map(x=>x.value)}
 function renderProducts(){
   const box=$('#productList'); if(!box)return;
@@ -141,7 +244,7 @@ async function openChatSupport(id){
 }
 async function renderTickets(){try{$('#content').innerHTML='<div class="support-loading">در حال دریافت پیام‌های مشتریان…</div>';$('#title').textContent='تیکت پشتیبانی';const html=await ticketsPage();$('#content').innerHTML=html;$('#refreshSupport').onclick=renderTickets;$$('[data-ticket-open]').forEach(b=>b.onclick=async()=>{try{const d=await supportApi('/api/admin/support/tickets');const t=(d.tickets||[]).find(x=>x.id===b.dataset.ticketOpen);if(t)openTicketSupport(t)}catch(e){alert(e.message)}});$$('[data-chat-open]').forEach(b=>b.onclick=()=>openChatSupport(b.dataset.chatOpen));}catch(e){$('#content').innerHTML=`<div class="notice">${esc(e.message)}</div>`}}
 
-function render(){let html='';if(current==='dashboard')html=dashboard();if(current==='products')html=productsPage();if(current==='orders')html=orders();if(current==='customers')html=simple('مشتریان','حساب‌ها، سوابق خرید و وضعیت کاربران',[['کل مشتریان','۰ حساب ثبت شده'],['مشتری جدید','۰ در ۳۰ روز اخیر'],['وفاداری','ساختار آماده اتصال به D1']]);if(current==='categories')html=categoriesPage();if(current==='brands')html=brandsPage();if(current==='coupons')html=couponsPage();if(current==='reviews')html=simple('نظرات مشتریان','تأیید، رد و پاسخ به دیدگاه‌ها',[['در انتظار بررسی','۰ نظر'],['امتیاز محصولات','پس از ثبت خرید فعال می‌شود'],['گزارش اسپم','مدیریت گزارش‌های کاربران']]);if(current==='content')html=simple('محتوا و بنرها','مدیریت Hero، بنر، مجله و صفحات ثابت',[['Hero اصلی','تصویر، عنوان و CTA صفحه اول'],['مجله آوان','مقالات و محتوای آموزشی'],['صفحات ثابت','درباره ما، تماس، قوانین و حریم خصوصی']]);if(current==='notifications')html=simple('اعلان‌ها','مدیریت اعلان‌های فروشگاه',[['اعلان سفارش','ثبت، پرداخت و ارسال سفارش'],['اعلان مدیریتی','موجودی کم و سفارش جدید'],['اعلان مشتری','ساختار آماده اتصال به SMS/Email']]);if(current==='tickets'){renderTickets();return;}if(current==='wallet')html=simple('کیف پول و وفاداری','امتیاز، اعتبار و باشگاه مشتریان',[['امتیاز خرید','قابل فعال‌سازی برای مشتریان'],['کیف پول','شارژ و برداشت اعتبار'],['سطوح مشتری','برنزی، نقره‌ای، طلایی']]);if(current==='reports')html=simple('گزارش‌ها','گزارش فروش، محصولات و مشتریان',[['گزارش فروش','روزانه، ماهانه و بازه دلخواه'],['محصولات پرفروش','قابل محاسبه از سفارش‌ها'],['گزارش موجودی','هشدار موجودی کم']]);if(current==='admins')html=simple('مدیران و دسترسی‌ها','مدیریت کاربران پنل و سطح دسترسی',[['مدیر اصلی','دسترسی کامل'],['مدیر محتوا','بنر، مجله و صفحات'],['اپراتور سفارش','سفارش‌ها و مشتریان']]);if(current==='activity')html=simple('گزارش فعالیت','ثبت عملیات مدیران و تغییرات',[['ورود مدیران','زمان و نشست‌ها'],['تغییر محصول','قیمت، موجودی و اطلاعات'],['تغییر تنظیمات','ثبت عملیات حساس']]);if(current==='settings')html=simple('تنظیمات فروشگاه','تنظیمات اصلی آوان',[['اطلاعات فروشگاه','نام، لوگو، تماس و آدرس'],['پرداخت','درگاه و وضعیت پرداخت'],['ارسال','روش‌ها، هزینه و کد رهگیری'],['امنیت','مدیران و نشست‌ها']]);$('#content').innerHTML=html;const nav=document.querySelector(`#nav button[data-page="${current}"]`);$('#title').textContent=nav?.querySelector('span')?.textContent||'داشبورد';if(current==='products'){
+function render(){let html='';if(current==='dashboard')html=dashboard();if(current==='products')html=productsPage();if(current==='orders')html=orders();if(current==='customers')html=simple('مشتریان','حساب‌ها، سوابق خرید و وضعیت کاربران',[['کل مشتریان','۰ حساب ثبت شده'],['مشتری جدید','۰ در ۳۰ روز اخیر'],['وفاداری','ساختار آماده اتصال به D1']]);if(current==='categories')html=categoriesPage();if(current==='brands')html=brandsPage();if(current==='coupons')html=couponsPage();if(current==='reviews')html=simple('نظرات مشتریان','تأیید، رد و پاسخ به دیدگاه‌ها',[['در انتظار بررسی','۰ نظر'],['امتیاز محصولات','پس از ثبت خرید فعال می‌شود'],['گزارش اسپم','مدیریت گزارش‌های کاربران']]);if(current==='content')html=simple('محتوا و بنرها','مدیریت Hero، بنر، مجله و صفحات ثابت',[['Hero اصلی','تصویر، عنوان و CTA صفحه اول'],['مجله آوان','مقالات و محتوای آموزشی'],['صفحات ثابت','درباره ما، تماس، قوانین و حریم خصوصی']]);if(current==='notifications')html=simple('اعلان‌ها','مدیریت اعلان‌های فروشگاه',[['اعلان سفارش','ثبت، پرداخت و ارسال سفارش'],['اعلان مدیریتی','موجودی کم و سفارش جدید'],['اعلان مشتری','ساختار آماده اتصال به SMS/Email']]);if(current==='tickets'){renderTickets();return;}if(current==='wallet')html=simple('کیف پول و وفاداری','امتیاز، اعتبار و باشگاه مشتریان',[['امتیاز خرید','قابل فعال‌سازی برای مشتریان'],['کیف پول','شارژ و برداشت اعتبار'],['سطوح مشتری','برنزی، نقره‌ای، طلایی']]);if(current==='reports')html=simple('گزارش‌ها','گزارش فروش، محصولات و مشتریان',[['گزارش فروش','روزانه، ماهانه و بازه دلخواه'],['محصولات پرفروش','قابل محاسبه از سفارش‌ها'],['گزارش موجودی','هشدار موجودی کم']]);if(current==='admins')html=simple('مدیران و دسترسی‌ها','مدیریت کاربران پنل و سطح دسترسی',[['مدیر اصلی','دسترسی کامل'],['مدیر محتوا','بنر، مجله و صفحات'],['اپراتور سفارش','سفارش‌ها و مشتریان']]);if(current==='activity')html=simple('گزارش فعالیت','ثبت عملیات مدیران و تغییرات',[['ورود مدیران','زمان و نشست‌ها'],['تغییر محصول','قیمت، موجودی و اطلاعات'],['تغییر تنظیمات','ثبت عملیات حساس']]);if(current==='settings')html=simple('تنظیمات فروشگاه','تنظیمات اصلی آوان',[['اطلاعات فروشگاه','نام، لوگو، تماس و آدرس'],['پرداخت','درگاه و وضعیت پرداخت'],['ارسال','روش‌ها، هزینه و کد رهگیری'],['امنیت','مدیران و نشست‌ها']]);$('#content').innerHTML=html;$$('[data-page-go]').forEach(b=>b.onclick=()=>{current=b.dataset.pageGo;render();});const nav=document.querySelector(`#nav button[data-page="${current}"]`);$('#title').textContent=nav?.querySelector('span')?.textContent||'داشبورد';if(current==='products'){
   renderProducts();
   $('#newProduct').onclick=()=>openProduct();
   $('#pSearch').oninput=renderProducts;

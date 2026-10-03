@@ -368,3 +368,45 @@
     openInfo(href==='#faq' ? faq : privacy);
   },true);
 })();
+
+// V102 — premium support tabs, chat and ticket UI
+(function(){
+  const modal=document.getElementById('onlineSupportModal');
+  if(!modal) return;
+  const openers=document.querySelectorAll('#openOnlineSupport,[data-open-support]');
+  const tabs=modal.querySelectorAll('[data-support-tab]');
+  const panels=modal.querySelectorAll('[data-support-panel]');
+  const chatForm=document.getElementById('avanChatForm');
+  const chatInput=document.getElementById('avanChatInput');
+  const messages=document.getElementById('avanChatMessages');
+  const ticketForm=document.getElementById('avanTicketForm');
+  const ticketSuccess=document.getElementById('ticketSuccess');
+  function setTab(name){
+    tabs.forEach(t=>{const active=t.dataset.supportTab===name;t.classList.toggle('is-active',active);t.setAttribute('aria-selected',active?'true':'false')});
+    panels.forEach(p=>{p.hidden=p.dataset.supportPanel!==name;p.classList.toggle('is-active',!p.hidden)});
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>setTab(t.dataset.supportTab)));
+  function addMessage(text,type){
+    const el=document.createElement('div');el.className='chat-bubble '+type;el.textContent=text;messages?.appendChild(el);if(messages)messages.scrollTop=messages.scrollHeight;
+  }
+  chatForm?.addEventListener('submit',e=>{
+    e.preventDefault();const text=(chatInput?.value||'').trim();if(!text)return;addMessage(text,'user');chatInput.value='';
+    setTimeout(()=>addMessage('پیامتون دریافت شد. پشتیبان آوان به‌زودی پاسخ می‌دهد. برای پاسخ فوری می‌توانید با 09965799499 تماس بگیرید.','agent'),450);
+  });
+  ticketForm?.addEventListener('submit',e=>{
+    e.preventDefault();
+    const data=new FormData(ticketForm);const id='AV-'+Date.now().toString().slice(-8);
+    const ticket={id,name:data.get('name'),phone:data.get('phone'),subject:data.get('subject'),message:data.get('message'),createdAt:new Date().toISOString()};
+    try{const old=JSON.parse(localStorage.getItem('avan_support_tickets')||'[]');old.unshift(ticket);localStorage.setItem('avan_support_tickets',JSON.stringify(old.slice(0,30)));}catch{}
+    if(ticketSuccess){ticketSuccess.hidden=false;ticketSuccess.textContent=`تیکت شما با موفقیت ثبت شد. شماره پیگیری: ${id} — برای ادامه پیگیری، این شماره را نزد خود نگه دارید.`;}
+    ticketForm.reset();
+  });
+  document.addEventListener('click',e=>{
+    const opener=e.target.closest('#openOnlineSupport,[data-open-support]');
+    if(!opener)return;
+    e.preventDefault();
+    // The existing V98 handler opens the modal; this only resets the default tab.
+    setTab('chat');
+  });
+  setTab('chat');
+})();

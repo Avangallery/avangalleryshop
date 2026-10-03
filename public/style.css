@@ -508,12 +508,6 @@ body{scroll-behavior:auto}
 .support-action-icon img{width:20px;height:20px;display:block;object-fit:contain}
 .avan-support-icon.avan-support-logo{overflow:hidden;padding:0;background:#041a27}
 .avan-support-icon.avan-support-logo img{width:100%;height:100%;object-fit:contain;padding:6px}
-.avan-footer-links-v94 a i{width:20px;height:20px;display:grid;place-items:center;font-size:0;border:1px solid rgba(236,193,91,.22);border-radius:7px}
-.avan-footer-links-v94 a:nth-of-type(1) i::before{content:'⌂';font-size:12px;color:#efc35d}
-.avan-footer-links-v94 a:nth-of-type(2) i::before{content:'▣';font-size:11px;color:#efc35d}
-.avan-footer-links-v94 a:nth-of-type(3) i::before{content:'i';font-size:12px;font-weight:900;color:#efc35d}
-.avan-footer-links-v94 a:nth-of-type(4) i::before{content:'✉';font-size:11px;color:#efc35d}
-.avan-footer-links-v94 a:nth-of-type(5) i::before{content:'?';font-size:12px;font-weight:900;color:#efc35d}
 .avan-trust-strip-v94>div>span{font-size:0}
 .avan-trust-strip-v94>div:nth-child(1)>span::before{content:'◇';font-size:20px}
 .avan-trust-strip-v94>div:nth-child(2)>span::before{content:'▱';font-size:19px}
@@ -524,3 +518,10 @@ body{scroll-behavior:auto}
 @media (prefers-reduced-motion: no-preference){.avan-no-jump-scroll{scroll-behavior:smooth}}
 .online-support-modal{overscroll-behavior:contain}
 .online-support-dialog{max-height:min(760px,calc(100vh - 36px));overflow:auto;overscroll-behavior:contain}
+/* V99 — real local SVG icons for footer links + trust strip */
+.avan-footer-links-v94 a i{width:34px;height:34px;display:grid;place-items:center;font-size:0;border:1px solid rgba(236,193,91,.26);border-radius:10px;background:rgba(236,193,91,.035);flex:0 0 34px}
+.avan-footer-links-v94 a i img{width:17px;height:17px;display:block;object-fit:contain}
+.avan-footer-links-v94 a:hover i{border-color:rgba(236,193,91,.6);background:rgba(236,193,91,.08)}
+.avan-trust-strip-v94>div>span{width:42px;height:42px;display:grid;place-items:center;flex:0 0 42px;border:1px solid rgba(236,193,91,.3);border-radius:12px;background:rgba(236,193,91,.035)}
+.avan-trust-strip-v94>div>span img{width:21px;height:21px;display:block;object-fit:contain}
+@media(max-width:700px){.avan-footer-links-v94 a i{width:32px;height:32px;flex-basis:32px}.avan-trust-strip-v94>div>span{width:40px;height:40px;flex-basis:40px}}

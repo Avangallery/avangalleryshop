@@ -83,3 +83,77 @@ html:has(.login-page), body:has(.login-page){
   .panel-inner{width:100%;max-width:590px;}
   .panel-inner.register-mode{overflow-y:auto !important;overflow-x:hidden !important;max-height:calc(100vh - 100px);}
 }
+
+/* V104 — adaptive login/register scrolling
+   No forced scroll when content fits; vertical scroll appears only when needed. */
+html:has(.login-page),body:has(.login-page){
+  width:100%;
+  min-height:100%;
+  height:auto;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+}
+.login-page{
+  width:100%;
+  min-height:100dvh;
+  height:auto !important;
+  overflow:visible !important;
+}
+.login-showcase{
+  min-height:100dvh;
+  height:auto;
+}
+.login-panel{
+  min-height:100dvh;
+  height:auto !important;
+  max-height:none !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  align-items:center;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(243,199,94,.45) rgba(3,21,35,.55);
+}
+.login-panel::-webkit-scrollbar{width:8px}
+.login-panel::-webkit-scrollbar-track{background:rgba(3,21,35,.55)}
+.login-panel::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(243,199,94,.65),rgba(66,97,116,.9));border-radius:10px;border:2px solid rgba(3,21,35,.55)}
+.panel-inner{
+  max-height:none !important;
+  overflow:visible !important;
+  flex:none;
+}
+.panel-inner.register-mode{
+  max-height:none !important;
+  overflow:visible !important;
+}
+@media(max-width:950px){
+  html:has(.login-page),body:has(.login-page){
+    height:auto;
+    min-height:100%;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+  }
+  .login-page{
+    min-height:100dvh;
+    height:auto !important;
+    overflow:visible !important;
+  }
+  .login-panel{
+    min-height:100dvh;
+    height:auto !important;
+    max-height:none !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    align-items:flex-start;
+    padding-top:76px;
+    padding-bottom:32px;
+  }
+  .panel-inner{margin-top:auto;margin-bottom:auto}
+}
+@media(max-height:760px) and (min-width:951px){
+  .login-panel{align-items:flex-start;padding-top:82px;padding-bottom:28px}
+}
+@media(max-width:560px){
+  .login-panel{padding-left:12px;padding-right:12px;padding-bottom:28px}
+  .panel-inner{width:100%;margin-top:0;margin-bottom:0}
+}

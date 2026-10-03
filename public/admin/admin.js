@@ -15,6 +15,12 @@ function productImage(src){
   if(/^https?:\/\//i.test(value)||value.startsWith('data:')||value.startsWith('/')) return value;
   return '/'+value.replace(/^\.\//,'').replace(/^\/+/, '');
 }
+const brandLogoMap={
+  'TISSOT':'tissot.svg','CITIZEN':'citizen.svg','CASIO':'casio.svg','SEIKO':'seiko.svg','ROLEX':'rolex.svg','OMEGA':'omega.svg','CARTIER':'cartier.svg','LONGINES':'longines.svg','TAG HEUER':'tag-heuer.svg','RADO':'rado.svg','HAMILTON':'hamilton.svg','CERTINA':'certina.svg','MIDO':'mido.svg','ORIENT':'orient.svg','SWATCH':'swatch.svg','FOSSIL':'fossil.svg','TIMEX':'timex.svg','BULOVA':'bulova.svg','G-SHOCK':'g-shock.svg','MICHAEL KORS':'michael-kors.svg','EMPORIO ARMANI':'emporio-armani.svg','TOMMY HILFIGER':'tommy-hilfiger.svg','DANIEL WELLINGTON':'daniel-wellington.svg','MOVADO':'movado.svg','FREDERIQUE CONSTANT':'frederique-constant.svg','INVICTA':'invicta.svg','DIESEL':'diesel.svg','GUESS':'guess.svg'
+};
+function brandKey(value){return String(value||'').trim().toUpperCase().replace(/\s+/g,' ')}
+function brandLogo(value){const file=brandLogoMap[brandKey(value)];return file?`/assets/brands/${file}`:''}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]))}
 function stockMeta(stock){
   const n=Number(stock)||0;
   if(n<=0) return {label:'ناموجود',cls:'out'};
@@ -97,12 +103,12 @@ function renderProducts(){
     return `<article class="product-item">
       <div class="product-name-cell"><img src="${productImage(p.image)}" alt=""><div><strong>${p.name||'بدون نام'}</strong><small>SKU: ${p.sku||'—'}</small></div></div>
       <div class="cell-muted">${categories.find(c=>c.id===p.category)?.name||p.category||'—'}</div>
-      <div class="cell-brand">${p.brand||'—'}</div>
+      <div class="cell-brand brand-cell">${brandLogo(p.brand)?`<span class="brand-logo-wrap"><img src="${brandLogo(p.brand)}" alt="${esc(p.brand)}" loading="lazy"></span>`:''}<span>${esc(p.brand||'—')}</span></div>
       <div class="price-cell">${fa(p.price)}<small>تومان</small></div>
       <div><span class="stock-number ${meta.cls}">${fa(p.stock)}</span></div>
       <div><span class="status-chip ${meta.cls}"><i></i>${meta.label}</span></div>
       <div class="cell-muted">${dateText}</div>
-      <div class="row-actions"><button class="icon-action view" title="مشاهده" data-view="${p.id}">◉</button><button class="icon-action edit" title="ویرایش" data-edit="${p.id}">✎</button><button class="icon-action delete" title="حذف" data-del="${p.id}">⌫</button></div>
+      <div class="row-actions"><button class="icon-action view" title="معرفی و مشاهده" data-view="${p.id}">◉</button><button class="icon-action edit" title="ویرایش" data-edit="${p.id}">✎</button><button class="icon-action delete" title="حذف" data-del="${p.id}">⌫</button></div>
     </article>`;
   }).join(''):`<div class="empty-products"><div class="empty-icon">⌚</div><h3>محصولی پیدا نشد</h3><p>فیلترها یا عبارت جستجو را تغییر دهید.</p></div>`;
 }
@@ -125,9 +131,31 @@ function render(){let html='';if(current==='dashboard')html=dashboard();if(curre
   $('#exportProducts').onclick=exportProducts;
 }if(current==='categories')$('#addCategory').onclick=addCategory;if(current==='brands')$('#addBrand').onclick=addBrand;if(current==='coupons')$('#addCoupon').onclick=addCoupon;}
 function openModal(html){$('#modalCard').innerHTML=html;$('#modal').classList.add('open');$('#modal').setAttribute('aria-hidden','false');$('#modalCard .close')?.addEventListener('click',closeModal);$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()},{once:true})}function closeModal(){$('#modal').classList.remove('open');$('#modal').setAttribute('aria-hidden','true')}
+function openProductPreview(p){
+  const logo=brandLogo(p.brand); const meta=stockMeta(p.stock);
+  const category=categories.find(c=>c.id===p.category)?.name||p.category||'—';
+  openModal(`<button class="close">×</button><div class="product-preview">
+    <div class="preview-media"><img src="${productImage(p.image)}" alt="${esc(p.name)}"></div>
+    <div class="preview-body">
+      <div class="preview-brand">${logo?`<img src="${logo}" alt="${esc(p.brand)}">`:''}<span>${esc(p.brand||'بدون برند')}</span></div>
+      <h2>${esc(p.name||'بدون نام')}</h2>
+      <p class="preview-desc">${esc(p.desc||'برای این محصول توضیحی ثبت نشده است.')}</p>
+      <div class="preview-price">${fa(p.price)} <small>تومان</small></div>
+      <div class="preview-grid">
+        <div><small>دسته‌بندی</small><b>${esc(category)}</b></div>
+        <div><small>موجودی</small><b>${fa(p.stock)} عدد</b></div>
+        <div><small>SKU</small><b>${esc(p.sku||'—')}</b></div>
+        <div><small>وضعیت</small><b class="preview-status ${meta.cls}">${meta.label}</b></div>
+      </div>
+      <div class="modal-actions"><button class="ghost close2">بستن</button><button class="gold edit-preview">ویرایش محصول</button></div>
+    </div>
+  </div>`);
+  $('#modalCard .close2').onclick=closeModal;
+  $('#modalCard .edit-preview').onclick=()=>{closeModal();openProduct(p.id)};
+}
 async function openProduct(id=''){const p=products.find(x=>String(x.id)===String(id));openModal(`<button class="close">×</button><h2>${p?'ویرایش محصول':'افزودن محصول'}</h2><form id="productForm" class="form"><label>نام محصول<input name="name" required value="${p?.name||''}"></label><label>برند<input name="brand" required value="${p?.brand||''}"></label><label>دسته‌بندی<select name="category">${categories.map(c=>`<option value="${c.id}" ${p?.category===c.id?'selected':''}>${c.name}</option>`).join('')}</select></label><label>قیمت<input name="price" type="number" min="0" required value="${p?.price||''}"></label><label>موجودی<input name="stock" type="number" min="0" required value="${p?.stock??''}"></label><label>SKU<input name="sku" value="${p?.sku||''}"></label><label class="full">تصویر محصول<input name="image" value="${p?.image||'assets/watch-1.jpg'}"><small style="color:#7893a2">فعلاً آدرس تصویر را وارد کنید؛ R2 استفاده نمی‌شود.</small></label><label class="full">توضیحات<textarea name="desc" rows="5">${p?.desc||''}</textarea></label><div class="modal-actions full"><button type="button" class="ghost close2">انصراف</button><button class="gold">ذخیره محصول</button></div></form>`);$('#modalCard .close2').onclick=closeModal;$('#productForm').onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));const obj={name:d.name,brand:d.brand,category:d.category,price:Number(d.price),stock:Number(d.stock),sku:d.sku,image:d.image||'assets/watch-1.jpg',desc:d.desc};try{await apiProduct(p?'PUT':'POST',p?.id,obj);closeModal();await loadProducts();}catch(err){alert(err.message)}}}
 function addCategory(){openModal(`<button class="close">×</button><h2>افزودن دسته‌بندی</h2><form id="simpleForm" class="form"><label class="full">نام دسته<input name="name" required></label><div class="modal-actions full"><button class="gold">ذخیره</button></div></form>`);$('#simpleForm').onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));const id=Date.now().toString();categories.push({id,name:d.name});save();closeModal();render()}}
 function addBrand(){openModal(`<button class="close">×</button><h2>افزودن برند</h2><form id="simpleForm" class="form"><label class="full">نام برند<input name="name" required></label><div class="modal-actions full"><button class="gold">ذخیره</button></div></form>`);$('#simpleForm').onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));brands.push(d.name.toUpperCase());save();closeModal();render()}}
 function addCoupon(){openModal(`<button class="close">×</button><h2>ساخت کد تخفیف</h2><form id="simpleForm" class="form"><label>کد<input name="code" required></label><label>درصد تخفیف<input name="percent" type="number" min="1" max="100" required></label><label>حداقل خرید<input name="min" type="number" min="0" value="0"></label><div class="modal-actions full"><button class="gold">ذخیره</button></div></form>`);$('#simpleForm').onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));coupons.push({id:Date.now(),code:d.code.toUpperCase(),percent:Number(d.percent),min:Number(d.min)});save();closeModal();render()}}
 function exportProducts(){const blob=new Blob([JSON.stringify(products,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='avan-products.json';a.click();URL.revokeObjectURL(a.href)}
-$('#nav').onclick=e=>{const b=e.target.closest('button[data-page]');if(!b)return;current=b.dataset.page;$$('#nav button').forEach(x=>x.classList.toggle('active',x===b));render();$('#sidebar').classList.remove('open')};$('#content').onclick=e=>{const ed=e.target.closest('[data-edit]'),view=e.target.closest('[data-view]'),del=e.target.closest('[data-del]'),cd=e.target.closest('[data-cat-del]'),bd=e.target.closest('[data-brand-del]'),cp=e.target.closest('[data-coupon-del]');if(ed)openProduct(ed.dataset.edit);if(view){const p=products.find(x=>String(x.id)===String(view.dataset.view));if(p)openProduct(p.id)}if(del&&confirm('این محصول حذف شود؟')){apiProduct('DELETE',del.dataset.del).then(loadProducts).catch(err=>alert(err.message))}if(cd&&confirm('این دسته حذف شود؟')){categories=categories.filter(x=>x.id!==cd.dataset.catDel);save();render()}if(bd&&confirm('این برند حذف شود؟')){brands=brands.filter(x=>x!==bd.dataset.brandDel);save();render()}if(cp){coupons=coupons.filter(x=>String(x.id)!==String(cp.dataset.couponDel));save();render()}};$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#logout').onclick=async()=>{await fetch('/api/admin/logout',{method:'POST'});location.href='/admin';};save();render();loadProducts();
+$('#nav').onclick=e=>{const b=e.target.closest('button[data-page]');if(!b)return;current=b.dataset.page;$$('#nav button').forEach(x=>x.classList.toggle('active',x===b));render();$('#sidebar').classList.remove('open')};$('#content').onclick=e=>{const ed=e.target.closest('[data-edit]'),view=e.target.closest('[data-view]'),del=e.target.closest('[data-del]'),cd=e.target.closest('[data-cat-del]'),bd=e.target.closest('[data-brand-del]'),cp=e.target.closest('[data-coupon-del]');if(ed)openProduct(ed.dataset.edit);if(view){const p=products.find(x=>String(x.id)===String(view.dataset.view));if(p)openProductPreview(p)}if(del&&confirm('این محصول حذف شود؟')){apiProduct('DELETE',del.dataset.del).then(loadProducts).catch(err=>alert(err.message))}if(cd&&confirm('این دسته حذف شود؟')){categories=categories.filter(x=>x.id!==cd.dataset.catDel);save();render()}if(bd&&confirm('این برند حذف شود؟')){brands=brands.filter(x=>x!==bd.dataset.brandDel);save();render()}if(cp){coupons=coupons.filter(x=>String(x.id)!==String(cp.dataset.couponDel));save();render()}};$('#mobileMenu').onclick=()=>$('#sidebar').classList.toggle('open');$('#logout').onclick=async()=>{await fetch('/api/admin/logout',{method:'POST'});location.href='/admin';};save();render();loadProducts();

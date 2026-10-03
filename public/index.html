@@ -186,7 +186,55 @@
   </div>
 </section>
 
-<section class="content-section compact" id="blog"><h2>استایل خودت را با آوان انتخاب کن</h2><p>راهنمای انتخاب و نگهداری ساعت.</p></section>
+<section class="avan-style-guide" id="blog" aria-labelledby="styleGuideTitle">
+  <div class="style-guide-shell">
+    <div class="style-guide-intro">
+      <div class="style-guide-brand">
+        <img src="assets/avan-mark-clean.png" alt="AVAN GALLERY">
+        <span>AVAN GALLERY</span>
+      </div>
+      <h2 id="styleGuideTitle">استایل خودت را با <em>آوان</em> انتخاب کن</h2>
+      <p>راهنمای انتخاب ساعت بر اساس استایل، موقعیت و کاربرد روزمره.</p>
+      <div class="style-guide-features" aria-label="ویژگی‌های راهنما">
+        <span><b>◆</b> انتخاب بر اساس استایل</span>
+        <span><b>◇</b> نکات نگهداری</span>
+        <span><b>◈</b> معرفی مدل‌ها</span>
+      </div>
+      <button class="style-guide-cta" type="button" id="openStyleGuide">مشاهده راهنمای انتخاب ساعت <span>←</span></button>
+    </div>
+
+    <div class="style-guide-cards">
+      <article class="style-card">
+        <div class="style-card-icon">⌚</div>
+        <h3>روزمره</h3>
+        <p>برای استفاده روزانه؛ راحت، کاربردی و هماهنگ با استایل شهری.</p>
+        <div class="style-card-media"><img src="assets/watch-1.jpg" alt="ساعت مناسب استفاده روزمره"></div>
+        <button type="button" data-guide="daily">راهنمای این سبک</button>
+      </article>
+      <article class="style-card">
+        <div class="style-card-icon">✦</div>
+        <h3>اسپرت</h3>
+        <p>مقاوم و کاربردی برای فعالیت‌های روزانه، سفر و موقعیت‌های پرتحرک.</p>
+        <div class="style-card-media"><img src="assets/watch-1.jpg" alt="ساعت اسپرت"></div>
+        <button type="button" data-guide="sport">راهنمای این سبک</button>
+      </article>
+      <article class="style-card">
+        <div class="style-card-icon">♛</div>
+        <h3>لوکس</h3>
+        <p>انتخابی خاص برای استایل رسمی، قرارهای مهم و موقعیت‌های ویژه.</p>
+        <div class="style-card-media"><img src="assets/watch-1.jpg" alt="ساعت لوکس"></div>
+        <button type="button" data-guide="luxury">راهنمای این سبک</button>
+      </article>
+      <article class="style-card">
+        <div class="style-card-icon">◆</div>
+        <h3>کلاسیک</h3>
+        <p>طراحی ماندگار و رسمی برای کسانی که ظاهر اصیل و شیک را می‌پسندند.</p>
+        <div class="style-card-media"><img src="assets/watch-1.jpg" alt="ساعت کلاسیک"></div>
+        <button type="button" data-guide="classic">راهنمای این سبک</button>
+      </article>
+    </div>
+  </div>
+</section>
 <section class="content-section compact" id="about"><h2>درباره آوان گالری</h2><p>فروشگاه تخصصی ساعت‌های کلاسیک و لوکس.</p></section>
 <section class="content-section compact" id="contact"><h2>تماس با ما</h2><p>پشتیبانی و ارتباط با آوان گالری.</p></section>
 <section class="content-section compact" id="account"><h2>حساب کاربری</h2><p>ورود و ثبت‌نام مشتری.</p></section>
@@ -200,10 +248,55 @@
     <button class="modal-ok" id="modalOk">متوجه شدم</button>
   </div>
 </div>
+<div class="style-guide-modal" id="styleGuideModal" aria-hidden="true">
+  <div class="style-guide-modal-backdrop" data-close-style-guide></div>
+  <div class="style-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="styleGuideModalTitle">
+    <button class="style-guide-close" type="button" data-close-style-guide aria-label="بستن">×</button>
+    <div class="style-guide-modal-head"><span>AVAN GALLERY</span><small>راهنمای انتخاب ساعت</small></div>
+    <h3 id="styleGuideModalTitle">انتخاب ساعت مناسب تو</h3>
+    <p id="styleGuideModalText">برای انتخاب بهتر، ابتدا موقعیت استفاده و استایل شخصی خودت را مشخص کن.</p>
+    <div class="style-guide-modal-grid">
+      <button type="button" data-guide-modal="classic"><strong>کلاسیک</strong><span>برای استایل رسمی و ماندگار</span></button>
+      <button type="button" data-guide-modal="luxury"><strong>لوکس</strong><span>برای موقعیت‌های خاص و رسمی</span></button>
+      <button type="button" data-guide-modal="sport"><strong>اسپرت</strong><span>برای استفاده پویا و روزمره</span></button>
+      <button type="button" data-guide-modal="daily"><strong>روزمره</strong><span>برای استفاده راحت و همیشگی</span></button>
+    </div>
+    <div class="style-guide-tips" id="styleGuideTips"></div>
+    <a class="style-guide-products" href="#products" data-close-style-guide>مشاهده محصولات مرتبط <span>←</span></a>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 
 <script>/* AVAN static hero: no slider */</script>
+<script>
+(function(){
+  const modal=document.getElementById('styleGuideModal');
+  const tips=document.getElementById('styleGuideTips');
+  const title=document.getElementById('styleGuideModalTitle');
+  const text=document.getElementById('styleGuideModalText');
+  const data={
+    classic:{title:'ساعت کلاسیک',text:'اگر بیشتر لباس رسمی، پیراهن، کت یا استایل مینیمال می‌پوشی، مدل‌های ساده با صفحه خوانا و بند چرمی یا استیل انتخاب متعادل‌تری هستند.',tips:['صفحه ساده و خوانا','قطر متناسب با مچ دست','رنگ‌های نقره‌ای، مشکی و طلایی برای ست‌کردن آسان‌تر']},
+    luxury:{title:'ساعت لوکس',text:'برای مراسم، قرارهای رسمی و استایل‌های ویژه، به کیفیت متریال، جزئیات صفحه، نوع بند و هماهنگی رنگ‌ها با لباس توجه کن.',tips:['جزئیات صفحه و پرداخت قاب','هماهنگی رنگ ساعت با اکسسوری‌ها','انتخاب مدل متناسب با موقعیت']},
+    sport:{title:'ساعت اسپرت',text:'برای فعالیت روزانه و موقعیت‌های پرتحرک، خوانایی، مقاومت، راحتی بند و مقاومت در برابر آب اهمیت بیشتری دارد.',tips:['وزن و راحتی روی مچ','مقاومت در برابر آب متناسب با استفاده','بند مقاوم و صفحه خوانا']},
+    daily:{title:'ساعت روزمره',text:'برای استفاده هرروزه، مدلی انتخاب کن که با بیشتر لباس‌ها هماهنگ باشد و در طول روز روی دست راحت بماند.',tips:['وزن مناسب','خوانایی بالا','رنگ و طراحی قابل ست با لباس‌های مختلف']}
+  };
+  function openGuide(key){
+    const d=data[key]||data.classic;
+    title.textContent=d.title;
+    text.textContent=d.text;
+    tips.innerHTML='<strong>نکات مهم برای انتخاب</strong><ul>'+d.tips.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+    modal.classList.add('is-open'); modal.setAttribute('aria-hidden','false'); document.body.classList.add('style-guide-open');
+  }
+  function closeGuide(){modal.classList.remove('is-open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('style-guide-open');}
+  document.getElementById('openStyleGuide')?.addEventListener('click',()=>openGuide('classic'));
+  document.querySelectorAll('[data-guide]').forEach(b=>b.addEventListener('click',()=>openGuide(b.dataset.guide)));
+  document.querySelectorAll('[data-guide-modal]').forEach(b=>b.addEventListener('click',()=>openGuide(b.dataset.guideModal)));
+  document.querySelectorAll('[data-close-style-guide]').forEach(b=>b.addEventListener('click',closeGuide));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGuide();});
+})();
+</script>
 <script src="app.js?v=57" defer></script>
 
 <script>

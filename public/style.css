@@ -379,3 +379,47 @@ img{max-width:100%}
   .style-guide-features{grid-template-columns:1fr;}
   .style-guide-features span{justify-content:flex-start;}
 }
+
+/* V92 — AVAN GALLERY ABOUT + CONTACT PREMIUM SECTION */
+.avan-about-contact{
+  position:relative;
+  overflow:hidden;
+  padding:clamp(70px,8vw,120px) clamp(18px,5vw,82px);
+  background:
+    radial-gradient(circle at 22% 48%,rgba(224,176,75,.12),transparent 26%),
+    radial-gradient(circle at 78% 30%,rgba(30,100,135,.14),transparent 28%),
+    linear-gradient(135deg,#020910 0%,#041b2a 48%,#020b12 100%);
+  color:#f3f6f7;
+  border-top:1px solid rgba(231,189,97,.13);
+  border-bottom:1px solid rgba(231,189,97,.13);
+  direction:rtl;
+}
+.avan-about-contact:before,.avan-about-contact:after{
+  content:"";position:absolute;pointer-events:none;width:300px;height:300px;border:1px solid rgba(231,189,97,.16);transform:rotate(45deg)
+}
+.avan-about-contact:before{left:-205px;top:-205px}.avan-about-contact:after{right:-205px;bottom:-205px}
+.avan-about-grid{
+  width:min(1440px,100%);margin:auto;display:grid;grid-template-columns:minmax(0,1.03fr) minmax(0,.97fr);gap:clamp(42px,6vw,90px);align-items:center;position:relative;z-index:1
+}
+.avan-about-visual{position:relative;min-height:610px;border-radius:30px;overflow:hidden;border:1px solid rgba(231,189,97,.22);background:#020b12;box-shadow:0 30px 80px rgba(0,0,0,.42);isolation:isolate}
+.avan-about-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.05),rgba(0,8,15,.2) 58%,rgba(2,9,15,.72));z-index:1;pointer-events:none}
+.avan-about-glow{position:absolute;inset:-20%;background:radial-gradient(circle at 48% 45%,rgba(231,189,97,.19),transparent 25%);filter:blur(18px);z-index:-1}
+.avan-watch-stage{position:absolute;inset:0;z-index:0}
+.avan-watch-stage img{width:100%;height:100%;display:block;object-fit:cover;object-position:center;filter:brightness(.72) saturate(.9) contrast(1.08);transform:scale(1.03)}
+.avan-about-logo{position:absolute;right:28px;top:26px;width:74px;height:74px;border-radius:50%;display:grid;place-items:center;background:rgba(2,15,25,.72);border:1px solid rgba(231,189,97,.3);backdrop-filter:blur(10px);z-index:3}
+.avan-about-logo img{width:54px;height:54px;object-fit:contain}
+.avan-trust-card{position:absolute;right:28px;bottom:74px;width:min(370px,calc(100% - 56px));padding:8px 22px;border:1px solid rgba(231,189,97,.34);border-radius:20px;background:rgba(2,18,29,.76);backdrop-filter:blur(14px);box-shadow:0 25px 60px rgba(0,0,0,.4);z-index:3}
+.avan-trust-item{display:flex;align-items:center;gap:14px;padding:17px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.avan-trust-item:last-child{border-bottom:0}.avan-trust-icon{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border:1px solid rgba(231,189,97,.5);border-radius:12px;color:#f1c968;font-size:19px}
+.avan-trust-item strong{display:block;color:#f0c967;font-size:15px;margin-bottom:4px}.avan-trust-item small{display:block;color:#c1ccd1;font-size:10px;line-height:1.9}
+.avan-story-line{position:absolute;right:28px;left:28px;bottom:24px;z-index:3;display:flex;align-items:center;gap:14px;color:#d5dde1;font-size:13px}.avan-story-line:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,rgba(231,189,97,.65))}.avan-story-line b{color:#efc45e;white-space:nowrap}
+.avan-about-copy{padding:18px 0 18px 10px}
+.avan-section-kicker{display:flex;align-items:center;gap:12px;color:#efc45e;font-size:10px;font-weight:900;letter-spacing:3px;margin-bottom:17px}.avan-section-kicker span{display:block;width:42px;height:1px;background:linear-gradient(90deg,transparent,#efc45e)}
+.avan-about-copy h2{margin:0;font-size:clamp(38px,4vw,62px);line-height:1.25;letter-spacing:-1px;color:#f7f8f8}.avan-about-copy h2 em{font-style:normal;color:#efc45e}.avan-lead{margin:17px 0 12px;color:#bfcbd0;font-size:16px}.avan-description{max-width:650px;margin:0 0 28px;color:#9eafb7;font-size:13px;line-height:2.2}
+.avan-gold-cta{display:inline-flex;align-items:center;justify-content:center;gap:22px;min-width:280px;padding:16px 24px;border-radius:16px;background:linear-gradient(135deg,#f5d37b,#d9aa4f);color:#132333;text-decoration:none;font-size:13px;font-weight:900;box-shadow:0 16px 38px rgba(0,0,0,.3);transition:.2s}.avan-gold-cta:hover{transform:translateY(-3px);box-shadow:0 22px 46px rgba(0,0,0,.4)}.avan-gold-cta span{font-size:20px}
+.avan-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(231,189,97,.48),transparent);margin:48px 0 40px}
+.avan-contact-block h3{margin:0;color:#f5f7f8;font-size:34px}.avan-contact-block>p{margin:10px 0 24px;color:#9eafb7;font-size:13px;line-height:2}
+.avan-contact-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.avan-contact-card{min-height:116px;padding:15px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5px;border:1px solid rgba(231,189,97,.18);border-radius:15px;background:rgba(3,21,32,.62);color:#fff;text-decoration:none;transition:.2s}.avan-contact-card:hover{border-color:rgba(231,189,97,.62);transform:translateY(-3px);background:rgba(8,34,49,.9)}.avan-contact-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:10px;border:1px solid rgba(231,189,97,.38);color:#efc45e;font-size:16px}.avan-contact-card b{font-size:11px;color:#f2c966}.avan-contact-card small{font-size:9px;color:#91a1a9}.avan-outline-cta{display:inline-flex;align-items:center;gap:18px;margin-top:22px;padding:13px 28px;border:1px solid rgba(231,189,97,.55);border-radius:30px;color:#f0c45e;text-decoration:none;font-size:12px;font-weight:900;transition:.2s}.avan-outline-cta:hover{background:rgba(231,189,97,.08);transform:translateY(-2px)}
+@media(max-width:1050px){.avan-about-grid{grid-template-columns:1fr;gap:46px}.avan-about-copy{padding:0;max-width:820px;margin:auto;text-align:center}.avan-section-kicker{justify-content:center}.avan-description{margin-inline:auto}.avan-about-visual{min-height:560px;max-width:820px;width:100%;margin:auto}.avan-contact-grid{max-width:720px;margin:auto}.avan-gold-cta{margin-inline:auto}}
+@media(max-width:680px){.avan-about-contact{padding:60px 14px}.avan-about-visual{min-height:530px;border-radius:22px}.avan-about-logo{right:18px;top:18px;width:62px;height:62px}.avan-about-logo img{width:45px;height:45px}.avan-trust-card{right:16px;bottom:58px;width:calc(100% - 32px);padding:6px 15px}.avan-trust-item{padding:13px 0}.avan-trust-icon{width:34px;height:34px;flex-basis:34px}.avan-trust-item strong{font-size:13px}.avan-story-line{right:16px;left:16px;bottom:17px;font-size:10px}.avan-about-copy h2{font-size:34px}.avan-contact-grid{grid-template-columns:repeat(2,1fr)}.avan-contact-card{min-height:105px}.avan-gold-cta{width:100%;min-width:0}.avan-outline-cta{width:100%;justify-content:center;box-sizing:border-box}}
+@media(max-width:390px){.avan-contact-grid{grid-template-columns:1fr}.avan-about-visual{min-height:570px}}

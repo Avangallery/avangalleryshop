@@ -153,7 +153,106 @@ function openProductPreview(p){
   $('#modalCard .close2').onclick=closeModal;
   $('#modalCard .edit-preview').onclick=()=>{closeModal();openProduct(p.id)};
 }
-async function openProduct(id=''){const p=products.find(x=>String(x.id)===String(id));openModal(`<button class="close">×</button><h2>${p?'ویرایش محصول':'افزودن محصول'}</h2><form id="productForm" class="form"><label>نام محصول<input name="name" required value="${p?.name||''}"></label><label>برند<input name="brand" required value="${p?.brand||''}"></label><label>دسته‌بندی<select name="category">${categories.map(c=>`<option value="${c.id}" ${p?.category===c.id?'selected':''}>${c.name}</option>`).join('')}</select></label><label>قیمت<input name="price" type="number" min="0" required value="${p?.price||''}"></label><label>موجودی<input name="stock" type="number" min="0" required value="${p?.stock??''}"></label><label>SKU<input name="sku" value="${p?.sku||''}"></label><label class="full">تصویر محصول<input name="image" value="${p?.image||'assets/watch-1.jpg'}"><small style="color:#7893a2">فعلاً آدرس تصویر را وارد کنید؛ R2 استفاده نمی‌شود.</small></label><label class="full">توضیحات<textarea name="desc" rows="5">${p?.desc||''}</textarea></label><div class="modal-actions full"><button type="button" class="ghost close2">انصراف</button><button class="gold">ذخیره محصول</button></div></form>`);$('#modalCard .close2').onclick=closeModal;$('#productForm').onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));const obj={name:d.name,brand:d.brand,category:d.category,price:Number(d.price),stock:Number(d.stock),sku:d.sku,image:d.image||'assets/watch-1.jpg',desc:d.desc};try{await apiProduct(p?'PUT':'POST',p?.id,obj);closeModal();await loadProducts();}catch(err){alert(err.message)}}}
+async function openProduct(id=''){
+  const p=products.find(x=>String(x.id)===String(id));
+  const m=p?.metadata||{};
+  const specs=m.specs||{}, seo=m.seo||{};
+  const gallery=Array.isArray(m.gallery)&&m.gallery.length?m.gallery:[p?.image||'assets/watch-1.jpg'];
+  const selectedBrand=brandKey(p?.brand||'');
+  const brandCards=brands.map(b=>`<button type="button" class="brand-option ${brandKey(b)===selectedBrand?'selected':''}" data-brand-value="${esc(b)}"><span class="brand-choice-logo">${brandLogo(b)?`<img src="${brandLogo(b)}" alt="${esc(b)}">`:'★'}</span><span>${esc(b)}</span></button>`).join('');
+  openModal(`<button class="close">×</button>
+    <div class="product-form-head"><div><h2>${p?'ویرایش محصول':'افزودن محصول'}</h2><p>اطلاعات محصول را کامل کنید؛ این اطلاعات مستقیماً در D1 ذخیره می‌شود.</p></div><span class="form-save-state">● D1</span></div>
+    <div class="form-tabs" role="tablist">
+      <button type="button" class="form-tab active" data-tab="basic">اطلاعات اصلی</button>
+      <button type="button" class="form-tab" data-tab="images">تصاویر</button>
+      <button type="button" class="form-tab" data-tab="specs">مشخصات ساعت</button>
+      <button type="button" class="form-tab" data-tab="seo">SEO</button>
+    </div>
+    <form id="productForm" class="product-form">
+      <section class="form-pane active" data-pane="basic">
+        <div class="form-section-title"><b>اطلاعات اصلی</b><small>نام، برند، دسته‌بندی و قیمت محصول</small></div>
+        <div class="form-grid">
+          <label>نام محصول<input name="name" required value="${esc(p?.name||'') }" placeholder="مثلاً Casio Edifice EFV-100"></label>
+          <div class="field-group full"><span class="field-label">برند</span><input type="hidden" name="brand" id="brandValue" value="${esc(p?.brand||'')}"><div class="brand-picker">${brandCards}</div></div>
+          <label>دسته‌بندی<select name="category">${categories.map(c=>`<option value="${esc(c.id)}" ${p?.category===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label>
+          <label>مناسب برای<select name="gender"><option value="" ${!m.gender?'selected':''}>انتخاب کنید</option><option value="مردانه" ${m.gender==='مردانه'?'selected':''}>مردانه</option><option value="زنانه" ${m.gender==='زنانه'?'selected':''}>زنانه</option><option value="یونیسکس" ${m.gender==='یونیسکس'?'selected':''}>یونیسکس</option></select></label>
+          <label>قیمت فروش (تومان)<input name="price" type="number" min="0" required value="${p?.price??''}" placeholder="12500000"></label>
+          <label>قیمت قبل از تخفیف<input name="oldPrice" type="number" min="0" value="${m.oldPrice||''}" placeholder="15000000"></label>
+          <label>موجودی<input name="stock" type="number" min="0" required value="${p?.stock??''}" placeholder="20"></label>
+          <label>SKU<input name="sku" value="${esc(p?.sku||'')}" placeholder="AV-CAS-001"></label>
+          <div class="field-group full discount-preview" id="discountPreview"><span>تخفیف</span><b>${fa(m.discountPercent||0)}٪</b></div>
+        </div>
+        <div class="form-checks">
+          <label><input type="checkbox" name="active" ${m.active!==false?'checked':''}> نمایش در فروشگاه</label>
+          <label><input type="checkbox" name="featured" ${m.featured?'checked':''}> محصول ویژه</label>
+          <label><input type="checkbox" name="bestseller" ${m.bestseller?'checked':''}> پرفروش</label>
+          <label><input type="checkbox" name="isNew" ${m.isNew?'checked':''}> جدید</label>
+        </div>
+        <label class="full">توضیح کوتاه<textarea name="shortDesc" rows="2" placeholder="یک معرفی کوتاه برای کارت محصول...">${esc(m.shortDesc||'')}</textarea></label>
+        <label class="full">توضیحات کامل<textarea name="desc" rows="5" placeholder="توضیحات کامل محصول...">${esc(p?.desc||'')}</textarea></label>
+      </section>
+      <section class="form-pane" data-pane="images">
+        <div class="form-section-title"><b>گالری تصاویر</b><small>R2 استفاده نمی‌شود؛ آدرس فایل محلی یا URL تصویر را وارد کنید.</small></div>
+        <div class="image-main-field"><label>تصویر اصلی<input name="image" id="mainImage" value="${esc(p?.image||gallery[0]||'assets/watch-1.jpg')}" placeholder="assets/watch-1.jpg یا https://..."></label><div class="main-image-preview"><img id="mainImagePreview" src="${productImage(p?.image||gallery[0]||'assets/watch-1.jpg')}" alt="پیش‌نمایش"></div></div>
+        <label class="full">تصاویر گالری <small>هر آدرس را در یک خط وارد کنید.</small><textarea name="gallery" id="galleryInput" rows="6" placeholder="assets/watch-1.jpg\nassets/watch-2.jpg\nhttps://...">${esc(gallery.join('\n'))}</textarea></label>
+        <div class="gallery-preview" id="galleryPreview">${gallery.map(src=>`<div class="gallery-thumb"><img src="${productImage(src)}" alt=""><button type="button" data-remove-image="${esc(src)}">×</button></div>`).join('')}</div>
+        <div class="image-tip">پیشنهاد: تصویر اصلی، نمای نزدیک، پشت ساعت، جعبه و تصویر روی دست را وارد کنید.</div>
+      </section>
+      <section class="form-pane" data-pane="specs">
+        <div class="form-section-title"><b>مشخصات تخصصی ساعت</b><small>این مشخصات در معرفی محصول قابل نمایش هستند.</small></div>
+        <div class="form-grid">
+          <label>نوع موتور<select name="movement"><option value="">انتخاب کنید</option><option ${specs.movement==='کوارتز'?'selected':''}>کوارتز</option><option ${specs.movement==='اتوماتیک'?'selected':''}>اتوماتیک</option><option ${specs.movement==='دستی'?'selected':''}>دستی</option><option ${specs.movement==='دیجیتال'?'selected':''}>دیجیتال</option></select></label>
+          <label>جنس قاب<input name="caseMaterial" value="${esc(specs.caseMaterial||'')}" placeholder="استیل ضدزنگ"></label>
+          <label>جنس بند<input name="strapMaterial" value="${esc(specs.strapMaterial||'')}" placeholder="استیل / چرم / سیلیکون"></label>
+          <label>رنگ صفحه<input name="dialColor" value="${esc(specs.dialColor||'')}" placeholder="مشکی"></label>
+          <label>رنگ قاب<input name="caseColor" value="${esc(specs.caseColor||'')}" placeholder="نقره‌ای"></label>
+          <label>مقاومت در برابر آب<input name="waterResistance" value="${esc(specs.waterResistance||'')}" placeholder="50 متر"></label>
+          <label>نوع شیشه<input name="crystal" value="${esc(specs.crystal||'')}" placeholder="معدنی / یاقوت کبود"></label>
+          <label>قطر قاب<input name="caseDiameter" value="${esc(specs.caseDiameter||'')}" placeholder="42 میلی‌متر"></label>
+        </div>
+      </section>
+      <section class="form-pane" data-pane="seo">
+        <div class="form-section-title"><b>بهینه‌سازی موتور جستجو</b><small>برای صفحه اختصاصی محصول</small></div>
+        <div class="form-grid">
+          <label class="full">Slug<input name="slug" value="${esc(seo.slug||'')}" placeholder="casio-edifice-efv-100"></label>
+          <label class="full">عنوان SEO<input name="seoTitle" value="${esc(seo.title||'')}" placeholder="خرید ساعت کاسیو ادیفایس | آوان گالری"></label>
+          <label class="full">توضیحات SEO<textarea name="seoDescription" rows="3" maxlength="160" placeholder="توضیحات کوتاه برای نتایج جستجو...">${esc(seo.description||'')}</textarea></label>
+          <label class="full">کلمات کلیدی<input name="keywords" value="${esc(seo.keywords||'')}" placeholder="کاسیو، ساعت کاسیو، ادیفایس"></label>
+        </div>
+      </section>
+      <div class="modal-actions product-form-actions"><button type="button" class="ghost close2">انصراف</button><button type="button" class="ghost preview-before-save">پیش‌نمایش</button><button class="gold">ذخیره محصول</button></div>
+    </form>`);
+  const form=$('#productForm');
+  const setTab=(name)=>{$$('.form-tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));$$('.form-pane').forEach(x=>x.classList.toggle('active',x.dataset.pane===name));};
+  $$('.form-tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+  $('#modalCard .close2').onclick=closeModal;
+  $$('.brand-option').forEach(btn=>btn.onclick=()=>{$$('.brand-option').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');$('#brandValue').value=btn.dataset.brandValue;});
+  const updateDiscount=()=>{const price=Number(form.price.value)||0, old=Number(form.oldPrice.value)||0;const pct=old>price&&old>0?Math.round((1-price/old)*100):0;$('#discountPreview b').textContent=`${fa(pct)}٪`;};
+  form.price.oninput=updateDiscount; form.oldPrice.oninput=updateDiscount; updateDiscount();
+  const refreshGallery=()=>{const urls=form.gallery.value.split(/\n+/).map(x=>x.trim()).filter(Boolean);$('#galleryPreview').innerHTML=urls.map(src=>`<div class="gallery-thumb"><img src="${productImage(src)}" alt=""><button type="button" data-remove-image="${esc(src)}">×</button></div>`).join('')||'<div class="gallery-empty">هنوز تصویری اضافه نشده است.</div>';};
+  form.gallery.oninput=refreshGallery;
+  form.image.oninput=()=>{$('#mainImagePreview').src=productImage(form.image.value)};
+  $('#galleryPreview').onclick=e=>{const b=e.target.closest('[data-remove-image]');if(!b)return;const val=b.dataset.removeImage;form.gallery.value=form.gallery.value.split(/\n+/).filter(x=>x.trim()!==val).join('\n');refreshGallery();};
+  $('.preview-before-save').onclick=()=>{
+    const d=Object.fromEntries(new FormData(form));
+    const preview={name:d.name,brand:d.brand,category:d.category,price:Number(d.price),stock:Number(d.stock),sku:d.sku,image:d.image,desc:d.desc,metadata:{oldPrice:Number(d.oldPrice)||0,shortDesc:d.shortDesc,gender:d.gender}};
+    closeModal();openProductPreview(preview);
+  };
+  form.onsubmit=async e=>{
+    e.preventDefault();
+    const d=Object.fromEntries(new FormData(form));
+    const galleryUrls=d.gallery.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+    const obj={name:d.name,brand:d.brand,category:d.category,price:Number(d.price),stock:Number(d.stock),sku:d.sku,image:d.image||galleryUrls[0]||'assets/watch-1.jpg',desc:d.desc,metadata:{
+      oldPrice:Number(d.oldPrice)||0,
+      discountPercent:Number(d.oldPrice)>Number(d.price)?Math.round((1-(Number(d.price)||0)/(Number(d.oldPrice)||1))*100):0,
+      active:d.active==='on',featured:d.featured==='on',bestseller:d.bestseller==='on',isNew:d.isNew==='on',gender:d.gender||'',shortDesc:d.shortDesc||'',gallery:galleryUrls,
+      specs:{movement:d.movement||'',caseMaterial:d.caseMaterial||'',strapMaterial:d.strapMaterial||'',dialColor:d.dialColor||'',caseColor:d.caseColor||'',waterResistance:d.waterResistance||'',crystal:d.crystal||'',caseDiameter:d.caseDiameter||''},
+      seo:{slug:d.slug||'',title:d.seoTitle||'',description:d.seoDescription||'',keywords:d.keywords||''}
+    }};
+    try{await apiProduct(p?'PUT':'POST',p?.id,obj);closeModal();await loadProducts();}catch(err){alert(err.message)}
+  };
+}
+
 function addCategory(){openModal(`<button class="close">×</button><h2>افزودن دسته‌بندی</h2><form id="simpleForm" class="form"><label class="full">نام دسته<input name="name" required></label><div class="modal-actions full"><button class="gold">ذخیره</button></div></form>`);$('#simpleForm').onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));const id=Date.now().toString();categories.push({id,name:d.name});save();closeModal();render()}}
 function addBrand(){openModal(`<button class="close">×</button><h2>افزودن برند</h2><form id="simpleForm" class="form"><label class="full">نام برند<input name="name" required></label><div class="modal-actions full"><button class="gold">ذخیره</button></div></form>`);$('#simpleForm').onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));brands.push(d.name.toUpperCase());save();closeModal();render()}}
 function addCoupon(){openModal(`<button class="close">×</button><h2>ساخت کد تخفیف</h2><form id="simpleForm" class="form"><label>کد<input name="code" required></label><label>درصد تخفیف<input name="percent" type="number" min="1" max="100" required></label><label>حداقل خرید<input name="min" type="number" min="0" value="0"></label><div class="modal-actions full"><button class="gold">ذخیره</button></div></form>`);$('#simpleForm').onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));coupons.push({id:Date.now(),code:d.code.toUpperCase(),percent:Number(d.percent),min:Number(d.min)});save();closeModal();render()}}

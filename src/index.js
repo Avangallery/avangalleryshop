@@ -52,6 +52,38 @@ async function validSession(request, secret) {
   } catch (_) { return false; }
 }
 
+function normalizeMetadata(input) {
+  const raw = input && typeof input.metadata === 'object' ? input.metadata : {};
+  const gallery = Array.isArray(raw.gallery) ? raw.gallery.map(v => String(v || '').trim()).filter(Boolean) : [];
+  return {
+    oldPrice: Math.max(0, Number(raw.oldPrice) || 0),
+    discountPercent: Math.max(0, Math.min(100, Number(raw.discountPercent) || 0)),
+    active: raw.active !== false,
+    featured: raw.featured === true,
+    bestseller: raw.bestseller === true,
+    isNew: raw.isNew === true,
+    gender: String(raw.gender || '').trim(),
+    shortDesc: String(raw.shortDesc || '').trim(),
+    gallery,
+    specs: {
+      movement: String(raw.specs?.movement || '').trim(),
+      caseMaterial: String(raw.specs?.caseMaterial || '').trim(),
+      strapMaterial: String(raw.specs?.strapMaterial || '').trim(),
+      dialColor: String(raw.specs?.dialColor || '').trim(),
+      caseColor: String(raw.specs?.caseColor || '').trim(),
+      waterResistance: String(raw.specs?.waterResistance || '').trim(),
+      crystal: String(raw.specs?.crystal || '').trim(),
+      caseDiameter: String(raw.specs?.caseDiameter || '').trim()
+    },
+    seo: {
+      slug: String(raw.seo?.slug || '').trim(),
+      title: String(raw.seo?.title || '').trim(),
+      description: String(raw.seo?.description || '').trim(),
+      keywords: String(raw.seo?.keywords || '').trim()
+    }
+  };
+}
+
 function cleanProduct(input) {
   return {
     name: String(input.name || '').trim(),
@@ -61,7 +93,8 @@ function cleanProduct(input) {
     stock: Math.max(0, Number(input.stock) || 0),
     sku: String(input.sku || '').trim(),
     image: String(input.image || 'assets/watch-1.jpg').trim(),
-    desc: String(input.desc || '').trim()
+    desc: String(input.desc || '').trim(),
+    metadata: normalizeMetadata(input)
   };
 }
 
@@ -85,8 +118,15 @@ async function api(request, env, url) {
   const isAdmin = await validSession(request, env.ADMIN_PASSWORD);
 
   if (url.pathname === '/api/products' && request.method === 'GET') {
-    const { results } = await env.DB.prepare(`SELECT id,name,brand,category,price,stock,sku,image,desc,created_at,updated_at FROM products WHERE active=1 ORDER BY created_at DESC`).all();
-    return json({ ok: true, products: results || [] });
+    const visibility = isAdmin ? '' : ' WHERE p.active=1';
+    const { results } = await env.DB.prepare(`SELECT p.id,p.name,p.brand,p.category,p.price,p.stock,p.sku,p.image,p.desc,p.active,p.created_at,p.updated_at,m.metadata_json FROM products p LEFT JOIN product_meta m ON m.product_id=p.id${visibility} ORDER BY p.created_at DESC`).all();
+    const products = (results || []).map(row => {
+      let metadata = {};
+      try { metadata = row.metadata_json ? JSON.parse(row.metadata_json) : {}; } catch (_) {}
+      delete row.metadata_json;
+      return { ...row, metadata };
+    });
+    return json({ ok: true, products });
   }
   if (!isAdmin) return json({ ok: false, error: 'Unauthorized' }, 401);
 
@@ -94,9 +134,13 @@ async function api(request, env, url) {
     const body = cleanProduct(await request.json().catch(() => ({})));
     if (!body.name || !body.brand) return json({ ok: false, error: 'نام و برند محصول الزامی است.' }, 400);
     const id = crypto.randomUUID();
-    await env.DB.prepare(`INSERT INTO products (id,name,brand,category,price,stock,sku,image,desc,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,1,datetime('now'),datetime('now'))`).bind(id, body.name, body.brand, body.category, body.price, body.stock, body.sku, body.image, body.desc).run();
+    const active = body.metadata.active !== false ? 1 : 0;
+    await env.DB.batch([
+      env.DB.prepare(`INSERT INTO products (id,name,brand,category,price,stock,sku,image,desc,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,datetime('now'),datetime('now'))`).bind(id, body.name, body.brand, body.category, body.price, body.stock, body.sku, body.image, body.desc, active),
+      env.DB.prepare(`INSERT INTO product_meta (product_id,metadata_json,updated_at) VALUES (?,?,datetime('now'))`).bind(id, JSON.stringify(body.metadata))
+    ]);
     const product = await env.DB.prepare(`SELECT * FROM products WHERE id=?`).bind(id).first();
-    return json({ ok: true, product }, 201);
+    return json({ ok: true, product: { ...product, metadata: body.metadata } }, 201);
   }
 
   const match = url.pathname.match(/^\/api\/products\/([^/]+)$/);
@@ -104,9 +148,12 @@ async function api(request, env, url) {
   const id = decodeURIComponent(match[1]);
   if (request.method === 'PUT') {
     const body = cleanProduct(await request.json().catch(() => ({})));
-    await env.DB.prepare(`UPDATE products SET name=?,brand=?,category=?,price=?,stock=?,sku=?,image=?,desc=?,updated_at=datetime('now') WHERE id=?`).bind(body.name, body.brand, body.category, body.price, body.stock, body.sku, body.image, body.desc, id).run();
+    await env.DB.batch([
+      env.DB.prepare(`UPDATE products SET name=?,brand=?,category=?,price=?,stock=?,sku=?,image=?,desc=?,active=?,updated_at=datetime('now') WHERE id=?`).bind(body.name, body.brand, body.category, body.price, body.stock, body.sku, body.image, body.desc, body.metadata.active !== false ? 1 : 0, id),
+      env.DB.prepare(`INSERT INTO product_meta (product_id,metadata_json,updated_at) VALUES (?,?,datetime('now')) ON CONFLICT(product_id) DO UPDATE SET metadata_json=excluded.metadata_json,updated_at=datetime('now')`).bind(id, JSON.stringify(body.metadata))
+    ]);
     const product = await env.DB.prepare(`SELECT * FROM products WHERE id=?`).bind(id).first();
-    return json({ ok: true, product });
+    return json({ ok: true, product: { ...product, metadata: body.metadata } });
   }
   if (request.method === 'DELETE') {
     await env.DB.prepare(`UPDATE products SET active=0,updated_at=datetime('now') WHERE id=?`).bind(id).run();

@@ -16,3 +16,12 @@ CREATE INDEX IF NOT EXISTS idx_products_active_created ON products(active, creat
 CREATE INDEX IF NOT EXISTS idx_products_brand ON products(brand);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_products_sku_unique ON products(sku) WHERE sku <> '';
+
+
+CREATE TABLE IF NOT EXISTS product_meta (
+  product_id TEXT PRIMARY KEY,
+  metadata_json TEXT NOT NULL DEFAULT '{}',
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_product_meta_updated ON product_meta(updated_at DESC);

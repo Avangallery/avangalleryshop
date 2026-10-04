@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>حساب کاربری | آوان گالری</title>
+<meta name="theme-color" content="#061a25">
+<link rel="icon" type="image/png" href="assets/favicon-avan.png">
+<link rel="stylesheet" href="login.css">
+<style>
+body{background:radial-gradient(circle at 20% 10%,rgba(216,182,90,.13),transparent 28%),radial-gradient(circle at 80% 90%,rgba(22,79,105,.32),transparent 35%),#061a25;min-height:100dvh;display:grid;place-items:center;padding:24px;box-sizing:border-box}
+.account-card{width:min(620px,100%);background:rgba(6,27,39,.94);border:1px solid rgba(216,182,90,.28);border-radius:28px;padding:38px;box-shadow:0 30px 80px rgba(0,0,0,.38);color:#f5f8fa;text-align:center}
+.avatar{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid #d8b65a;background:#0b2a3a;margin-bottom:16px}
+.avatar-fallback{display:grid;place-items:center;font-size:34px;font-weight:800;color:#d8b65a}
+h1{margin:0 0 8px;font-size:26px}.email{color:#a9c0cb;margin:0 0 28px;direction:ltr;unicode-bidi:isolate}.badge{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(216,182,90,.1);border:1px solid rgba(216,182,90,.25);color:#e5c86e;font-size:12px;margin-bottom:24px}.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.actions a,.actions button{min-width:180px;height:48px;border-radius:13px;border:1px solid rgba(216,182,90,.35);background:#0a2432;color:#fff;text-decoration:none;font:700 14px Vazirmatn;cursor:pointer}.actions a.primary{background:linear-gradient(135deg,#e7c35e,#b89232);color:#08151d;border:0;display:grid;place-items:center}.state{color:#a9c0cb;margin:0 0 20px}.error{color:#ff9a9a}.loading{color:#d8b65a}
+@media(max-width:560px){.account-card{padding:28px 20px;border-radius:22px}h1{font-size:22px}.actions{flex-direction:column}.actions a,.actions button{width:100%}}
+</style>
+</head>
+<body>
+<main class="account-card" id="accountCard">
+  <div class="loading" id="loading">در حال بررسی حساب کاربری...</div>
+</main>
+<script>
+const card=document.getElementById('accountCard');
+function esc(v){return String(v||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+async function load(){
+  try{
+    const r=await fetch('/api/auth/me',{cache:'no-store'}),d=await r.json();
+    if(!d.authenticated){location.href='login.html';return;}
+    const u=d.user||{};
+    const initial=esc((u.name||'آ').trim().charAt(0));
+    card.innerHTML=`
+      ${u.avatar?`<img class="avatar" src="${esc(u.avatar)}" alt="تصویر پروفایل">`:`<div class="avatar avatar-fallback">${initial}</div>`}
+      <div class="badge">ورود با حساب Google</div>
+      <h1>${esc(u.name||'کاربر آوان گالری')}</h1>
+      <p class="email">${esc(u.email||'')}</p>
+      <p class="state">حساب شما با موفقیت به آوان گالری متصل شده است.</p>
+      <div class="actions"><a class="primary" href="/">بازگشت به فروشگاه</a><button id="logout" type="button">خروج از حساب</button></div>`;
+    document.getElementById('logout').onclick=async()=>{await fetch('/api/auth/logout',{method:'POST'});location.href='login.html';};
+  }catch(e){card.innerHTML='<p class="error">خطا در دریافت اطلاعات حساب. دوباره تلاش کنید.</p><div class="actions"><a class="primary" href="/login.html">بازگشت به ورود</a></div>';}
+}
+load();
+</script>
+</body>
+</html>

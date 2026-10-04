@@ -59,3 +59,16 @@ CREATE TABLE IF NOT EXISTS support_messages (
   FOREIGN KEY(chat_id) REFERENCES support_chats(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_support_messages_chat_created ON support_messages(chat_id, created_at ASC);
+
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  google_id TEXT UNIQUE,
+  email TEXT UNIQUE,
+  name TEXT NOT NULL DEFAULT '',
+  avatar TEXT NOT NULL DEFAULT '',
+  provider TEXT NOT NULL DEFAULT 'google',
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);

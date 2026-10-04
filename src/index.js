@@ -1,5 +1,9 @@
 const SESSION_COOKIE = 'avan_admin_session';
 const SESSION_TTL = 60 * 60 * 24;
+const USER_SESSION_COOKIE = 'avan_user_session';
+const USER_SESSION_TTL = 60 * 60 * 24 * 30;
+const GOOGLE_STATE_COOKIE = 'avan_google_oauth_state';
+const GOOGLE_STATE_TTL = 600;
 
 function json(data, status = 200, extra = {}) {
   return new Response(JSON.stringify(data), {
@@ -38,6 +42,99 @@ async function makeSession(secret) {
   const sig = b64u(await hmac(secret, payload));
   return `${payload}.${sig}`;
 }
+async function makeUserSession(secret, userId) {
+  const exp = Math.floor(Date.now() / 1000) + USER_SESSION_TTL;
+  const payload = b64u(new TextEncoder().encode(JSON.stringify({ uid: String(userId), exp })));
+  const sig = b64u(await hmac(secret, payload));
+  return `${payload}.${sig}`;
+}
+
+async function validUserSession(request, secret) {
+  if (!secret) return null;
+  const token = cookieValue(request, USER_SESSION_COOKIE);
+  if (!token) return null;
+  const [payload, sig] = token.split('.');
+  if (!payload || !sig) return null;
+  try {
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+    const ok = await crypto.subtle.verify('HMAC', key, unb64u(sig), new TextEncoder().encode(payload));
+    if (!ok) return null;
+    const data = JSON.parse(new TextDecoder().decode(unb64u(payload)));
+    if (!data?.uid || !Number.isFinite(Number(data.exp)) || Number(data.exp) < Math.floor(Date.now() / 1000)) return null;
+    return { uid: String(data.uid), exp: Number(data.exp) };
+  } catch (_) { return null; }
+}
+
+async function ensureUsersTable(env) {
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    google_id TEXT UNIQUE,
+    email TEXT UNIQUE,
+    name TEXT NOT NULL DEFAULT '',
+    avatar TEXT NOT NULL DEFAULT '',
+    provider TEXT NOT NULL DEFAULT 'google',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id)`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`).run();
+}
+
+function googleRedirectUri(request) {
+  return new URL('/api/auth/google/callback', request.url).toString();
+}
+
+function oauthCookie(name, value, maxAge) {
+  return `${name}=${encodeURIComponent(value)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAge}`;
+}
+
+function clearCookie(name) {
+  return `${name}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
+}
+
+function redirectWithCookies(target, cookies) {
+  const response = new Response(null, { status: 302, headers: { Location: target } });
+  for (const cookie of (cookies || [])) response.headers.append('Set-Cookie', cookie);
+  return response;
+}
+
+async function googleTokenExchange(env, request, code) {
+  const redirectUri = googleRedirectUri(request);
+  const params = new URLSearchParams({
+    code,
+    client_id: env.GOOGLE_CLIENT_ID,
+    client_secret: env.GOOGLE_CLIENT_SECRET,
+    redirect_uri: redirectUri,
+    grant_type: 'authorization_code'
+  });
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: params.toString()
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.id_token) throw new Error(data.error_description || data.error || 'Google token exchange failed.');
+  return data;
+}
+
+async function verifyGoogleIdToken(idToken, clientId) {
+  const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.error_description || data.error) throw new Error('Google identity verification failed.');
+  if (String(data.aud || '') !== String(clientId || '')) throw new Error('Google client ID mismatch.');
+  const iss = String(data.iss || '');
+  if (iss && iss !== 'https://accounts.google.com' && iss !== 'accounts.google.com') throw new Error('Invalid Google issuer.');
+  if (!data.sub || !data.email) throw new Error('Google account information is incomplete.');
+  if (String(data.email_verified) !== 'true') throw new Error('Google email is not verified.');
+  if (Number(data.exp || 0) < Math.floor(Date.now() / 1000)) throw new Error('Google identity token has expired.');
+  return {
+    googleId: String(data.sub),
+    email: String(data.email).trim().toLowerCase(),
+    name: String(data.name || data.email.split('@')[0] || '').trim(),
+    avatar: String(data.picture || '').trim()
+  };
+}
+
 async function validSession(request, secret) {
   if (!secret) return false;
   const token = cookieValue(request, SESSION_COOKIE);
@@ -99,6 +196,66 @@ function cleanProduct(input) {
 }
 
 async function api(request, env, url) {
+  // Customer Google OAuth
+  if (url.pathname === '/api/auth/google' && request.method === 'GET') {
+    if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return json({ ok:false, error:'Google OAuth is not configured in Cloudflare.' }, 500);
+    const state = crypto.randomUUID();
+    const redirectUri = googleRedirectUri(request);
+    const params = new URLSearchParams({
+      client_id: env.GOOGLE_CLIENT_ID,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'openid email profile',
+      state,
+      prompt: 'select_account'
+    });
+    return Response.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`, 302, {
+      'Set-Cookie': oauthCookie(GOOGLE_STATE_COOKIE, state, GOOGLE_STATE_TTL)
+    });
+  }
+  if (url.pathname === '/api/auth/google/callback' && request.method === 'GET') {
+    if (!env.DB || !env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return Response.redirect(new URL('/login.html?google=error&reason=not-configured', request.url), 302);
+    const state = url.searchParams.get('state') || '';
+    const savedState = cookieValue(request, GOOGLE_STATE_COOKIE) || '';
+    const code = url.searchParams.get('code') || '';
+    const oauthError = url.searchParams.get('error') || '';
+    const clearState = clearCookie(GOOGLE_STATE_COOKIE);
+    if (oauthError) return redirectWithCookies(new URL(`/login.html?google=error&reason=${encodeURIComponent(oauthError)}`, request.url).toString(), [clearState]);
+    if (!state || !savedState || state !== savedState || !code) return redirectWithCookies(new URL('/login.html?google=error&reason=invalid-state', request.url).toString(), [clearState]);
+    try {
+      const tokens = await googleTokenExchange(env, request, code);
+      const googleUser = await verifyGoogleIdToken(tokens.id_token, env.GOOGLE_CLIENT_ID);
+      await ensureUsersTable(env);
+      let user = await env.DB.prepare(`SELECT * FROM users WHERE google_id=? OR email=? LIMIT 1`).bind(googleUser.googleId, googleUser.email).first();
+      if (user) {
+        await env.DB.prepare(`UPDATE users SET google_id=?,email=?,name=?,avatar=?,provider='google',updated_at=datetime('now') WHERE id=?`).bind(googleUser.googleId, googleUser.email, googleUser.name, googleUser.avatar, user.id).run();
+        user = await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(user.id).first();
+      } else {
+        const id = crypto.randomUUID();
+        await env.DB.prepare(`INSERT INTO users (id,google_id,email,name,avatar,provider,created_at,updated_at) VALUES (?,?,?,?,?,'google',datetime('now'),datetime('now'))`).bind(id, googleUser.googleId, googleUser.email, googleUser.name, googleUser.avatar).run();
+        user = await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(id).first();
+      }
+      const sessionSecret = String(env.GOOGLE_CLIENT_SECRET || '');
+      const session = await makeUserSession(sessionSecret, user.id);
+      return redirectWithCookies(new URL('/account.html?login=success', request.url).toString(), [
+        oauthCookie(USER_SESSION_COOKIE, session, USER_SESSION_TTL),
+        clearState
+      ]);
+    } catch (err) {
+      return redirectWithCookies(new URL(`/login.html?google=error&reason=${encodeURIComponent(err?.message || 'oauth-failed')}`, request.url).toString(), [clearState]);
+    }
+  }
+  if (url.pathname === '/api/auth/me' && request.method === 'GET') {
+    if (!env.DB) return json({ ok:true, authenticated:false });
+    const session = await validUserSession(request, String(env.GOOGLE_CLIENT_SECRET || ''));
+    if (!session) return json({ ok:true, authenticated:false });
+    const user = await env.DB.prepare(`SELECT id,email,name,avatar,provider,created_at FROM users WHERE id=?`).bind(session.uid).first();
+    if (!user) return json({ ok:true, authenticated:false }, 200, { 'Set-Cookie': clearCookie(USER_SESSION_COOKIE) });
+    return json({ ok:true, authenticated:true, user });
+  }
+  if (url.pathname === '/api/auth/logout' && request.method === 'POST') {
+    return json({ ok:true }, 200, { 'Set-Cookie': clearCookie(USER_SESSION_COOKIE) });
+  }
   if (url.pathname === '/api/admin/login' && request.method === 'POST') {
     const body = await request.json().catch(() => ({}));
     const password = String(body.password || '');

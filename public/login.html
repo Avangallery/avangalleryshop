@@ -109,7 +109,9 @@ function setMode(mode){
 registerTab.addEventListener('click',()=>setMode('register'));
 loginTab.addEventListener('click',()=>setMode('login'));
 document.getElementById('registerBottom').addEventListener('click',()=>setMode('register'));
-document.getElementById('googleLogin').addEventListener('click',()=>alert('ورود با Google پس از تنظیم OAuth کلادفلر فعال می‌شود.'));
+document.getElementById('googleLogin').addEventListener('click',()=>{window.location.href='/api/auth/google';});
+
+(function(){const q=new URLSearchParams(location.search);if(q.get('google')==='error'){const reason=q.get('reason');const box=document.createElement('div');box.style.cssText='margin:14px 0;padding:11px 13px;border-radius:12px;background:rgba(255,100,100,.08);border:1px solid rgba(255,120,120,.25);color:#ffb0b0;font-size:12px;line-height:1.8;text-align:center';box.textContent=reason==='access_denied'?'ورود با Google لغو شد.':'ورود با Google انجام نشد. تنظیمات OAuth و حساب تست را بررسی کنید.';document.querySelector('.divider')?.before(box);}})();
 document.getElementById('forgotPassword').addEventListener('click',e=>{e.preventDefault();alert('بازیابی رمز عبور در مرحله بعدی متصل می‌شود.');});
 form.addEventListener('submit',e=>{
   e.preventDefault();

@@ -389,3 +389,17 @@
   ticketForm?.addEventListener('submit',async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(ticketForm));const btn=ticketForm.querySelector('button[type=submit]');if(btn)btn.disabled=true;try{const r=await fetch('/api/support/ticket',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const d=await r.json();if(!r.ok)throw new Error(d.error||'خطا');localStorage.setItem('avan_last_ticket_id',d.ticket.id);if(ticketSuccess){ticketSuccess.hidden=false;ticketSuccess.textContent=`تیکت شما ثبت شد. شماره پیگیری: ${d.ticket.id}`;}ticketForm.reset();}catch(err){alert(err.message)}finally{if(btn)btn.disabled=false}});
   setTab('chat'); loadChat(); setInterval(loadChat,5000);
 })();
+
+// V106 — Google account state in the storefront header
+(function(){
+  const accountBtn=document.getElementById('headerAccount');
+  if(!accountBtn) return;
+  fetch('/api/auth/me',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
+    if(!d?.authenticated || !d.user) return;
+    const name=(d.user.name||'حساب کاربری').trim();
+    const strong=accountBtn.querySelector('strong');
+    if(strong) strong.textContent=name.length>18?name.slice(0,18)+'…':name;
+    accountBtn.setAttribute('href','/account.html');
+    accountBtn.setAttribute('aria-label','حساب کاربری');
+  }).catch(()=>{});
+})();

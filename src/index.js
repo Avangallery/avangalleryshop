@@ -198,7 +198,7 @@ function cleanProduct(input) {
 async function api(request, env, url) {
   // Customer Google OAuth
   if (url.pathname === '/api/auth/google' && request.method === 'GET') {
-    if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return json({ ok:false, error:'Google OAuth is not configured in Cloudflare.' }, 500);
+    if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return json({ ok:false, error: !env.GOOGLE_CLIENT_ID ? 'Google OAuth Client ID is missing.' : 'Google OAuth Client Secret is missing. Add GOOGLE_CLIENT_SECRET as a Production Secret in Cloudflare.' }, 500);
     const state = crypto.randomUUID();
     const redirectUri = googleRedirectUri(request);
     const params = new URLSearchParams({

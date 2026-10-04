@@ -347,6 +347,28 @@ async function api(request, env, url) {
     return json({ok:true,tickets:Number(t?.n||0),chats:Number(c?.n||0)});
   }
 
+  // Admin customers — Google accounts stored in D1
+  if (url.pathname === '/api/admin/customers' && request.method === 'GET') {
+    if (!await validSession(request, env.ADMIN_PASSWORD)) return json({ ok:false, error:'Unauthorized' }, 401);
+    if (!env.DB) return json({ ok:false, error:'D1 binding DB is not configured.' }, 500);
+    await ensureUsersTable(env);
+    const q = String(url.searchParams.get('q') || '').trim();
+    const limit = Math.min(Math.max(Number(url.searchParams.get('limit') || 100), 1), 300);
+    let rows;
+    if (q) {
+      const like = `%${q}%`;
+      const r = await env.DB.prepare(`SELECT id,email,name,avatar,provider,created_at,updated_at FROM users WHERE name LIKE ? OR email LIKE ? ORDER BY created_at DESC LIMIT ${limit}`).bind(like, like).all();
+      rows = r.results || [];
+    } else {
+      const r = await env.DB.prepare(`SELECT id,email,name,avatar,provider,created_at,updated_at FROM users ORDER BY created_at DESC LIMIT ${limit}`).all();
+      rows = r.results || [];
+    }
+    const total = await env.DB.prepare(`SELECT COUNT(*) AS n FROM users`).first();
+    const recent = await env.DB.prepare(`SELECT COUNT(*) AS n FROM users WHERE created_at >= datetime('now','-30 day')`).first();
+    const providers = await env.DB.prepare(`SELECT provider, COUNT(*) AS n FROM users GROUP BY provider`).all();
+    return json({ok:true, customers:rows, stats:{total:Number(total?.n||0), recent:Number(recent?.n||0), providers:providers.results||[]}});
+  }
+
   if (!url.pathname.startsWith('/api/products')) return json({ ok: false, error: 'Not found' }, 404);
   if (!env.DB) return json({ ok: false, error: 'D1 binding DB is not configured.' }, 500);
   const isAdmin = await validSession(request, env.ADMIN_PASSWORD);

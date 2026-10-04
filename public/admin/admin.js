@@ -216,6 +216,72 @@ function renderProducts(){
   }).join(''):`<div class="empty-products"><div class="empty-icon">⌚</div><h3>محصولی پیدا نشد</h3><p>فیلترها یا عبارت جستجو را تغییر دهید.</p></div>`;
 }
 function simple(title,sub,items){return head(title,sub)+`<div class="cards3">${items.map(x=>`<div class="info"><h4>${x[0]}</h4><p>${x[1]}</p></div>`).join('')}</div>`}
+let customers=[];
+let customerStats={total:0,recent:0,providers:[]};
+async function loadCustomers(q=''){
+  const r=await fetch('/api/admin/customers'+(q?`?q=${encodeURIComponent(q)}`:''),{cache:'no-store'});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.error||'خطا در دریافت مشتریان');
+  customers=Array.isArray(d.customers)?d.customers:[];
+  customerStats=d.stats||{total:customers.length,recent:0,providers:[]};
+}
+function customerDate(v){
+  if(!v)return '—';
+  const d=new Date(String(v).replace(' ','T')+'Z');
+  return Number.isNaN(d.getTime())?'—':new Intl.DateTimeFormat('fa-IR',{year:'numeric',month:'long',day:'numeric'}).format(d);
+}
+function customerInitial(c){return esc(String(c?.name||c?.email||'م').trim().charAt(0).toUpperCase()||'م')}
+function customerAvatar(c){return c?.avatar?`<img src="${esc(c.avatar)}" alt="" loading="lazy">`:`<span>${customerInitial(c)}</span>`}
+function customersPage(){
+  const googleCount=Number((customerStats.providers||[]).find(x=>x.provider==='google')?.n||0);
+  return `
+  <section class="customers-hero">
+    <div class="customers-hero-copy">
+      <span class="eyebrow">AVAN GALLERY • CRM</span>
+      <h2>مدیریت مشتریان</h2>
+      <p>حساب‌های ثبت‌شده، ورودهای گوگل و اطلاعات مشتریان آوان گالری را یکجا مدیریت کنید.</p>
+      <div class="customer-hero-chips"><span><i></i> D1 متصل</span><span>ورود Google فعال</span></div>
+    </div>
+    <div class="customers-hero-art"><div class="customer-orbit one"></div><div class="customer-orbit two"></div><div class="customer-gem">AVAN<small>GALLERY</small></div></div>
+  </section>
+  <div class="customer-stats-grid">
+    <article class="customer-stat"><span class="customer-stat-icon">♙</span><div><small>کل مشتریان</small><strong>${fa(customerStats.total)}</strong><em>حساب ثبت‌شده</em></div></article>
+    <article class="customer-stat"><span class="customer-stat-icon gold">✦</span><div><small>مشتریان جدید</small><strong>${fa(customerStats.recent)}</strong><em>در ۳۰ روز اخیر</em></div></article>
+    <article class="customer-stat"><span class="customer-stat-icon green">G</span><div><small>ورود با Google</small><strong>${fa(googleCount)}</strong><em>حساب Google</em></div></article>
+    <article class="customer-stat"><span class="customer-stat-icon blue">●</span><div><small>وضعیت اتصال</small><strong>فعال</strong><em>D1 / Worker</em></div></article>
+  </div>
+  <section class="panel customers-panel">
+    <div class="customers-toolbar">
+      <div><h3>فهرست مشتریان</h3><p id="customersCount">${fa(customers.length)} حساب نمایش داده می‌شود</p></div>
+      <div class="customers-actions"><label class="customer-search"><span>⌕</span><input id="customerSearch" placeholder="جستجو بر اساس نام یا ایمیل..." autocomplete="off"></label><button class="ghost" id="refreshCustomers">↻ بروزرسانی</button></div>
+    </div>
+    <div id="customersList" class="customers-list"></div>
+  </section>`;
+}
+function renderCustomers(){
+  const box=$('#customersList'); if(!box)return;
+  const q=($('#customerSearch')?.value||'').trim().toLowerCase();
+  const arr=customers.filter(c=>`${c.name||''} ${c.email||''}`.toLowerCase().includes(q));
+  $('#customersCount').textContent=`${fa(arr.length)} حساب از ${fa(customerStats.total)} مشتری`;
+  if(!arr.length){box.innerHTML=`<div class="customers-empty"><div class="customers-empty-icon">♙</div><h3>${q?'مشتری پیدا نشد':'هنوز مشتری‌ای ثبت نشده است'}</h3><p>${q?'عبارت جستجو را تغییر دهید.':'با اولین ورود Google، مشتری در این بخش نمایش داده می‌شود.'}</p></div>`;return}
+  box.innerHTML=`<div class="customers-table-head"><span>مشتری</span><span>روش ورود</span><span>تاریخ عضویت</span><span>آخرین بروزرسانی</span><span>عملیات</span></div>`+arr.map(c=>`<article class="customer-row" data-customer-id="${esc(c.id)}">
+    <div class="customer-main"><div class="customer-avatar">${customerAvatar(c)}</div><div><strong>${esc(c.name||'کاربر آوان')}</strong><small dir="ltr">${esc(c.email||'—')}</small></div></div>
+    <div><span class="customer-provider"><b>G</b> Google</span></div>
+    <div class="customer-muted">${customerDate(c.created_at)}</div>
+    <div class="customer-muted">${customerDate(c.updated_at)}</div>
+    <div class="customer-actions"><button class="icon-action view" title="مشاهده" data-customer-view="${esc(c.id)}">◉</button></div>
+  </article>`).join('');
+  $$('[data-customer-view]').forEach(b=>b.onclick=()=>openCustomer(b.dataset.customerView));
+}
+function openCustomer(id){
+  const c=customers.find(x=>String(x.id)===String(id)); if(!c)return;
+  openModal(`<button class="close">×</button><div class="customer-detail"><div class="customer-detail-top"><div class="customer-detail-avatar">${customerAvatar(c)}</div><div><span class="eyebrow">AVAN GALLERY • CUSTOMER</span><h2>${esc(c.name||'کاربر آوان')}</h2><p dir="ltr">${esc(c.email||'—')}</p></div></div><div class="customer-detail-grid"><div><small>روش ورود</small><b>Google</b></div><div><small>عضویت</small><b>${customerDate(c.created_at)}</b></div><div><small>آخرین بروزرسانی</small><b>${customerDate(c.updated_at)}</b></div><div><small>شناسه کاربر</small><b class="mono">${esc(c.id)}</b></div></div><div class="customer-detail-note"><span>✦</span><div><b>پروفایل مشتری</b><p>این حساب از طریق Google ایجاد شده است. سوابق سفارش و وفاداری پس از اتصال ماژول سفارش‌ها در همین پروفایل قابل نمایش خواهد بود.</p></div></div><div class="modal-actions"><button class="ghost close2">بستن</button></div></div>`);
+  $('#modalCard .close2').onclick=closeModal;
+}
+async function renderCustomersPage(){
+  try{ $('#content').innerHTML='<div class="support-loading">در حال دریافت مشتریان…</div>'; $('#title').textContent='مشتریان'; await loadCustomers(); $('#content').innerHTML=customersPage(); renderCustomers(); $('#customerSearch').oninput=async()=>{const q=$('#customerSearch').value.trim(); if(q.length>=2||q.length===0){try{await loadCustomers(q);renderCustomers()}catch(e){}} else renderCustomers()}; $('#refreshCustomers').onclick=async()=>{await loadCustomers($('#customerSearch').value.trim());renderCustomers()}; }
+  catch(e){$('#content').innerHTML=`<div class="notice">${esc(e.message)}</div>`}
+}
 function orders(){return head('سفارش‌ها','مدیریت پرداخت، ارسال و کد رهگیری')+`<section class="panel"><div class="notice">فعلاً سفارشی ثبت نشده است. پس از اتصال D1، سفارش‌های واقعی اینجا نمایش داده می‌شوند.</div><div class="table-wrap"><table class="table"><tr><th>شماره</th><th>مشتری</th><th>مبلغ</th><th>پرداخت</th><th>ارسال</th><th>کد رهگیری</th></tr><tr><td>—</td><td>—</td><td>۰ تومان</td><td>—</td><td>—</td><td>—</td></tr></table></div></section>`}
 function categoriesPage(){return head('دسته‌بندی‌ها','ساختار دسته‌بندی محصولات',`<button class="gold" id="addCategory">＋ دسته جدید</button>`)+`<div class="cards3" id="categoryList">${categories.map(c=>`<div class="info"><h4>${c.name}</h4><p>شناسه: ${c.id}<br>محصولات: ${fa(products.filter(p=>p.category===c.id).length)}<br><button class="mini" data-cat-del="${c.id}">حذف</button></p></div>`).join('')}</div>`}
 function brandsPage(){return head('برندها','کاتالوگ برندهای قابل انتخاب در محصول',`<button class="gold" id="addBrand">＋ برند جدید</button>`)+`<div class="cards3" id="brandList">${brands.map(b=>`<div class="info"><h4>${b}</h4><p>محصولات: ${fa(products.filter(p=>p.brand===b).length)}<br><button class="mini" data-brand-del="${b}">حذف از کاتالوگ</button></p></div>`).join('')}</div>`}
@@ -244,7 +310,7 @@ async function openChatSupport(id){
 }
 async function renderTickets(){try{$('#content').innerHTML='<div class="support-loading">در حال دریافت پیام‌های مشتریان…</div>';$('#title').textContent='تیکت پشتیبانی';const html=await ticketsPage();$('#content').innerHTML=html;$('#refreshSupport').onclick=renderTickets;$$('[data-ticket-open]').forEach(b=>b.onclick=async()=>{try{const d=await supportApi('/api/admin/support/tickets');const t=(d.tickets||[]).find(x=>x.id===b.dataset.ticketOpen);if(t)openTicketSupport(t)}catch(e){alert(e.message)}});$$('[data-chat-open]').forEach(b=>b.onclick=()=>openChatSupport(b.dataset.chatOpen));}catch(e){$('#content').innerHTML=`<div class="notice">${esc(e.message)}</div>`}}
 
-function render(){let html='';if(current==='dashboard')html=dashboard();if(current==='products')html=productsPage();if(current==='orders')html=orders();if(current==='customers')html=simple('مشتریان','حساب‌ها، سوابق خرید و وضعیت کاربران',[['کل مشتریان','۰ حساب ثبت شده'],['مشتری جدید','۰ در ۳۰ روز اخیر'],['وفاداری','ساختار آماده اتصال به D1']]);if(current==='categories')html=categoriesPage();if(current==='brands')html=brandsPage();if(current==='coupons')html=couponsPage();if(current==='reviews')html=simple('نظرات مشتریان','تأیید، رد و پاسخ به دیدگاه‌ها',[['در انتظار بررسی','۰ نظر'],['امتیاز محصولات','پس از ثبت خرید فعال می‌شود'],['گزارش اسپم','مدیریت گزارش‌های کاربران']]);if(current==='content')html=simple('محتوا و بنرها','مدیریت Hero، بنر، مجله و صفحات ثابت',[['Hero اصلی','تصویر، عنوان و CTA صفحه اول'],['مجله آوان','مقالات و محتوای آموزشی'],['صفحات ثابت','درباره ما، تماس، قوانین و حریم خصوصی']]);if(current==='notifications')html=simple('اعلان‌ها','مدیریت اعلان‌های فروشگاه',[['اعلان سفارش','ثبت، پرداخت و ارسال سفارش'],['اعلان مدیریتی','موجودی کم و سفارش جدید'],['اعلان مشتری','ساختار آماده اتصال به SMS/Email']]);if(current==='tickets'){renderTickets();return;}if(current==='wallet')html=simple('کیف پول و وفاداری','امتیاز، اعتبار و باشگاه مشتریان',[['امتیاز خرید','قابل فعال‌سازی برای مشتریان'],['کیف پول','شارژ و برداشت اعتبار'],['سطوح مشتری','برنزی، نقره‌ای، طلایی']]);if(current==='reports')html=simple('گزارش‌ها','گزارش فروش، محصولات و مشتریان',[['گزارش فروش','روزانه، ماهانه و بازه دلخواه'],['محصولات پرفروش','قابل محاسبه از سفارش‌ها'],['گزارش موجودی','هشدار موجودی کم']]);if(current==='admins')html=simple('مدیران و دسترسی‌ها','مدیریت کاربران پنل و سطح دسترسی',[['مدیر اصلی','دسترسی کامل'],['مدیر محتوا','بنر، مجله و صفحات'],['اپراتور سفارش','سفارش‌ها و مشتریان']]);if(current==='activity')html=simple('گزارش فعالیت','ثبت عملیات مدیران و تغییرات',[['ورود مدیران','زمان و نشست‌ها'],['تغییر محصول','قیمت، موجودی و اطلاعات'],['تغییر تنظیمات','ثبت عملیات حساس']]);if(current==='settings')html=simple('تنظیمات فروشگاه','تنظیمات اصلی آوان',[['اطلاعات فروشگاه','نام، لوگو، تماس و آدرس'],['پرداخت','درگاه و وضعیت پرداخت'],['ارسال','روش‌ها، هزینه و کد رهگیری'],['امنیت','مدیران و نشست‌ها']]);$('#content').innerHTML=html;$$('[data-page-go]').forEach(b=>b.onclick=()=>{current=b.dataset.pageGo;render();});const nav=document.querySelector(`#nav button[data-page="${current}"]`);$('#title').textContent=nav?.querySelector('span')?.textContent||'داشبورد';if(current==='products'){
+function render(){let html='';if(current==='dashboard')html=dashboard();if(current==='products')html=productsPage();if(current==='orders')html=orders();if(current==='customers'){renderCustomersPage();return;}if(current==='categories')html=categoriesPage();if(current==='brands')html=brandsPage();if(current==='coupons')html=couponsPage();if(current==='reviews')html=simple('نظرات مشتریان','تأیید، رد و پاسخ به دیدگاه‌ها',[['در انتظار بررسی','۰ نظر'],['امتیاز محصولات','پس از ثبت خرید فعال می‌شود'],['گزارش اسپم','مدیریت گزارش‌های کاربران']]);if(current==='content')html=simple('محتوا و بنرها','مدیریت Hero، بنر، مجله و صفحات ثابت',[['Hero اصلی','تصویر، عنوان و CTA صفحه اول'],['مجله آوان','مقالات و محتوای آموزشی'],['صفحات ثابت','درباره ما، تماس، قوانین و حریم خصوصی']]);if(current==='notifications')html=simple('اعلان‌ها','مدیریت اعلان‌های فروشگاه',[['اعلان سفارش','ثبت، پرداخت و ارسال سفارش'],['اعلان مدیریتی','موجودی کم و سفارش جدید'],['اعلان مشتری','ساختار آماده اتصال به SMS/Email']]);if(current==='tickets'){renderTickets();return;}if(current==='wallet')html=simple('کیف پول و وفاداری','امتیاز، اعتبار و باشگاه مشتریان',[['امتیاز خرید','قابل فعال‌سازی برای مشتریان'],['کیف پول','شارژ و برداشت اعتبار'],['سطوح مشتری','برنزی، نقره‌ای، طلایی']]);if(current==='reports')html=simple('گزارش‌ها','گزارش فروش، محصولات و مشتریان',[['گزارش فروش','روزانه، ماهانه و بازه دلخواه'],['محصولات پرفروش','قابل محاسبه از سفارش‌ها'],['گزارش موجودی','هشدار موجودی کم']]);if(current==='admins')html=simple('مدیران و دسترسی‌ها','مدیریت کاربران پنل و سطح دسترسی',[['مدیر اصلی','دسترسی کامل'],['مدیر محتوا','بنر، مجله و صفحات'],['اپراتور سفارش','سفارش‌ها و مشتریان']]);if(current==='activity')html=simple('گزارش فعالیت','ثبت عملیات مدیران و تغییرات',[['ورود مدیران','زمان و نشست‌ها'],['تغییر محصول','قیمت، موجودی و اطلاعات'],['تغییر تنظیمات','ثبت عملیات حساس']]);if(current==='settings')html=simple('تنظیمات فروشگاه','تنظیمات اصلی آوان',[['اطلاعات فروشگاه','نام، لوگو، تماس و آدرس'],['پرداخت','درگاه و وضعیت پرداخت'],['ارسال','روش‌ها، هزینه و کد رهگیری'],['امنیت','مدیران و نشست‌ها']]);$('#content').innerHTML=html;$$('[data-page-go]').forEach(b=>b.onclick=()=>{current=b.dataset.pageGo;render();});const nav=document.querySelector(`#nav button[data-page="${current}"]`);$('#title').textContent=nav?.querySelector('span')?.textContent||'داشبورد';if(current==='products'){
   renderProducts();
   $('#newProduct').onclick=()=>openProduct();
   $('#pSearch').oninput=renderProducts;

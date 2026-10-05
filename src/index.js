@@ -115,6 +115,55 @@ async function ensureProductMetaTable(env) {
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_product_meta_updated ON product_meta(updated_at DESC)`).run();
 }
 
+
+async function ensureOrdersTables(env) {
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS orders (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    customer_name TEXT NOT NULL DEFAULT '',
+    phone TEXT NOT NULL DEFAULT '',
+    email TEXT NOT NULL DEFAULT '',
+    province TEXT NOT NULL DEFAULT '',
+    city TEXT NOT NULL DEFAULT '',
+    address TEXT NOT NULL DEFAULT '',
+    postal_code TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT '',
+    subtotal INTEGER NOT NULL DEFAULT 0,
+    shipping INTEGER NOT NULL DEFAULT 0,
+    discount INTEGER NOT NULL DEFAULT 0,
+    total INTEGER NOT NULL DEFAULT 0,
+    payment_method TEXT NOT NULL DEFAULT 'card_transfer',
+    payment_status TEXT NOT NULL DEFAULT 'pending',
+    order_status TEXT NOT NULL DEFAULT 'pending_payment',
+    tracking_code TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`).run();
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS order_items (
+    id TEXT PRIMARY KEY,
+    order_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    product_name TEXT NOT NULL DEFAULT '',
+    product_image TEXT NOT NULL DEFAULT '',
+    unit_price INTEGER NOT NULL DEFAULT 0,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    line_total INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE
+  )`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at DESC)`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(order_status,payment_status)`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id,created_at DESC)`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id)`).run();
+}
+
+function paymentConfig(env) {
+  return {
+    cardNumber: String(env.PAYMENT_CARD_NUMBER || '').trim(),
+    cardName: String(env.PAYMENT_CARD_NAME || 'آوان گالری').trim(),
+    bankName: String(env.PAYMENT_BANK_NAME || '').trim()
+  };
+}
+
 function googleRedirectUri(request) {
   return new URL('/api/auth/google/callback', request.url).toString();
 }
@@ -402,6 +451,77 @@ async function api(request, env, url) {
     const recent = await env.DB.prepare(`SELECT COUNT(*) AS n FROM users WHERE created_at >= datetime('now','-30 day')`).first();
     const providers = await env.DB.prepare(`SELECT provider, COUNT(*) AS n FROM users GROUP BY provider`).all();
     return json({ok:true, customers:rows, stats:{total:Number(total?.n||0), recent:Number(recent?.n||0), providers:providers.results||[]}});
+  }
+
+  // Checkout + manual card transfer orders (no R2 required)
+  if (url.pathname === '/api/orders' && request.method === 'POST') {
+    if (!env.DB) return json({ok:false,error:'D1 binding DB is not configured.'},500);
+    await ensureOrdersTables(env);
+    const body = await request.json().catch(()=>({}));
+    const items = Array.isArray(body.items) ? body.items : [];
+    const customer = body.customer || {};
+    if (!items.length) return json({ok:false,error:'سبد خرید خالی است.'},400);
+    const name=String(customer.name||'').trim(), phone=String(customer.phone||'').trim(), email=String(customer.email||'').trim();
+    const province=String(customer.province||'').trim(), city=String(customer.city||'').trim(), address=String(customer.address||'').trim(), postal=String(customer.postalCode||'').trim(), notes=String(customer.notes||'').trim();
+    if(!name||!phone||!province||!city||!address) return json({ok:false,error:'لطفاً نام، شماره موبایل، استان، شهر و آدرس را کامل کنید.'},400);
+    const ids=[...new Set(items.map(x=>String(x.id||'').trim()).filter(Boolean))];
+    if(!ids.length) return json({ok:false,error:'محصول معتبر پیدا نشد.'},400);
+    const products=[];
+    for(const id of ids){ const row=await env.DB.prepare(`SELECT id,name,price,stock,image,active FROM products WHERE id=? LIMIT 1`).bind(id).first(); if(row) products.push(row); }
+    const map=new Map(products.map(p=>[String(p.id),p]));
+    let subtotal=0; const normalized=[];
+    for(const raw of items){ const p=map.get(String(raw.id)); const qty=Math.max(1,Math.floor(Number(raw.qty)||1)); if(!p||Number(p.active)!==1) return json({ok:false,error:`محصول ${raw.id} در دسترس نیست.`},400); if(Number(p.stock)<qty) return json({ok:false,error:`موجودی ${p.name} برای تعداد درخواستی کافی نیست.`},409); const line=Number(p.price)*qty; subtotal+=line; normalized.push({product:p,qty,line}); }
+    const shipping = subtotal >= 5000000 ? 0 : 0;
+    const discount = 0;
+    const total = Math.max(0,subtotal+shipping-discount);
+    const orderId='AVN-'+Date.now().toString(36).toUpperCase()+'-'+crypto.randomUUID().split('-')[0].toUpperCase();
+    const userSession=await validUserSession(request,String(env.GOOGLE_CLIENT_SECRET||''));
+    const userId=userSession?.uid || null;
+    await env.DB.prepare(`INSERT INTO orders (id,user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'card_transfer','pending','pending_payment',datetime('now'),datetime('now'))`).bind(orderId,userId,name,phone,email,province,city,address,postal,notes,subtotal,shipping,discount,total).run();
+    for(const x of normalized){ await env.DB.prepare(`INSERT INTO order_items (id,order_id,product_id,product_name,product_image,unit_price,quantity,line_total) VALUES (?,?,?,?,?,?,?,?)`).bind(crypto.randomUUID(),orderId,String(x.product.id),String(x.product.name),String(x.product.image||''),Number(x.product.price),x.qty,x.line).run(); }
+    return json({ok:true,order:{id:orderId,total,subtotal,shipping,discount,paymentStatus:'pending',orderStatus:'pending_payment',payment:paymentConfig(env)}},201);
+  }
+  if (url.pathname.match(/^\/api\/orders\/[^/]+\/payment$/) && request.method === 'POST') {
+    if (!env.DB) return json({ok:false,error:'D1 binding DB is not configured.'},500);
+    await ensureOrdersTables(env);
+    const orderId=decodeURIComponent(url.pathname.split('/')[3]);
+    const body=await request.json().catch(()=>({}));
+    const reference=String(body.reference||'').trim();
+    if(!reference) return json({ok:false,error:'کد پیگیری/شماره تراکنش را وارد کنید.'},400);
+    const order=await env.DB.prepare(`SELECT id,payment_status FROM orders WHERE id=?`).bind(orderId).first();
+    if(!order) return json({ok:false,error:'سفارش پیدا نشد.'},404);
+    await env.DB.prepare(`UPDATE orders SET tracking_code=?,payment_status='submitted',order_status='awaiting_verification',updated_at=datetime('now') WHERE id=?`).bind(reference,orderId).run();
+    return json({ok:true,message:'اطلاعات پرداخت ثبت شد و پس از بررسی تأیید می‌شود.'});
+  }
+  if (url.pathname.match(/^\/api\/orders\/[^/]+$/) && request.method === 'GET') {
+    if (!env.DB) return json({ok:false,error:'D1 binding DB is not configured.'},500);
+    await ensureOrdersTables(env);
+    const orderId=decodeURIComponent(url.pathname.split('/')[3]);
+    const order=await env.DB.prepare(`SELECT * FROM orders WHERE id=?`).bind(orderId).first();
+    if(!order) return json({ok:false,error:'سفارش پیدا نشد.'},404);
+    const {results}=await env.DB.prepare(`SELECT * FROM order_items WHERE order_id=? ORDER BY rowid ASC`).bind(orderId).all();
+    return json({ok:true,order,items:results||[],payment:paymentConfig(env)});
+  }
+  if (url.pathname === '/api/admin/orders' && request.method === 'GET') {
+    if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
+    await ensureOrdersTables(env);
+    const {results}=await env.DB.prepare(`SELECT * FROM orders ORDER BY created_at DESC`).all();
+    return json({ok:true,orders:results||[]});
+  }
+  const adminOrder=url.pathname.match(/^\/api\/admin\/orders\/([^/]+)$/);
+  if(adminOrder && request.method === 'PATCH') {
+    if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
+    await ensureOrdersTables(env);
+    const orderId=decodeURIComponent(adminOrder[1]);
+    const body=await request.json().catch(()=>({}));
+    const paymentStatus=String(body.paymentStatus||'').trim();
+    const orderStatus=String(body.orderStatus||'').trim();
+    const tracking=String(body.trackingCode||'').trim();
+    const allowedPay=['pending','submitted','paid','failed','refunded']; const allowedOrder=['pending_payment','awaiting_verification','processing','shipped','delivered','cancelled'];
+    if(paymentStatus && !allowedPay.includes(paymentStatus)) return json({ok:false,error:'وضعیت پرداخت نامعتبر است.'},400);
+    if(orderStatus && !allowedOrder.includes(orderStatus)) return json({ok:false,error:'وضعیت سفارش نامعتبر است.'},400);
+    await env.DB.prepare(`UPDATE orders SET payment_status=CASE WHEN ?<>'' THEN ? ELSE payment_status END,order_status=CASE WHEN ?<>'' THEN ? ELSE order_status END,tracking_code=CASE WHEN ?<>'' THEN ? ELSE tracking_code END,updated_at=datetime('now') WHERE id=?`).bind(paymentStatus,paymentStatus,orderStatus,orderStatus,tracking,tracking,orderId).run();
+    return json({ok:true});
   }
 
   if (!url.pathname.startsWith('/api/products')) return json({ ok: false, error: 'Not found' }, 404);

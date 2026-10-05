@@ -183,7 +183,7 @@
 
   $('#checkoutCart')?.addEventListener('click', () => {
     if (!cart.length) return;
-    location.hash = 'checkout';
+    location.href = '/checkout.html';
   });
 
   searchInput?.addEventListener('input', () => {

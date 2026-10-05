@@ -66,18 +66,53 @@ async function validUserSession(request, secret) {
 }
 
 async function ensureUsersTable(env) {
+  // Create the current schema for new installations. For existing D1 databases,
+  // migrate missing columns safely instead of assuming the table is empty/new.
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
-    google_id TEXT UNIQUE,
-    email TEXT UNIQUE,
+    google_id TEXT,
+    email TEXT,
     name TEXT NOT NULL DEFAULT '',
     avatar TEXT NOT NULL DEFAULT '',
     provider TEXT NOT NULL DEFAULT 'google',
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`).run();
+
+  const info = await env.DB.prepare(`PRAGMA table_info(users)`).all();
+  const columns = new Set((info.results || []).map(row => String(row.name)));
+
+  const additions = [
+    ['google_id', `ALTER TABLE users ADD COLUMN google_id TEXT`],
+    ['email', `ALTER TABLE users ADD COLUMN email TEXT`],
+    ['name', `ALTER TABLE users ADD COLUMN name TEXT NOT NULL DEFAULT ''`],
+    ['avatar', `ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT ''`],
+    ['provider', `ALTER TABLE users ADD COLUMN provider TEXT NOT NULL DEFAULT 'google'`],
+    ['created_at', `ALTER TABLE users ADD COLUMN created_at TEXT NOT NULL DEFAULT (datetime('now'))`],
+    ['updated_at', `ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))`]
+  ];
+
+  for (const [name, sql] of additions) {
+    if (!columns.has(name)) {
+      await env.DB.prepare(sql).run();
+    }
+  }
+
+  // Indexes are created only after the migration, so older users tables cannot
+  // fail with "no such column: google_id". Non-unique indexes avoid migration
+  // failures if an old database already contains duplicate email addresses.
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id)`).run();
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`).run();
+}
+
+async function ensureProductMetaTable(env) {
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS product_meta (
+    product_id TEXT PRIMARY KEY,
+    metadata_json TEXT NOT NULL DEFAULT '{}',
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+  )`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_product_meta_updated ON product_meta(updated_at DESC)`).run();
 }
 
 function googleRedirectUri(request) {
@@ -371,6 +406,7 @@ async function api(request, env, url) {
 
   if (!url.pathname.startsWith('/api/products')) return json({ ok: false, error: 'Not found' }, 404);
   if (!env.DB) return json({ ok: false, error: 'D1 binding DB is not configured.' }, 500);
+  await ensureProductMetaTable(env);
   const isAdmin = await validSession(request, env.ADMIN_PASSWORD);
 
   if (url.pathname === '/api/products' && request.method === 'GET') {

@@ -118,49 +118,53 @@ async function ensureProductMetaTable(env) {
 
 async function ensureOrdersTables(env) {
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS orders (
-    id TEXT PRIMARY KEY,
-    user_id TEXT,
-    customer_name TEXT NOT NULL DEFAULT '',
-    phone TEXT NOT NULL DEFAULT '',
-    email TEXT NOT NULL DEFAULT '',
-    province TEXT NOT NULL DEFAULT '',
-    city TEXT NOT NULL DEFAULT '',
-    address TEXT NOT NULL DEFAULT '',
-    postal_code TEXT NOT NULL DEFAULT '',
-    notes TEXT NOT NULL DEFAULT '',
-    subtotal INTEGER NOT NULL DEFAULT 0,
-    shipping INTEGER NOT NULL DEFAULT 0,
-    discount INTEGER NOT NULL DEFAULT 0,
-    total INTEGER NOT NULL DEFAULT 0,
-    payment_method TEXT NOT NULL DEFAULT 'card_transfer',
-    payment_status TEXT NOT NULL DEFAULT 'pending',
-    order_status TEXT NOT NULL DEFAULT 'pending_payment',
-    tracking_code TEXT NOT NULL DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    id TEXT PRIMARY KEY, user_id TEXT, customer_name TEXT NOT NULL DEFAULT '', phone TEXT NOT NULL DEFAULT '', email TEXT NOT NULL DEFAULT '',
+    province TEXT NOT NULL DEFAULT '', city TEXT NOT NULL DEFAULT '', address TEXT NOT NULL DEFAULT '', postal_code TEXT NOT NULL DEFAULT '', notes TEXT NOT NULL DEFAULT '',
+    subtotal INTEGER NOT NULL DEFAULT 0, shipping INTEGER NOT NULL DEFAULT 0, discount INTEGER NOT NULL DEFAULT 0, total INTEGER NOT NULL DEFAULT 0,
+    payment_method TEXT NOT NULL DEFAULT 'card_transfer', payment_status TEXT NOT NULL DEFAULT 'pending', order_status TEXT NOT NULL DEFAULT 'pending_payment',
+    tracking_code TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT ''
   )`).run();
-  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS order_items (
-    id TEXT PRIMARY KEY,
-    order_id TEXT NOT NULL,
-    product_id TEXT NOT NULL,
-    product_name TEXT NOT NULL DEFAULT '',
-    product_image TEXT NOT NULL DEFAULT '',
-    unit_price INTEGER NOT NULL DEFAULT 0,
-    quantity INTEGER NOT NULL DEFAULT 1,
-    line_total INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE
-  )`).run();
+  const info = await env.DB.prepare(`PRAGMA table_info(orders)`).all();
+  const cols = new Set((info.results || []).map(r => String(r.name)));
+  const additions = [
+    ['user_id', `ALTER TABLE orders ADD COLUMN user_id TEXT`], ['customer_name', `ALTER TABLE orders ADD COLUMN customer_name TEXT NOT NULL DEFAULT ''`],
+    ['phone', `ALTER TABLE orders ADD COLUMN phone TEXT NOT NULL DEFAULT ''`], ['email', `ALTER TABLE orders ADD COLUMN email TEXT NOT NULL DEFAULT ''`],
+    ['province', `ALTER TABLE orders ADD COLUMN province TEXT NOT NULL DEFAULT ''`], ['city', `ALTER TABLE orders ADD COLUMN city TEXT NOT NULL DEFAULT ''`],
+    ['address', `ALTER TABLE orders ADD COLUMN address TEXT NOT NULL DEFAULT ''`], ['postal_code', `ALTER TABLE orders ADD COLUMN postal_code TEXT NOT NULL DEFAULT ''`],
+    ['notes', `ALTER TABLE orders ADD COLUMN notes TEXT NOT NULL DEFAULT ''`], ['subtotal', `ALTER TABLE orders ADD COLUMN subtotal INTEGER NOT NULL DEFAULT 0`],
+    ['shipping', `ALTER TABLE orders ADD COLUMN shipping INTEGER NOT NULL DEFAULT 0`], ['discount', `ALTER TABLE orders ADD COLUMN discount INTEGER NOT NULL DEFAULT 0`],
+    ['total', `ALTER TABLE orders ADD COLUMN total INTEGER NOT NULL DEFAULT 0`], ['payment_method', `ALTER TABLE orders ADD COLUMN payment_method TEXT NOT NULL DEFAULT 'card_transfer'`],
+    ['payment_status', `ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'pending'`], ['order_status', `ALTER TABLE orders ADD COLUMN order_status TEXT NOT NULL DEFAULT 'pending_payment'`],
+    ['tracking_code', `ALTER TABLE orders ADD COLUMN tracking_code TEXT NOT NULL DEFAULT ''`], ['created_at', `ALTER TABLE orders ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`],
+    ['updated_at', `ALTER TABLE orders ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''`]
+  ];
+  for (const [name, sql] of additions) if (!cols.has(name)) await env.DB.prepare(sql).run();
+  await env.DB.prepare(`UPDATE orders SET created_at=datetime('now') WHERE created_at IS NULL OR created_at=''`).run();
+  await env.DB.prepare(`UPDATE orders SET updated_at=datetime('now') WHERE updated_at IS NULL OR updated_at=''`).run();
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS order_items (id TEXT PRIMARY KEY, order_id TEXT NOT NULL, product_id TEXT NOT NULL, product_name TEXT NOT NULL DEFAULT '', product_image TEXT NOT NULL DEFAULT '', unit_price INTEGER NOT NULL DEFAULT 0, quantity INTEGER NOT NULL DEFAULT 1, line_total INTEGER NOT NULL DEFAULT 0, FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE)`).run();
+  const itemInfo = await env.DB.prepare(`PRAGMA table_info(order_items)`).all();
+  const itemCols = new Set((itemInfo.results || []).map(r => String(r.name)));
+  const itemAdds = [['product_image',`ALTER TABLE order_items ADD COLUMN product_image TEXT NOT NULL DEFAULT ''`],['unit_price',`ALTER TABLE order_items ADD COLUMN unit_price INTEGER NOT NULL DEFAULT 0`],['quantity',`ALTER TABLE order_items ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1`],['line_total',`ALTER TABLE order_items ADD COLUMN line_total INTEGER NOT NULL DEFAULT 0`]];
+  for (const [name, sql] of itemAdds) if (!itemCols.has(name)) await env.DB.prepare(sql).run();
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at DESC)`).run();
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(order_status,payment_status)`).run();
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id,created_at DESC)`).run();
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id)`).run();
 }
 
-function paymentConfig(env) {
+async function ensureStoreSettings(env) {
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS store_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT (datetime('now')))` ).run();
+}
+
+async function paymentConfig(env) {
+  await ensureStoreSettings(env);
+  const {results} = await env.DB.prepare(`SELECT key,value FROM store_settings WHERE key IN ('payment_card_number','payment_card_name','payment_bank_name','payment_gateway_enabled','payment_gateway_name','payment_gateway_merchant_id','payment_gateway_note')`).all();
+  const m = Object.fromEntries((results || []).map(r => [r.key, r.value]));
   return {
-    cardNumber: String(env.PAYMENT_CARD_NUMBER || '').trim(),
-    cardName: String(env.PAYMENT_CARD_NAME || 'آوان گالری').trim(),
-    bankName: String(env.PAYMENT_BANK_NAME || '').trim()
+    cardNumber: String(m.payment_card_number || env.PAYMENT_CARD_NUMBER || '').trim(),
+    cardName: String(m.payment_card_name || env.PAYMENT_CARD_NAME || 'آوان گالری').trim(),
+    bankName: String(m.payment_bank_name || env.PAYMENT_BANK_NAME || '').trim(),
+    gatewayEnabled: m.payment_gateway_enabled === '1', gatewayName: m.payment_gateway_name || '', merchantId: m.payment_gateway_merchant_id || '', note: m.payment_gateway_note || ''
   };
 }
 
@@ -479,7 +483,7 @@ async function api(request, env, url) {
     const userId=userSession?.uid || null;
     await env.DB.prepare(`INSERT INTO orders (id,user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'card_transfer','pending','pending_payment',datetime('now'),datetime('now'))`).bind(orderId,userId,name,phone,email,province,city,address,postal,notes,subtotal,shipping,discount,total).run();
     for(const x of normalized){ await env.DB.prepare(`INSERT INTO order_items (id,order_id,product_id,product_name,product_image,unit_price,quantity,line_total) VALUES (?,?,?,?,?,?,?,?)`).bind(crypto.randomUUID(),orderId,String(x.product.id),String(x.product.name),String(x.product.image||''),Number(x.product.price),x.qty,x.line).run(); }
-    return json({ok:true,order:{id:orderId,total,subtotal,shipping,discount,paymentStatus:'pending',orderStatus:'pending_payment',payment:paymentConfig(env)}},201);
+    return json({ok:true,order:{id:orderId,total,subtotal,shipping,discount,paymentStatus:'pending',orderStatus:'pending_payment',payment:await paymentConfig(env)}},201);
   }
   if (url.pathname.match(/^\/api\/orders\/[^/]+\/payment$/) && request.method === 'POST') {
     if (!env.DB) return json({ok:false,error:'D1 binding DB is not configured.'},500);
@@ -500,7 +504,7 @@ async function api(request, env, url) {
     const order=await env.DB.prepare(`SELECT * FROM orders WHERE id=?`).bind(orderId).first();
     if(!order) return json({ok:false,error:'سفارش پیدا نشد.'},404);
     const {results}=await env.DB.prepare(`SELECT * FROM order_items WHERE order_id=? ORDER BY rowid ASC`).bind(orderId).all();
-    return json({ok:true,order,items:results||[],payment:paymentConfig(env)});
+    return json({ok:true,order,items:results||[],payment:await paymentConfig(env)});
   }
   if (url.pathname === '/api/admin/orders' && request.method === 'GET') {
     if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
@@ -508,6 +512,20 @@ async function api(request, env, url) {
     const {results}=await env.DB.prepare(`SELECT * FROM orders ORDER BY created_at DESC`).all();
     return json({ok:true,orders:results||[]});
   }
+  if (url.pathname === '/api/admin/payment-settings' && request.method === 'GET') {
+    if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
+    const payment=await paymentConfig(env);
+    return json({ok:true,payment});
+  }
+  if (url.pathname === '/api/admin/payment-settings' && request.method === 'POST') {
+    if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
+    await ensureStoreSettings(env);
+    const b=await request.json().catch(()=>({}));
+    const values={payment_card_number:String(b.cardNumber||'').trim(),payment_card_name:String(b.cardName||'').trim(),payment_bank_name:String(b.bankName||'').trim(),payment_gateway_enabled:b.gatewayEnabled?'1':'0',payment_gateway_name:String(b.gatewayName||'').trim(),payment_gateway_merchant_id:String(b.merchantId||'').trim(),payment_gateway_note:String(b.note||'').trim()};
+    for(const [key,value] of Object.entries(values)) await env.DB.prepare(`INSERT INTO store_settings(key,value,updated_at) VALUES(?,?,datetime('now')) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=datetime('now')`).bind(key,value).run();
+    return json({ok:true,payment:await paymentConfig(env)});
+  }
+
   const adminOrder=url.pathname.match(/^\/api\/admin\/orders\/([^/]+)$/);
   if(adminOrder && request.method === 'PATCH') {
     if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
@@ -583,8 +601,18 @@ export default {
       if (url.pathname === '/admin' || url.pathname === '/admin/') {
         return env.ASSETS.fetch(new Request(new URL('/admin/index.html', request.url), request));
       }
+      if (url.pathname === '/admin/dashboard' || url.pathname === '/admin/payment' || url.pathname === '/checkout') {
+        if (env.DB) {
+          await ensureProductMetaTable(env);
+          await ensureOrdersTables(env);
+          await ensureStoreSettings(env);
+        }
+      }
       if (url.pathname === '/admin/dashboard') {
         return env.ASSETS.fetch(new Request(new URL('/admin/dashboard.html', request.url), request));
+      }
+      if (url.pathname === '/admin/payment') {
+        return env.ASSETS.fetch(new Request(new URL('/admin/payment.html', request.url), request));
       }
       return env.ASSETS.fetch(request);
     } catch (err) {

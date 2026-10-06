@@ -478,10 +478,16 @@ async function api(request, env, url) {
     const shipping = subtotal >= 5000000 ? 0 : 0;
     const discount = 0;
     const total = Math.max(0,subtotal+shipping-discount);
-    const orderId='AVN-'+Date.now().toString(36).toUpperCase()+'-'+crypto.randomUUID().split('-')[0].toUpperCase();
+    // Existing installations may have an INTEGER PRIMARY KEY for orders.id.
+    // SQLite rejects a string such as AVN-... when inserted into an INTEGER rowid alias.
+    const orderInfo=await env.DB.prepare(`PRAGMA table_info(orders)`).all();
+    const idCol=(orderInfo.results||[]).find(r=>String(r.name)==='id');
+    const idType=String(idCol?.type||'').toUpperCase();
+    const numericOrderId=/INT/.test(idType) ? Date.now() : ('AVN-'+Date.now().toString(36).toUpperCase()+'-'+crypto.randomUUID().split('-')[0].toUpperCase());
+    const orderId=String(numericOrderId);
     const userSession=await validUserSession(request,String(env.GOOGLE_CLIENT_SECRET||''));
     const userId=userSession?.uid || null;
-    await env.DB.prepare(`INSERT INTO orders (id,user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'card_transfer','pending','pending_payment',datetime('now'),datetime('now'))`).bind(orderId,userId,name,phone,email,province,city,address,postal,notes,subtotal,shipping,discount,total).run();
+    await env.DB.prepare(`INSERT INTO orders (id,user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'card_transfer','pending','pending_payment',datetime('now'),datetime('now'))`).bind(numericOrderId,userId,name,phone,email,province,city,address,postal,notes,subtotal,shipping,discount,total).run();
     for(const x of normalized){ await env.DB.prepare(`INSERT INTO order_items (id,order_id,product_id,product_name,product_image,unit_price,quantity,line_total) VALUES (?,?,?,?,?,?,?,?)`).bind(crypto.randomUUID(),orderId,String(x.product.id),String(x.product.name),String(x.product.image||''),Number(x.product.price),x.qty,x.line).run(); }
     return json({ok:true,order:{id:orderId,total,subtotal,shipping,discount,paymentStatus:'pending',orderStatus:'pending_payment',payment:await paymentConfig(env)}},201);
   }

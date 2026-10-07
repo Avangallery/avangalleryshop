@@ -66,8 +66,10 @@ async function validUserSession(request, secret) {
 }
 
 async function ensureUsersTable(env) {
-  // Create the current schema for new installations. For existing D1 databases,
-  // migrate missing columns safely instead of assuming the table is empty/new.
+  if (!env.DB) throw new Error('D1 binding DB is not configured.');
+  // Create the table for fresh installs. Existing installations are migrated
+  // conservatively: never change the primary-key type and never use a
+  // non-constant DEFAULT in ALTER TABLE (SQLite rejects that).
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     google_id TEXT,
@@ -75,34 +77,53 @@ async function ensureUsersTable(env) {
     name TEXT NOT NULL DEFAULT '',
     avatar TEXT NOT NULL DEFAULT '',
     provider TEXT NOT NULL DEFAULT 'google',
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL DEFAULT ''
   )`).run();
 
   const info = await env.DB.prepare(`PRAGMA table_info(users)`).all();
   const columns = new Set((info.results || []).map(row => String(row.name)));
-
   const additions = [
     ['google_id', `ALTER TABLE users ADD COLUMN google_id TEXT`],
     ['email', `ALTER TABLE users ADD COLUMN email TEXT`],
     ['name', `ALTER TABLE users ADD COLUMN name TEXT NOT NULL DEFAULT ''`],
     ['avatar', `ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT ''`],
     ['provider', `ALTER TABLE users ADD COLUMN provider TEXT NOT NULL DEFAULT 'google'`],
-    ['created_at', `ALTER TABLE users ADD COLUMN created_at TEXT NOT NULL DEFAULT (datetime('now'))`],
-    ['updated_at', `ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT (datetime('now'))`]
+    ['created_at', `ALTER TABLE users ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`],
+    ['updated_at', `ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''`]
   ];
-
   for (const [name, sql] of additions) {
     if (!columns.has(name)) {
-      await env.DB.prepare(sql).run();
+      try { await env.DB.prepare(sql).run(); } catch (_) { /* continue; route has a safe fallback */ }
     }
   }
+  // Backfill nullable/empty legacy fields without changing the PK or data.
+  try { await env.DB.prepare(`UPDATE users SET created_at=datetime('now') WHERE created_at IS NULL OR created_at=''`).run(); } catch (_) {}
+  try { await env.DB.prepare(`UPDATE users SET updated_at=COALESCE(NULLIF(updated_at,''), created_at, datetime('now')) WHERE updated_at IS NULL OR updated_at=''`).run(); } catch (_) {}
+  try { await env.DB.prepare(`UPDATE users SET provider='google' WHERE provider IS NULL OR provider=''`).run(); } catch (_) {}
+  // Indexes are best-effort; an old/odd schema must never prevent the customer panel from loading.
+  try { await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id)`).run(); } catch (_) {}
+  try { await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`).run(); } catch (_) {}
+}
 
-  // Indexes are created only after the migration, so older users tables cannot
-  // fail with "no such column: google_id". Non-unique indexes avoid migration
-  // failures if an old database already contains duplicate email addresses.
-  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id)`).run();
-  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`).run();
+async function readUsersForAdmin(env, q, limit) {
+  const info = await env.DB.prepare(`PRAGMA table_info(users)`).all();
+  const cols = new Set((info.results || []).map(r => String(r.name)));
+  const pick = name => cols.has(name) ? name : null;
+  const id = pick('id') || 'rowid';
+  const email = pick('email'); const name = pick('name'); const avatar = pick('avatar');
+  const provider = pick('provider'); const created = pick('created_at'); const updated = pick('updated_at');
+  const select = [id, email ? `${email} AS email` : `'' AS email`, name ? `${name} AS name` : `'' AS name`, avatar ? `${avatar} AS avatar` : `'' AS avatar`, provider ? `${provider} AS provider` : `'unknown' AS provider`, created ? `${created} AS created_at` : `'' AS created_at`, updated ? `${updated} AS updated_at` : `'' AS updated_at`].join(',');
+  const whereParts=[]; const binds=[];
+  if(q){
+    const like=`%${q}%`;
+    if(name) { whereParts.push(`${name} LIKE ?`); binds.push(like); }
+    if(email) { whereParts.push(`${email} LIKE ?`); binds.push(like); }
+  }
+  const where=whereParts.length?` WHERE ${whereParts.join(' OR ')}`:'';
+  const order=created?` ORDER BY ${created} DESC`:` ORDER BY ${id} DESC`;
+  const r=await env.DB.prepare(`SELECT ${select} FROM users${where}${order} LIMIT ${limit}`).bind(...binds).all();
+  return r.results||[];
 }
 
 async function ensureProductMetaTable(env) {
@@ -442,18 +463,14 @@ async function api(request, env, url) {
     await ensureUsersTable(env);
     const q = String(url.searchParams.get('q') || '').trim();
     const limit = Math.min(Math.max(Number(url.searchParams.get('limit') || 100), 1), 300);
-    let rows;
-    if (q) {
-      const like = `%${q}%`;
-      const r = await env.DB.prepare(`SELECT id,email,name,avatar,provider,created_at,updated_at FROM users WHERE name LIKE ? OR email LIKE ? ORDER BY created_at DESC LIMIT ${limit}`).bind(like, like).all();
-      rows = r.results || [];
-    } else {
-      const r = await env.DB.prepare(`SELECT id,email,name,avatar,provider,created_at,updated_at FROM users ORDER BY created_at DESC LIMIT ${limit}`).all();
-      rows = r.results || [];
+    let rows = [];
+    try { rows = await readUsersForAdmin(env, q, limit); } catch (e) {
+      return json({ok:false,error:'خطا در خواندن جدول مشتریان: '+String(e?.message||e)},500);
     }
-    const total = await env.DB.prepare(`SELECT COUNT(*) AS n FROM users`).first();
-    const recent = await env.DB.prepare(`SELECT COUNT(*) AS n FROM users WHERE created_at >= datetime('now','-30 day')`).first();
-    const providers = await env.DB.prepare(`SELECT provider, COUNT(*) AS n FROM users GROUP BY provider`).all();
+    let total={n:rows.length}, recent={n:0}, providers={results:[]};
+    try { total = await env.DB.prepare(`SELECT COUNT(*) AS n FROM users`).first() || total; } catch (_) {}
+    try { recent = await env.DB.prepare(`SELECT COUNT(*) AS n FROM users WHERE COALESCE(created_at,'') >= datetime('now','-30 day')`).first() || recent; } catch (_) {}
+    try { providers = await env.DB.prepare(`SELECT COALESCE(provider,'unknown') AS provider, COUNT(*) AS n FROM users GROUP BY provider`).all() || providers; } catch (_) {}
     return json({ok:true, customers:rows, stats:{total:Number(total?.n||0), recent:Number(recent?.n||0), providers:providers.results||[]}});
   }
 

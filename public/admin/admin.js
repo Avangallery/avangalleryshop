@@ -227,9 +227,11 @@ async function loadCustomers(q=''){
 }
 function customerDate(v){
   if(!v)return '—';
-  const d=new Date(String(v).replace(' ','T')+'Z');
+  const raw=String(v);
+  const d=new Date(raw.includes('T')?raw:(raw.includes(' ')?raw.replace(' ','T')+'Z':raw));
   return Number.isNaN(d.getTime())?'—':new Intl.DateTimeFormat('fa-IR',{year:'numeric',month:'long',day:'numeric'}).format(d);
 }
+function customerProvider(c){const p=String(c?.provider||'unknown').toLowerCase(); return p==='google'?'Google':(p==='guest'?'مهمان':p==='unknown'?'نامشخص':p);}
 function customerInitial(c){return esc(String(c?.name||c?.email||'م').trim().charAt(0).toUpperCase()||'م')}
 function customerAvatar(c){return c?.avatar?`<img src="${esc(c.avatar)}" alt="" loading="lazy">`:`<span>${customerInitial(c)}</span>`}
 function customersPage(){
@@ -240,7 +242,7 @@ function customersPage(){
       <span class="eyebrow">AVAN GALLERY • CRM</span>
       <h2>مدیریت مشتریان</h2>
       <p>حساب‌های ثبت‌شده، ورودهای گوگل و اطلاعات مشتریان آوان گالری را یکجا مدیریت کنید.</p>
-      <div class="customer-hero-chips"><span><i></i> D1 متصل</span><span>ورود Google فعال</span></div>
+      <div class="customer-hero-chips"><span><i></i> D1 متصل</span><span>حساب‌های ثبت‌شده</span></div>
     </div>
     <div class="customers-hero-art"><div class="customer-orbit one"></div><div class="customer-orbit two"></div><div class="customer-gem">AVAN<small>GALLERY</small></div></div>
   </section>
@@ -263,10 +265,10 @@ function renderCustomers(){
   const q=($('#customerSearch')?.value||'').trim().toLowerCase();
   const arr=customers.filter(c=>`${c.name||''} ${c.email||''}`.toLowerCase().includes(q));
   $('#customersCount').textContent=`${fa(arr.length)} حساب از ${fa(customerStats.total)} مشتری`;
-  if(!arr.length){box.innerHTML=`<div class="customers-empty"><div class="customers-empty-icon">♙</div><h3>${q?'مشتری پیدا نشد':'هنوز مشتری‌ای ثبت نشده است'}</h3><p>${q?'عبارت جستجو را تغییر دهید.':'با اولین ورود Google، مشتری در این بخش نمایش داده می‌شود.'}</p></div>`;return}
+  if(!arr.length){box.innerHTML=`<div class="customers-empty"><div class="customers-empty-icon">♙</div><h3>${q?'مشتری پیدا نشد':'هنوز مشتری‌ای ثبت نشده است'}</h3><p>${q?'عبارت جستجو را تغییر دهید.':'با ثبت حساب یا اولین سفارش، مشتری در این بخش نمایش داده می‌شود.'}</p></div>`;return}
   box.innerHTML=`<div class="customers-table-head"><span>مشتری</span><span>روش ورود</span><span>تاریخ عضویت</span><span>آخرین بروزرسانی</span><span>عملیات</span></div>`+arr.map(c=>`<article class="customer-row" data-customer-id="${esc(c.id)}">
     <div class="customer-main"><div class="customer-avatar">${customerAvatar(c)}</div><div><strong>${esc(c.name||'کاربر آوان')}</strong><small dir="ltr">${esc(c.email||'—')}</small></div></div>
-    <div><span class="customer-provider"><b>G</b> Google</span></div>
+    <div><span class="customer-provider"><b>${String(c?.provider||'U').slice(0,1).toUpperCase()}</b> ${esc(customerProvider(c))}</span></div>
     <div class="customer-muted">${customerDate(c.created_at)}</div>
     <div class="customer-muted">${customerDate(c.updated_at)}</div>
     <div class="customer-actions"><button class="icon-action view" title="مشاهده" data-customer-view="${esc(c.id)}">◉</button></div>
@@ -275,7 +277,7 @@ function renderCustomers(){
 }
 function openCustomer(id){
   const c=customers.find(x=>String(x.id)===String(id)); if(!c)return;
-  openModal(`<button class="close">×</button><div class="customer-detail"><div class="customer-detail-top"><div class="customer-detail-avatar">${customerAvatar(c)}</div><div><span class="eyebrow">AVAN GALLERY • CUSTOMER</span><h2>${esc(c.name||'کاربر آوان')}</h2><p dir="ltr">${esc(c.email||'—')}</p></div></div><div class="customer-detail-grid"><div><small>روش ورود</small><b>Google</b></div><div><small>عضویت</small><b>${customerDate(c.created_at)}</b></div><div><small>آخرین بروزرسانی</small><b>${customerDate(c.updated_at)}</b></div><div><small>شناسه کاربر</small><b class="mono">${esc(c.id)}</b></div></div><div class="customer-detail-note"><span>✦</span><div><b>پروفایل مشتری</b><p>این حساب از طریق Google ایجاد شده است. سوابق سفارش و وفاداری پس از اتصال ماژول سفارش‌ها در همین پروفایل قابل نمایش خواهد بود.</p></div></div><div class="modal-actions"><button class="ghost close2">بستن</button></div></div>`);
+  openModal(`<button class="close">×</button><div class="customer-detail"><div class="customer-detail-top"><div class="customer-detail-avatar">${customerAvatar(c)}</div><div><span class="eyebrow">AVAN GALLERY • CUSTOMER</span><h2>${esc(c.name||'کاربر آوان')}</h2><p dir="ltr">${esc(c.email||'—')}</p></div></div><div class="customer-detail-grid"><div><small>روش ورود</small><b>${esc(customerProvider(c))}</b></div><div><small>عضویت</small><b>${customerDate(c.created_at)}</b></div><div><small>آخرین بروزرسانی</small><b>${customerDate(c.updated_at)}</b></div><div><small>شناسه کاربر</small><b class="mono">${esc(c.id)}</b></div></div><div class="customer-detail-note"><span>✦</span><div><b>پروفایل مشتری</b><p>این حساب از طریق Google ایجاد شده است. سوابق سفارش و وفاداری پس از اتصال ماژول سفارش‌ها در همین پروفایل قابل نمایش خواهد بود.</p></div></div><div class="modal-actions"><button class="ghost close2">بستن</button></div></div>`);
   $('#modalCard .close2').onclick=closeModal;
 }
 async function renderCustomersPage(){

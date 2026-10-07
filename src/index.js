@@ -106,6 +106,28 @@ async function ensureUsersTable(env) {
   try { await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`).run(); } catch (_) {}
 }
 
+async function createUserCompat(env, data = {}) {
+  const info = await env.DB.prepare(`PRAGMA table_info(users)`).all();
+  const cols = (info.results || []).map(r => ({name:String(r.name), type:String(r.type||"").toUpperCase(), notnull:Number(r.notnull||0)===1, pk:Number(r.pk||0)===1, dflt:r.dflt_value}));
+  const byName = new Map(cols.map(c => [c.name,c]));
+  const values = {google_id:data.googleId ?? null, email:data.email ?? '', name:data.name ?? '', avatar:data.avatar ?? '', provider:data.provider ?? 'guest', phone:data.phone ?? ''};
+  const idCol=byName.get('id');
+  const idIsIntegerPk=!!(idCol && /INT/.test(idCol.type) && idCol.pk);
+  let idValue=data.id;
+  if (!idIsIntegerPk && byName.has('id')) { idValue=idValue ?? ('usr-'+crypto.randomUUID()); values.id=idValue; }
+  const names=[],exprs=[],binds=[];
+  for (const c of cols) {
+    if (c.name==='id' && idIsIntegerPk) continue;
+    if (c.name==='created_at' || c.name==='updated_at') { names.push(c.name); exprs.push(`datetime('now')`); continue; }
+    if (Object.prototype.hasOwnProperty.call(values,c.name)) { names.push(c.name); exprs.push('?'); binds.push(values[c.name]); }
+    else if (c.notnull && c.dflt === null && !c.pk) { names.push(c.name); exprs.push('?'); binds.push(''); }
+  }
+  await env.DB.prepare(`INSERT INTO users (${names.join(',')}) VALUES (${exprs.join(',')})`).bind(...binds).run();
+  let user=idIsIntegerPk ? await env.DB.prepare(`SELECT * FROM users ORDER BY rowid DESC LIMIT 1`).first() : await env.DB.prepare(`SELECT * FROM users WHERE id=? LIMIT 1`).bind(idValue).first();
+  if (!user && data.email) user=await env.DB.prepare(`SELECT * FROM users WHERE email=? ORDER BY rowid DESC LIMIT 1`).bind(data.email).first();
+  return user;
+}
+
 async function readUsersForAdmin(env, q, limit) {
   const info = await env.DB.prepare(`PRAGMA table_info(users)`).all();
   const cols = new Set((info.results || []).map(r => String(r.name)));
@@ -340,9 +362,7 @@ async function api(request, env, url) {
         await env.DB.prepare(`UPDATE users SET google_id=?,email=?,name=?,avatar=?,provider='google',updated_at=datetime('now') WHERE id=?`).bind(googleUser.googleId, googleUser.email, googleUser.name, googleUser.avatar, user.id).run();
         user = await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(user.id).first();
       } else {
-        const id = crypto.randomUUID();
-        await env.DB.prepare(`INSERT INTO users (id,google_id,email,name,avatar,provider,created_at,updated_at) VALUES (?,?,?,?,?,'google',datetime('now'),datetime('now'))`).bind(id, googleUser.googleId, googleUser.email, googleUser.name, googleUser.avatar).run();
-        user = await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(id).first();
+        user = await createUserCompat(env, {id:crypto.randomUUID(), googleId:googleUser.googleId, email:googleUser.email, name:googleUser.name, avatar:googleUser.avatar, provider:'google', phone:''});
       }
       const sessionSecret = String(env.GOOGLE_CLIENT_SECRET || '');
       const session = await makeUserSession(sessionSecret, user.id);
@@ -519,14 +539,7 @@ async function api(request, env, url) {
 
     if(userId===null || userId===undefined || userId===''){
       const guestEmail=`guest-${crypto.randomUUID()}@avan.local`;
-      if(usersIdIsInteger){
-        // INTEGER PRIMARY KEY: omit id and let SQLite generate it.
-        await env.DB.prepare(`INSERT INTO users (email,name,avatar,provider,created_at,updated_at) VALUES (?,?,'','guest',datetime('now'),datetime('now'))`).bind(guestEmail,name).run();
-      }else{
-        userId='guest-'+crypto.randomUUID();
-        await env.DB.prepare(`INSERT INTO users (id,email,name,avatar,provider,created_at,updated_at) VALUES (?,?,?,'','guest',datetime('now'),datetime('now'))`).bind(userId,guestEmail,name).run();
-      }
-      const guest=await env.DB.prepare(`SELECT id FROM users WHERE email=? ORDER BY rowid DESC LIMIT 1`).bind(guestEmail).first();
+      const guest=await createUserCompat(env, {id:usersIdIsInteger ? undefined : ('guest-'+crypto.randomUUID()), email:guestEmail, name, avatar:'', provider:'guest', phone});
       userId=guest?.id;
     }
     if(userId===null || userId===undefined || userId==='') return json({ok:false,error:'شناسه کاربر برای ثبت سفارش ایجاد نشد.'},500);

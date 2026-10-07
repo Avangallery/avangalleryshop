@@ -478,27 +478,73 @@ async function api(request, env, url) {
     const shipping = subtotal >= 5000000 ? 0 : 0;
     const discount = 0;
     const total = Math.max(0,subtotal+shipping-discount);
-    // Existing installations may have an INTEGER PRIMARY KEY for orders.id.
-    // SQLite rejects a string such as AVN-... when inserted into an INTEGER rowid alias.
-    const orderInfo=await env.DB.prepare(`PRAGMA table_info(orders)`).all();
-    const idCol=(orderInfo.results||[]).find(r=>String(r.name)==='id');
-    const idType=String(idCol?.type||'').toUpperCase();
-    const numericOrderId=/INT/.test(idType) ? Date.now() : ('AVN-'+Date.now().toString(36).toUpperCase()+'-'+crypto.randomUUID().split('-')[0].toUpperCase());
-    const orderId=String(numericOrderId);
+    // Create the order using the EXISTING D1 schema instead of assuming id/user_id types.
+    // This makes checkout compatible with older databases that used INTEGER PRIMARY KEYs.
+    const orderInfo2=await env.DB.prepare(`PRAGMA table_info(orders)`).all();
+    const orderCols=new Map((orderInfo2.results||[]).map(r=>[String(r.name),r]));
+    const ordersIdCol=orderCols.get('id');
+    const ordersUserIdCol=orderCols.get('user_id');
+    const ordersIdIsInteger=/INT/.test(String(ordersIdCol?.type||'').toUpperCase()) && Number(ordersIdCol?.pk||0)===1;
+    const ordersUserIdIsInteger=/INT/.test(String(ordersUserIdCol?.type||'').toUpperCase());
+
     const userSession=await validUserSession(request,String(env.GOOGLE_CLIENT_SECRET||''));
-    // Some existing D1 installations have orders.user_id defined as NOT NULL.
-    // Checkout must still work for guests, so create a lightweight guest user
-    // record when there is no authenticated Google session.
-    let userId=userSession?.uid || null;
-    if (!userId) {
-      await ensureUsersTable(env);
-      userId = 'guest-' + crypto.randomUUID();
-      const guestEmail = `guest-${crypto.randomUUID()}@avan.local`;
-      await env.DB.prepare(`INSERT INTO users (id,email,name,avatar,provider,created_at,updated_at) VALUES (?,?,?,'','guest',datetime('now'),datetime('now'))`)
-        .bind(userId, guestEmail, name).run();
+    await ensureUsersTable(env);
+    const userInfo=await env.DB.prepare(`PRAGMA table_info(users)`).all();
+    const userCols=new Map((userInfo.results||[]).map(r=>[String(r.name),r]));
+    const usersIdCol=userCols.get('id');
+    const usersIdIsInteger=/INT/.test(String(usersIdCol?.type||'').toUpperCase()) && Number(usersIdCol?.pk||0)===1;
+
+    let userId=null;
+    if(userSession?.uid){
+      const sessionUser=await env.DB.prepare(`SELECT id FROM users WHERE id=? LIMIT 1`).bind(usersIdIsInteger ? Number(userSession.uid) : String(userSession.uid)).first().catch(()=>null);
+      if(sessionUser?.id!==undefined && sessionUser?.id!==null) userId=sessionUser.id;
     }
-    await env.DB.prepare(`INSERT INTO orders (id,user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'card_transfer','pending','pending_payment',datetime('now'),datetime('now'))`).bind(numericOrderId,userId,name,phone,email,province,city,address,postal,notes,subtotal,shipping,discount,total).run();
-    for(const x of normalized){ await env.DB.prepare(`INSERT INTO order_items (id,order_id,product_id,product_name,product_image,unit_price,quantity,line_total) VALUES (?,?,?,?,?,?,?,?)`).bind(crypto.randomUUID(),orderId,String(x.product.id),String(x.product.name),String(x.product.image||''),Number(x.product.price),x.qty,x.line).run(); }
+
+    if(userId===null || userId===undefined || userId===''){
+      const guestEmail=`guest-${crypto.randomUUID()}@avan.local`;
+      if(usersIdIsInteger){
+        // INTEGER PRIMARY KEY: omit id and let SQLite generate it.
+        await env.DB.prepare(`INSERT INTO users (email,name,avatar,provider,created_at,updated_at) VALUES (?,?,'','guest',datetime('now'),datetime('now'))`).bind(guestEmail,name).run();
+      }else{
+        userId='guest-'+crypto.randomUUID();
+        await env.DB.prepare(`INSERT INTO users (id,email,name,avatar,provider,created_at,updated_at) VALUES (?,?,?,'','guest',datetime('now'),datetime('now'))`).bind(userId,guestEmail,name).run();
+      }
+      const guest=await env.DB.prepare(`SELECT id FROM users WHERE email=? ORDER BY rowid DESC LIMIT 1`).bind(guestEmail).first();
+      userId=guest?.id;
+    }
+    if(userId===null || userId===undefined || userId==='') return json({ok:false,error:'شناسه کاربر برای ثبت سفارش ایجاد نشد.'},500);
+    const orderUserValue=ordersUserIdIsInteger ? Number(userId) : String(userId);
+    if(ordersUserIdIsInteger && !Number.isFinite(orderUserValue)) return json({ok:false,error:'ساختار شناسه کاربر در دیتابیس با سفارش سازگار نیست.'},500);
+
+    // Insert order dynamically so an old INTEGER PRIMARY KEY does not receive a text id.
+    let orderId;
+    if(ordersIdIsInteger){
+      const sql=`INSERT INTO orders (user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'),datetime('now'))`;
+      await env.DB.prepare(sql).bind(orderUserValue,name,phone,email,province,city,address,postal,notes,subtotal,shipping,discount,total,'card_transfer','pending','pending_payment').run();
+      const created=await env.DB.prepare(`SELECT id FROM orders ORDER BY rowid DESC LIMIT 1`).first();
+      orderId=created?.id;
+    }else{
+      orderId='AVN-'+Date.now().toString(36).toUpperCase()+'-'+crypto.randomUUID().split('-')[0].toUpperCase();
+      await env.DB.prepare(`INSERT INTO orders (id,user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'),datetime('now'))`).bind(orderId,orderUserValue,name,phone,email,province,city,address,postal,notes,subtotal,shipping,discount,total,'card_transfer','pending','pending_payment').run();
+    }
+    if(orderId===undefined || orderId===null || orderId==='') return json({ok:false,error:'شماره سفارش ایجاد نشد.'},500);
+
+    const itemInfo2=await env.DB.prepare(`PRAGMA table_info(order_items)`).all();
+    const itemCols2=new Map((itemInfo2.results||[]).map(r=>[String(r.name),r]));
+    const itemIdCol=itemCols2.get('id');
+    const itemOrderIdCol=itemCols2.get('order_id');
+    const itemProductIdCol=itemCols2.get('product_id');
+    const itemIdIsInteger=/INT/.test(String(itemIdCol?.type||'').toUpperCase()) && Number(itemIdCol?.pk||0)===1;
+    const itemOrderIdIsInteger=/INT/.test(String(itemOrderIdCol?.type||'').toUpperCase());
+    const itemProductIdIsInteger=/INT/.test(String(itemProductIdCol?.type||'').toUpperCase());
+    for(const x of normalized){
+      const itemId=itemIdIsInteger ? null : crypto.randomUUID();
+      if(itemIdIsInteger){
+        await env.DB.prepare(`INSERT INTO order_items (order_id,product_id,product_name,product_image,unit_price,quantity,line_total) VALUES (?,?,?,?,?,?,?)`).bind(itemOrderIdIsInteger ? Number(orderId) : String(orderId),itemProductIdIsInteger ? Number(x.product.id) : String(x.product.id),String(x.product.name),String(x.product.image||''),Number(x.product.price),x.qty,x.line).run();
+      }else{
+        await env.DB.prepare(`INSERT INTO order_items (id,order_id,product_id,product_name,product_image,unit_price,quantity,line_total) VALUES (?,?,?,?,?,?,?,?)`).bind(itemId,itemOrderIdIsInteger ? Number(orderId) : String(orderId),itemProductIdIsInteger ? Number(x.product.id) : String(x.product.id),String(x.product.name),String(x.product.image||''),Number(x.product.price),x.qty,x.line).run();
+      }
+    }
     return json({ok:true,order:{id:orderId,total,subtotal,shipping,discount,paymentStatus:'pending',orderStatus:'pending_payment',payment:await paymentConfig(env)}},201);
   }
   if (url.pathname.match(/^\/api\/orders\/[^/]+\/payment$/) && request.method === 'POST') {

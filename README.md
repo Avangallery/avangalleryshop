@@ -36,3 +36,7 @@ The checkout payment step now shows the configured card number, holder, bank, pa
 
 ## V132 — Legacy D1 schema compatibility
 Checkout chooses product_id binding based on the actual products.id schema, avoiding NULL product IDs when IDs are text slugs. Email/password registration supports legacy databases with INTEGER PRIMARY KEY user IDs by allowing SQLite to allocate the ID and retrieving the created user. Existing records are preserved.
+
+
+## V133 — Legacy schema compatibility hardening
+Order-item inserts are now generated from the actual D1 table columns and populate legacy `price` as well as `unit_price`, plus common quantity/total fields. Password registration uses the detected users schema and fills legacy required columns conservatively. This does not replace a live test against the production D1 database; deploy to staging or test with a low-value test order first.

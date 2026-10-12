@@ -365,19 +365,30 @@ async function api(request, env, url) {
         if (user) return json({ok:false,error:'این ایمیل قبلاً ثبت‌نام کرده است. وارد حساب شوید یا از ورود با گوگل استفاده کنید.'},409);
         const hashed = await hashCustomerPassword(password);
         const userInfo = await env.DB.prepare(`PRAGMA table_info(users)`).all();
-        const userCols = new Map((userInfo.results || []).map(c => [String(c.name), c]));
-        const idCol = userCols.get('id');
-        const integerId = !!(idCol && /INT/i.test(String(idCol.type || '')) && Number(idCol.pk || 0) === 1);
+        const userCols = (userInfo.results || []).map(c => ({name:String(c.name),type:String(c.type||'').toUpperCase(),notnull:Number(c.notnull||0)===1,pk:Number(c.pk||0)===1,dflt:c.dflt_value}));
+        const idCol = userCols.find(c=>c.name==='id');
+        const integerId = !!(idCol && /INT/.test(idCol.type) && idCol.pk);
         const id = integerId ? null : ('usr-' + crypto.randomUUID());
-        if (integerId) {
-          await env.DB.prepare(`INSERT INTO users (email,name,avatar,provider,password_hash,created_at,updated_at) VALUES (?,?,?,'password',?,datetime('now'),datetime('now'))`)
-            .bind(email,name,'',hashed.salt+'$'+hashed.hash).run();
-          user = await env.DB.prepare(`SELECT * FROM users WHERE lower(email)=? ORDER BY rowid DESC LIMIT 1`).bind(email).first();
-        } else {
-          await env.DB.prepare(`INSERT INTO users (id,email,name,avatar,provider,password_hash,created_at,updated_at) VALUES (?,?,?,?,'password',?,datetime('now'),datetime('now'))`)
-            .bind(id,email,name,'',hashed.salt+'$'+hashed.hash).run();
-          user = await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(id).first();
+        const values = {
+          id, google_id:'', email, name, avatar:'', provider:'password',
+          password_hash:hashed.salt+'$'+hashed.hash, phone:'',
+          created_at:new Date().toISOString(), updated_at:new Date().toISOString()
+        };
+        const insertCols=[], insertVals=[];
+        for (const c of userCols) {
+          if (c.pk && c.name==='id' && integerId) continue;
+          if (Object.prototype.hasOwnProperty.call(values,c.name)) {
+            if (c.name==='id' && (values.id===null || values.id===undefined)) continue;
+            insertCols.push(c.name); insertVals.push(values[c.name]);
+          } else if (c.notnull && c.dflt===null && !c.pk) {
+            // Compatibility for legacy schemas with extra required columns.
+            insertCols.push(c.name); insertVals.push(/INT|REAL|NUMERIC|DECIMAL/.test(c.type) ? 0 : '');
+          }
         }
+        if (!insertCols.includes('email') || !insertCols.includes('password_hash')) throw new Error('users schema lacks email/password_hash columns');
+        const marks=insertCols.map(()=>'?').join(',');
+        await env.DB.prepare(`INSERT INTO users (${insertCols.map(c=>'"'+c.replace(/"/g,'""')+'"').join(',')}) VALUES (${marks})`).bind(...insertVals).run();
+        user = await env.DB.prepare(`SELECT * FROM users WHERE lower(email)=? LIMIT 1`).bind(email).first();
         if (!user || user.id === undefined || user.id === null) throw new Error('User row was not returned after registration');
       } else {
         if (!user || !(await verifyCustomerPassword(password, user.password_hash))) return json({ok:false,error:'ایمیل یا رمز عبور صحیح نیست.'},401);
@@ -623,22 +634,48 @@ async function api(request, env, url) {
     if(orderId===undefined || orderId===null || orderId==='') return json({ok:false,error:'شماره سفارش ایجاد نشد.'},500);
 
     const itemInfo2=await env.DB.prepare(`PRAGMA table_info(order_items)`).all();
-    const itemCols2=new Map((itemInfo2.results||[]).map(r=>[String(r.name),r]));
-    const itemIdCol=itemCols2.get('id');
-    const itemOrderIdCol=itemCols2.get('order_id');
-    const itemProductIdCol=itemCols2.get('product_id');
-    const itemIdIsInteger=/INT/.test(String(itemIdCol?.type||'').toUpperCase()) && Number(itemIdCol?.pk||0)===1;
-    const itemOrderIdIsInteger=/INT/.test(String(itemOrderIdCol?.type||'').toUpperCase());
+    const itemCols2=(itemInfo2.results||[]).map(c=>({name:String(c.name),type:String(c.type||'').toUpperCase(),notnull:Number(c.notnull||0)===1,pk:Number(c.pk||0)===1,dflt:c.dflt_value}));
+    const itemIdCol=itemCols2.find(c=>c.name==='id');
+    const itemOrderIdCol=itemCols2.find(c=>c.name==='order_id');
+    const itemIdIsInteger=!!(itemIdCol && /INT/.test(itemIdCol.type) && itemIdCol.pk);
+    const itemOrderIdIsInteger=!!(itemOrderIdCol && /INT/.test(itemOrderIdCol.type));
     const productInfoForItems=await env.DB.prepare(`PRAGMA table_info(products)`).all();
     const productsIdCol=(productInfoForItems.results||[]).find(c=>String(c.name)==='id');
     const itemProductIdIsInteger=!!(productsIdCol && /INT/.test(String(productsIdCol.type||'').toUpperCase()) && Number(productsIdCol.pk||0)===1);
     for(const x of normalized){
-      const itemId=itemIdIsInteger ? null : crypto.randomUUID();
-      if(itemIdIsInteger){
-        await env.DB.prepare(`INSERT INTO order_items (order_id,product_id,product_name,product_image,unit_price,quantity,line_total) VALUES (?,?,?,?,?,?,?)`).bind(itemOrderIdIsInteger ? Number(orderId) : String(orderId),itemProductIdIsInteger ? Number(x.product.id) : String(x.product.id),String(x.product.name),String(x.product.image||''),Number(x.product.price),x.qty,x.line).run();
-      }else{
-        await env.DB.prepare(`INSERT INTO order_items (id,order_id,product_id,product_name,product_image,unit_price,quantity,line_total) VALUES (?,?,?,?,?,?,?,?)`).bind(itemId,itemOrderIdIsInteger ? Number(orderId) : String(orderId),itemProductIdIsInteger ? Number(x.product.id) : String(x.product.id),String(x.product.name),String(x.product.image||''),Number(x.product.price),x.qty,x.line).run();
+      const values={
+        id:itemIdIsInteger?undefined:crypto.randomUUID(),
+        order_id:itemOrderIdIsInteger?Number(orderId):String(orderId),
+        product_id:itemProductIdIsInteger?Number(x.product.id):String(x.product.id),
+        product_name:String(x.product.name||''),
+        product_image:String(x.product.image||''),
+        price:Number(x.product.price),
+        unit_price:Number(x.product.price),
+        quantity:x.qty,
+        qty:x.qty,
+        line_total:x.line,
+        total:x.line,
+        amount:x.line
+      };
+      const insertCols=[],insertVals=[];
+      for(const c of itemCols2){
+        if(c.name==='id' && (values.id===undefined || values.id===null)) continue;
+        if(Object.prototype.hasOwnProperty.call(values,c.name) && values[c.name]!==undefined){
+          insertCols.push(c.name);insertVals.push(values[c.name]);
+        }else if(c.notnull && c.dflt===null && !c.pk){
+          // Common legacy required columns can be safely filled from the current item.
+          if(/price/i.test(c.name)){insertCols.push(c.name);insertVals.push(Number(x.product.price));}
+          else if(/qty|quantity/i.test(c.name)){insertCols.push(c.name);insertVals.push(x.qty);}
+          else if(/name/i.test(c.name)){insertCols.push(c.name);insertVals.push(String(x.product.name||''));}
+          else if(/image|photo/i.test(c.name)){insertCols.push(c.name);insertVals.push(String(x.product.image||''));}
+          else if(/total|amount|subtotal/i.test(c.name)){insertCols.push(c.name);insertVals.push(x.line);}
+          else if(/INT|REAL|NUMERIC|DECIMAL/.test(c.type)){insertCols.push(c.name);insertVals.push(0);}
+          else {insertCols.push(c.name);insertVals.push('');}
+        }
       }
+      if(!insertCols.includes('order_id')||!insertCols.includes('product_id')) throw new Error('order_items schema lacks order_id or product_id');
+      const marks=insertCols.map(()=>'?').join(',');
+      await env.DB.prepare(`INSERT INTO order_items (${insertCols.map(c=>'"'+c.replace(/"/g,'""')+'"').join(',')}) VALUES (${marks})`).bind(...insertVals).run();
     }
     return json({ok:true,order:{id:orderId,total,subtotal,shipping,discount,paymentStatus:'pending',orderStatus:'pending_payment',payment:await paymentConfig(env)}},201);
   }

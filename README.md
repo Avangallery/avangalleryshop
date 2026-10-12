@@ -32,3 +32,7 @@ The Worker now checks the existing `order_items` table and adds the missing `pro
 
 ## V131 — Card transfer checkout
 The checkout payment step now shows the configured card number, holder, bank, payment note, order ID, and payable amount; includes a copy-card button and a warning if the card number is not configured. Admin payment settings validate a provided card number as 16 digits. Set the card details in `/admin/payment` after signing into the admin panel. Never commit real payment card details into source code.
+
+
+## V132 — Legacy D1 schema compatibility
+Checkout chooses product_id binding based on the actual products.id schema, avoiding NULL product IDs when IDs are text slugs. Email/password registration supports legacy databases with INTEGER PRIMARY KEY user IDs by allowing SQLite to allocate the ID and retrieving the created user. Existing records are preserved.

@@ -364,10 +364,21 @@ async function api(request, env, url) {
       if (isRegister) {
         if (user) return json({ok:false,error:'این ایمیل قبلاً ثبت‌نام کرده است. وارد حساب شوید یا از ورود با گوگل استفاده کنید.'},409);
         const hashed = await hashCustomerPassword(password);
-        const id = 'usr-' + crypto.randomUUID();
-        await env.DB.prepare(`INSERT INTO users (id,email,name,avatar,provider,password_hash,created_at,updated_at) VALUES (?,?,?,'','password',?,?,datetime('now'),datetime('now'))`.replace("VALUES (?,?,?,'','password',?,?,datetime('now'),datetime('now'))","VALUES (?,?,?,'','password',?,datetime('now'),datetime('now'))"))
-          .bind(id,email,name,hashed.salt+'$'+hashed.hash).run();
-        user = await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(id).first();
+        const userInfo = await env.DB.prepare(`PRAGMA table_info(users)`).all();
+        const userCols = new Map((userInfo.results || []).map(c => [String(c.name), c]));
+        const idCol = userCols.get('id');
+        const integerId = !!(idCol && /INT/i.test(String(idCol.type || '')) && Number(idCol.pk || 0) === 1);
+        const id = integerId ? null : ('usr-' + crypto.randomUUID());
+        if (integerId) {
+          await env.DB.prepare(`INSERT INTO users (email,name,avatar,provider,password_hash,created_at,updated_at) VALUES (?,?,?,'password',?,datetime('now'),datetime('now'))`)
+            .bind(email,name,'',hashed.salt+'$'+hashed.hash).run();
+          user = await env.DB.prepare(`SELECT * FROM users WHERE lower(email)=? ORDER BY rowid DESC LIMIT 1`).bind(email).first();
+        } else {
+          await env.DB.prepare(`INSERT INTO users (id,email,name,avatar,provider,password_hash,created_at,updated_at) VALUES (?,?,?,?,'password',?,datetime('now'),datetime('now'))`)
+            .bind(id,email,name,'',hashed.salt+'$'+hashed.hash).run();
+          user = await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(id).first();
+        }
+        if (!user || user.id === undefined || user.id === null) throw new Error('User row was not returned after registration');
       } else {
         if (!user || !(await verifyCustomerPassword(password, user.password_hash))) return json({ok:false,error:'ایمیل یا رمز عبور صحیح نیست.'},401);
       }
@@ -618,7 +629,9 @@ async function api(request, env, url) {
     const itemProductIdCol=itemCols2.get('product_id');
     const itemIdIsInteger=/INT/.test(String(itemIdCol?.type||'').toUpperCase()) && Number(itemIdCol?.pk||0)===1;
     const itemOrderIdIsInteger=/INT/.test(String(itemOrderIdCol?.type||'').toUpperCase());
-    const itemProductIdIsInteger=/INT/.test(String(itemProductIdCol?.type||'').toUpperCase());
+    const productInfoForItems=await env.DB.prepare(`PRAGMA table_info(products)`).all();
+    const productsIdCol=(productInfoForItems.results||[]).find(c=>String(c.name)==='id');
+    const itemProductIdIsInteger=!!(productsIdCol && /INT/.test(String(productsIdCol.type||'').toUpperCase()) && Number(productsIdCol.pk||0)===1);
     for(const x of normalized){
       const itemId=itemIdIsInteger ? null : crypto.randomUUID();
       if(itemIdIsInteger){

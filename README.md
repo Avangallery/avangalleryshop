@@ -25,3 +25,10 @@ See `README-V126.md` for the V126 style-guide, responsive layout, checkout and a
 - The existing D1 `users` table is migrated on demand to add `password_hash`.
 - Optional `AUTH_SESSION_SECRET` can be configured as a Cloudflare secret. If omitted, the app falls back to the existing Google OAuth secret (or admin password) for signing customer sessions.
 - Standard registration currently accepts email addresses, not phone numbers. Email verification and password reset are not implemented in this version.
+
+## V130 — Checkout database compatibility
+The Worker now checks the existing `order_items` table and adds the missing `product_name` column before creating orders. Deploy the Worker; the migration runs automatically when the order-table initialization runs. No R2 binding is required.
+
+
+## V131 — Card transfer checkout
+The checkout payment step now shows the configured card number, holder, bank, payment note, order ID, and payable amount; includes a copy-card button and a warning if the card number is not configured. Admin payment settings validate a provided card number as 16 digits. Set the card details in `/admin/payment` after signing into the admin panel. Never commit real payment card details into source code.

@@ -188,7 +188,7 @@ async function ensureOrdersTables(env) {
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS order_items (id TEXT PRIMARY KEY, order_id TEXT NOT NULL, product_id TEXT NOT NULL, product_name TEXT NOT NULL DEFAULT '', product_image TEXT NOT NULL DEFAULT '', unit_price INTEGER NOT NULL DEFAULT 0, quantity INTEGER NOT NULL DEFAULT 1, line_total INTEGER NOT NULL DEFAULT 0, FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE)`).run();
   const itemInfo = await env.DB.prepare(`PRAGMA table_info(order_items)`).all();
   const itemCols = new Set((itemInfo.results || []).map(r => String(r.name)));
-  const itemAdds = [['product_image',`ALTER TABLE order_items ADD COLUMN product_image TEXT NOT NULL DEFAULT ''`],['unit_price',`ALTER TABLE order_items ADD COLUMN unit_price INTEGER NOT NULL DEFAULT 0`],['quantity',`ALTER TABLE order_items ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1`],['line_total',`ALTER TABLE order_items ADD COLUMN line_total INTEGER NOT NULL DEFAULT 0`]];
+  const itemAdds = [['product_name',`ALTER TABLE order_items ADD COLUMN product_name TEXT NOT NULL DEFAULT ''`],['product_image',`ALTER TABLE order_items ADD COLUMN product_image TEXT NOT NULL DEFAULT ''`],['unit_price',`ALTER TABLE order_items ADD COLUMN unit_price INTEGER NOT NULL DEFAULT 0`],['quantity',`ALTER TABLE order_items ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1`],['line_total',`ALTER TABLE order_items ADD COLUMN line_total INTEGER NOT NULL DEFAULT 0`]];
   for (const [name, sql] of itemAdds) if (!itemCols.has(name)) await env.DB.prepare(sql).run();
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at DESC)`).run();
   await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(order_status,payment_status)`).run();
@@ -355,7 +355,7 @@ async function api(request, env, url) {
     const password = String(body.password || '');
     const name = String(body.name || '').trim();
     const isRegister = url.pathname.endsWith('/register');
-    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({ok:false,error:'یک آدرس ایمیل معتبر وارد کنید.'},400);
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ok:false,error:'یک آدرس ایمیل معتبر وارد کنید.'},400);
     if (password.length < 6) return json({ok:false,error:'رمز عبور باید حداقل ۶ کاراکتر باشد.'},400);
     if (isRegister && !name) return json({ok:false,error:'نام و نام خانوادگی را وارد کنید.'},400);
     try {

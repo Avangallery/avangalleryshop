@@ -179,7 +179,7 @@ async function ensureOrdersTables(env) {
     ['shipping', `ALTER TABLE orders ADD COLUMN shipping INTEGER NOT NULL DEFAULT 0`], ['discount', `ALTER TABLE orders ADD COLUMN discount INTEGER NOT NULL DEFAULT 0`],
     ['total', `ALTER TABLE orders ADD COLUMN total INTEGER NOT NULL DEFAULT 0`], ['payment_method', `ALTER TABLE orders ADD COLUMN payment_method TEXT NOT NULL DEFAULT 'card_transfer'`],
     ['payment_status', `ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'pending'`], ['order_status', `ALTER TABLE orders ADD COLUMN order_status TEXT NOT NULL DEFAULT 'pending_payment'`],
-    ['tracking_code', `ALTER TABLE orders ADD COLUMN tracking_code TEXT NOT NULL DEFAULT ''`], ['created_at', `ALTER TABLE orders ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`],
+    ['tracking_code', `ALTER TABLE orders ADD COLUMN tracking_code TEXT NOT NULL DEFAULT ''`], ['receipt_image', `ALTER TABLE orders ADD COLUMN receipt_image TEXT NOT NULL DEFAULT ''`], ['created_at', `ALTER TABLE orders ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`],
     ['updated_at', `ALTER TABLE orders ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''`]
   ];
   for (const [name, sql] of additions) if (!cols.has(name)) await env.DB.prepare(sql).run();
@@ -685,11 +685,14 @@ async function api(request, env, url) {
     const orderId=decodeURIComponent(url.pathname.split('/')[3]);
     const body=await request.json().catch(()=>({}));
     const reference=String(body.reference||'').trim();
+    const receiptImage=String(body.receiptImage||'').trim();
     if(!reference) return json({ok:false,error:'کد پیگیری/شماره تراکنش را وارد کنید.'},400);
+    if(receiptImage && !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(receiptImage)) return json({ok:false,error:'فرمت تصویر رسید معتبر نیست. فایل JPG، PNG یا WebP انتخاب کنید.'},400);
+    if(receiptImage && receiptImage.length > 2800000) return json({ok:false,error:'حجم تصویر رسید باید کمتر از ۲ مگابایت باشد.'},413);
     const order=await env.DB.prepare(`SELECT id,payment_status FROM orders WHERE id=?`).bind(orderId).first();
     if(!order) return json({ok:false,error:'سفارش پیدا نشد.'},404);
-    await env.DB.prepare(`UPDATE orders SET tracking_code=?,payment_status='submitted',order_status='awaiting_verification',updated_at=datetime('now') WHERE id=?`).bind(reference,orderId).run();
-    return json({ok:true,message:'اطلاعات پرداخت ثبت شد و پس از بررسی تأیید می‌شود.'});
+    await env.DB.prepare(`UPDATE orders SET tracking_code=?,receipt_image=?,payment_status='submitted',order_status='awaiting_verification',updated_at=datetime('now') WHERE id=?`).bind(reference,receiptImage,orderId).run();
+    return json({ok:true,message:'اطلاعات پرداخت و رسید ثبت شد و پس از بررسی مدیر تأیید می‌شود.'});
   }
   if (url.pathname.match(/^\/api\/orders\/[^/]+$/) && request.method === 'GET') {
     if (!env.DB) return json({ok:false,error:'D1 binding DB is not configured.'},500);

@@ -40,3 +40,7 @@ Checkout chooses product_id binding based on the actual products.id schema, avoi
 
 ## V133 — Legacy schema compatibility hardening
 Order-item inserts are now generated from the actual D1 table columns and populate legacy `price` as well as `unit_price`, plus common quantity/total fields. Password registration uses the detected users schema and fills legacy required columns conservatively. This does not replace a live test against the production D1 database; deploy to staging or test with a low-value test order first.
+
+
+## V134 — Payment receipt upload
+Checkout payment form accepts an optional JPG/PNG/WebP receipt image up to 2 MB, previews/removes it client-side, and submits it with the transaction reference. The Worker stores the data URL in `orders.receipt_image`; existing D1 databases receive the new column through the orders migration. Admin UI visibility of receipt images may require a separate admin-orders UI change.

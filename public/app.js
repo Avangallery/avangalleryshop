@@ -6,6 +6,25 @@
   const cartBtn = $('#headerCart');
   const cartPop = $('#cartPopover');
   const accountBtn = $('#headerAccount');
+
+  // Sync the header account button with the server-side Google session.
+  // Google OAuth sets an HttpOnly session cookie, so the page must ask /api/auth/me.
+  if (accountBtn) {
+    fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (!data || !data.authenticated) return;
+        accountBtn.href = '/account.html';
+        accountBtn.setAttribute('aria-label', 'حساب کاربری');
+        const label = accountBtn.querySelector('strong');
+        if (label) label.textContent = 'حساب کاربری';
+        accountBtn.classList.add('is-authenticated');
+        accountBtn.dataset.authenticated = 'true';
+      })
+      .catch(() => {
+        // Keep the normal login link if the auth endpoint is temporarily unavailable.
+      });
+  }
   const searchForm = $('#headerSearch');
   const searchInput = $('#headerSearchInput');
   const searchPop = $('#searchPopover');

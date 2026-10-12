@@ -113,20 +113,50 @@ document.getElementById('googleLogin').addEventListener('click',()=>{window.loca
 
 (function(){const q=new URLSearchParams(location.search);if(q.get('google')==='error'){const reason=q.get('reason')||'';const messages={'access_denied':'ورود با گوگل لغو شد. در صورت تمایل دوباره تلاش کن.','not-configured':'تنظیمات Google OAuth یا اتصال دیتابیس روی سرور کامل نیست.','invalid-state':'اعتبار نشست ورود منقضی یا نامعتبر شده است؛ صفحه را تازه کن و دوباره تلاش کن.','invalid_client':'شناسه یا رمز OAuth در تنظیمات Cloudflare با کلاینت Google Cloud مطابقت ندارد.','server_error':'گوگل نتوانست درخواست ورود را کامل کند؛ تنظیمات OAuth را بررسی کن.'};const box=document.createElement('div');box.style.cssText='margin:14px 0;padding:11px 13px;border-radius:12px;background:rgba(255,100,100,.08);border:1px solid rgba(255,120,120,.25);color:#ffb0b0;font-size:12px;line-height:1.8;text-align:center';box.textContent=messages[reason]||'ورود با گوگل انجام نشد. آدرس بازگشت در Google Cloud و متغیرهای GOOGLE_CLIENT_ID و GOOGLE_CLIENT_SECRET در Cloudflare را بررسی کن.';document.querySelector('.divider')?.before(box);}})();
 document.getElementById('forgotPassword').addEventListener('click',e=>{e.preventDefault();alert('بازیابی رمز عبور در مرحله بعدی متصل می‌شود.');});
-form.addEventListener('submit',e=>{
+function showAuthError(message){
+  let box=document.getElementById('authApiError');
+  if(!box){box=document.createElement('div');box.id='authApiError';box.style.cssText='margin:12px 0;padding:10px 12px;border-radius:10px;background:rgba(255,90,90,.1);border:1px solid rgba(255,120,120,.3);color:#ffbcbc;font-size:13px;line-height:1.8';form.before(box);}
+  box.textContent=message;
+}
+form.addEventListener('submit',async e=>{
   e.preventDefault();
   document.querySelectorAll('.field-error').forEach(x=>x.textContent='');
   const id=document.getElementById('identity');
-  if(!id.value.trim()){document.getElementById('identityError').textContent='شماره موبایل یا ایمیل را وارد کنید.';return;}
+  if(!id.value.trim()){document.getElementById('identityError').textContent='ایمیل خود را وارد کنید.';return;}
   if(!pass.value){document.getElementById('passwordError').textContent='رمز عبور را وارد کنید.';return;}
   if(registerTab.classList.contains('active')){
     const name=document.getElementById('fullName');
     if(!name.value.trim()){document.getElementById('nameError').textContent='نام و نام خانوادگی را وارد کنید.';return;}
     if(pass.value.length<6){document.getElementById('passwordError').textContent='رمز عبور باید حداقل ۶ کاراکتر باشد.';return;}
     if(pass.value!==confirmPass.value){document.getElementById('confirmError').textContent='تکرار رمز عبور صحیح نیست.';return;}
-    alert('اطلاعات ثبت‌نام آماده اتصال به API است.');
+    // Real API-backed email/password registration.
+    const oldMessage=document.getElementById('authApiError');
+    if(oldMessage) oldMessage.remove();
+    submitBtn.disabled=true;
+    const originalLabel=submitBtn.innerHTML;
+    submitBtn.textContent='در حال ثبت‌نام...';
+    try {
+      const response=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({name:name.value.trim(),email:id.value.trim(),password:pass.value})});
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok||!result.ok) throw new Error(result.error||'ثبت‌نام انجام نشد. دوباره تلاش کنید.');
+      window.location.href='/account.html?login=success';
+    } catch(error) {
+      showAuthError(error.message||'ارتباط با سرور برقرار نشد.');
+    } finally { submitBtn.disabled=false; submitBtn.innerHTML=originalLabel; }
   } else {
-    alert('فرم ورود آماده اتصال به API حساب کاربری است.');
+    const oldMessage=document.getElementById('authApiError');
+    if(oldMessage) oldMessage.remove();
+    submitBtn.disabled=true;
+    const originalLabel=submitBtn.innerHTML;
+    submitBtn.textContent='در حال ورود...';
+    try {
+      const response=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({email:id.value.trim(),password:pass.value})});
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok||!result.ok) throw new Error(result.error||'ورود انجام نشد. دوباره تلاش کنید.');
+      window.location.href='/account.html?login=success';
+    } catch(error) {
+      showAuthError(error.message||'ارتباط با سرور برقرار نشد.');
+    } finally { submitBtn.disabled=false; submitBtn.innerHTML=originalLabel; }
   }
 });
 </script>

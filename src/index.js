@@ -90,7 +90,8 @@ async function ensureUsersTable(env) {
     ['avatar', `ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT ''`],
     ['provider', `ALTER TABLE users ADD COLUMN provider TEXT NOT NULL DEFAULT 'google'`],
     ['created_at', `ALTER TABLE users ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`],
-    ['updated_at', `ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''`]
+    ['updated_at', `ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''`],
+    ['password_hash', `ALTER TABLE users ADD COLUMN password_hash TEXT`]
   ];
   for (const [name, sql] of additions) {
     if (!columns.has(name)) {
@@ -326,7 +327,60 @@ function cleanProduct(input) {
   };
 }
 
+
+async function hashCustomerPassword(password, saltHex) {
+  const salt = saltHex ? Uint8Array.from(saltHex.match(/.{1,2}/g).map(x => parseInt(x,16))) : crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt, iterations:150000, hash:'SHA-256'}, key, 256);
+  const hex = bytes => Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2,'0')).join('');
+  return {salt:hex(salt), hash:hex(bits)};
+}
+async function verifyCustomerPassword(password, stored) {
+  if (!stored || !String(stored).includes('$')) return false;
+  const [salt, expected] = String(stored).split('$');
+  const result = await hashCustomerPassword(password, salt);
+  return result.hash === expected;
+}
+function customerSessionSecret(env) {
+  return String(env.AUTH_SESSION_SECRET || env.GOOGLE_CLIENT_SECRET || env.ADMIN_PASSWORD || '');
+}
+
 async function api(request, env, url) {
+
+  // Customer email/password registration and login
+  if ((url.pathname === '/api/auth/register' || url.pathname === '/api/auth/login') && request.method === 'POST') {
+    if (!env.DB) return json({ok:false,error:'اتصال پایگاه داده حساب‌های کاربری تنظیم نشده است.'},500);
+    const body = await request.json().catch(() => ({}));
+    const email = String(body.email || body.identity || '').trim().toLowerCase();
+    const password = String(body.password || '');
+    const name = String(body.name || '').trim();
+    const isRegister = url.pathname.endsWith('/register');
+    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return json({ok:false,error:'یک آدرس ایمیل معتبر وارد کنید.'},400);
+    if (password.length < 6) return json({ok:false,error:'رمز عبور باید حداقل ۶ کاراکتر باشد.'},400);
+    if (isRegister && !name) return json({ok:false,error:'نام و نام خانوادگی را وارد کنید.'},400);
+    try {
+      await ensureUsersTable(env);
+      let user = await env.DB.prepare('SELECT * FROM users WHERE lower(email)=? LIMIT 1').bind(email).first();
+      if (isRegister) {
+        if (user) return json({ok:false,error:'این ایمیل قبلاً ثبت‌نام کرده است. وارد حساب شوید یا از ورود با گوگل استفاده کنید.'},409);
+        const hashed = await hashCustomerPassword(password);
+        const id = 'usr-' + crypto.randomUUID();
+        await env.DB.prepare(`INSERT INTO users (id,email,name,avatar,provider,password_hash,created_at,updated_at) VALUES (?,?,?,'','password',?,?,datetime('now'),datetime('now'))`.replace("VALUES (?,?,?,'','password',?,?,datetime('now'),datetime('now'))","VALUES (?,?,?,'','password',?,datetime('now'),datetime('now'))"))
+          .bind(id,email,name,hashed.salt+'$'+hashed.hash).run();
+        user = await env.DB.prepare('SELECT * FROM users WHERE id=?').bind(id).first();
+      } else {
+        if (!user || !(await verifyCustomerPassword(password, user.password_hash))) return json({ok:false,error:'ایمیل یا رمز عبور صحیح نیست.'},401);
+      }
+      const session = await makeUserSession(customerSessionSecret(env), user.id);
+      return json({ok:true,user:{id:user.id,email:user.email,name:user.name,provider:user.provider}},200,{
+        'Set-Cookie': oauthCookie(USER_SESSION_COOKIE, session, USER_SESSION_TTL),
+        'Cache-Control':'no-store'
+      });
+    } catch (err) {
+      return json({ok:false,error:'ثبت‌نام یا ورود انجام نشد. تنظیمات پایگاه داده را بررسی کنید.',detail:String(err?.message||err)},500);
+    }
+  }
+
   // Customer Google OAuth
   if (url.pathname === '/api/auth/google' && request.method === 'GET') {
     if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return json({ ok:false, error: !env.GOOGLE_CLIENT_ID ? 'Google OAuth Client ID is missing.' : 'Google OAuth Client Secret is missing. Add GOOGLE_CLIENT_SECRET as a Production Secret in Cloudflare.' }, 500);
@@ -362,7 +416,7 @@ async function api(request, env, url) {
       } else {
         user = await createUserCompat(env, {id:crypto.randomUUID(), googleId:googleUser.googleId, email:googleUser.email, name:googleUser.name, avatar:googleUser.avatar, provider:'google', phone:''});
       }
-      const sessionSecret = String(env.GOOGLE_CLIENT_SECRET || '');
+      const sessionSecret = customerSessionSecret(env);
       const session = await makeUserSession(sessionSecret, user.id);
       return redirectWithCookies(new URL('/account.html?login=success', request.url).toString(), [
         oauthCookie(USER_SESSION_COOKIE, session, USER_SESSION_TTL),
@@ -374,7 +428,7 @@ async function api(request, env, url) {
   }
   if (url.pathname === '/api/auth/me' && request.method === 'GET') {
     if (!env.DB) return json({ ok:true, authenticated:false });
-    const session = await validUserSession(request, String(env.GOOGLE_CLIENT_SECRET || ''));
+    const session = await validUserSession(request, customerSessionSecret(env));
     if (!session) return json({ ok:true, authenticated:false });
     const user = await env.DB.prepare(`SELECT id,email,name,avatar,provider,created_at FROM users WHERE id=?`).bind(session.uid).first();
     if (!user) return json({ ok:true, authenticated:false }, 200, { 'Set-Cookie': clearCookie(USER_SESSION_COOKIE) });

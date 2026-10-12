@@ -340,9 +340,7 @@ async function api(request, env, url) {
       state,
       prompt: 'select_account'
     });
-    return Response.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`, 302, {
-      'Set-Cookie': oauthCookie(GOOGLE_STATE_COOKIE, state, GOOGLE_STATE_TTL)
-    });
+    return redirectWithCookies(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`, [oauthCookie(GOOGLE_STATE_COOKIE, state, GOOGLE_STATE_TTL)]);
   }
   if (url.pathname === '/api/auth/google/callback' && request.method === 'GET') {
     if (!env.DB || !env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return Response.redirect(new URL('/login.html?google=error&reason=not-configured', request.url), 302);
@@ -549,13 +547,13 @@ async function api(request, env, url) {
     // Insert order dynamically so an old INTEGER PRIMARY KEY does not receive a text id.
     let orderId;
     if(ordersIdIsInteger){
-      const sql=`INSERT INTO orders (user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'),datetime('now'))`;
+      const sql=`INSERT INTO orders (user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, ?,datetime('now'),datetime('now'))`;
       await env.DB.prepare(sql).bind(orderUserValue,name,phone,email,province,city,address,postal,notes,subtotal,shipping,discount,total,'card_transfer','pending','pending_payment').run();
       const created=await env.DB.prepare(`SELECT id FROM orders ORDER BY rowid DESC LIMIT 1`).first();
       orderId=created?.id;
     }else{
       orderId='AVN-'+Date.now().toString(36).toUpperCase()+'-'+crypto.randomUUID().split('-')[0].toUpperCase();
-      await env.DB.prepare(`INSERT INTO orders (id,user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'),datetime('now'))`).bind(orderId,orderUserValue,name,phone,email,province,city,address,postal,notes,subtotal,shipping,discount,total,'card_transfer','pending','pending_payment').run();
+      await env.DB.prepare(`INSERT INTO orders (id,user_id,customer_name,phone,email,province,city,address,postal_code,notes,subtotal,shipping,discount,total,payment_method,payment_status,order_status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'),datetime('now'))`).bind(orderId,orderUserValue,name,phone,email,province,city,address,postal,notes,subtotal,shipping,discount,total,'card_transfer','pending','pending_payment').run();
     }
     if(orderId===undefined || orderId===null || orderId==='') return json({ok:false,error:'شماره سفارش ایجاد نشد.'},500);
 

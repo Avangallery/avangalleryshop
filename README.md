@@ -11,3 +11,6 @@
 - Ready for GitHub + Cloudflare static deployment
 
 Admin route rewrites are in `_redirects`.
+
+## Latest patch
+See `README-V126.md` for the V126 style-guide, responsive layout, checkout and admin order workflow changes.

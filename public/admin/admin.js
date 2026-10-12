@@ -284,7 +284,7 @@ async function renderCustomersPage(){
   try{ $('#content').innerHTML='<div class="support-loading">در حال دریافت مشتریان…</div>'; $('#title').textContent='مشتریان'; await loadCustomers(); $('#content').innerHTML=customersPage(); renderCustomers(); $('#customerSearch').oninput=async()=>{const q=$('#customerSearch').value.trim(); if(q.length>=2||q.length===0){try{await loadCustomers(q);renderCustomers()}catch(e){}} else renderCustomers()}; $('#refreshCustomers').onclick=async()=>{await loadCustomers($('#customerSearch').value.trim());renderCustomers()}; }
   catch(e){$('#content').innerHTML=`<div class="notice">${esc(e.message)}</div>`}
 }
-function orders(){return head('سفارش‌ها','مدیریت پرداخت، ارسال و کد رهگیری')+`<section class="panel"><div id="ordersLoading" class="notice">در حال دریافت سفارش‌ها...</div><div class="table-wrap"><table class="table" id="ordersTable"><thead><tr><th>شماره</th><th>مشتری</th><th>مبلغ</th><th>پرداخت</th><th>وضعیت سفارش</th><th>کد پیگیری</th></tr></thead><tbody></tbody></table></div></section>`}
+function orders(){return head('سفارش‌ها','مدیریت پرداخت، ارسال، تأیید یا رد پرداخت و کد رهگیری')+`<section class="panel"><div id="ordersLoading" class="notice">در حال دریافت سفارش‌ها...</div><div class="table-wrap"><table class="table" id="ordersTable"><thead><tr><th>شماره</th><th>مشتری</th><th>مبلغ</th><th>پرداخت</th><th>وضعیت سفارش</th><th>کد پیگیری</th><th>اقدامات</th></tr></thead><tbody></tbody></table></div></section>`}
 function paymentPage(){return head('پرداخت و کارت','مدیریت اطلاعات کارت، پرداخت دستی و تنظیمات درگاه')+`<div class="payment-admin-grid">
 <section class="panel payment-card-panel"><div class="panel-head"><div><h3>اطلاعات کارت فروشگاه</h3><p>این اطلاعات در مرحله پرداخت کارت‌به‌کارت مشتری نمایش داده می‌شود.</p></div><span class="live-pill" id="paymentLive">● فعال</span></div>
 <div class="payment-form-grid"><label>شماره کارت<input id="payCardNumber" dir="ltr" inputmode="numeric" placeholder="6037 0000 0000 0000"></label><label>نام صاحب کارت<input id="payCardName" placeholder="نام صاحب حساب / فروشگاه"></label><label>بانک<input id="payBankName" placeholder="نام بانک"></label></div>
@@ -328,7 +328,43 @@ async function openChatSupport(id){
 }
 async function renderTickets(){try{$('#content').innerHTML='<div class="support-loading">در حال دریافت پیام‌های مشتریان…</div>';$('#title').textContent='تیکت پشتیبانی';const html=await ticketsPage();$('#content').innerHTML=html;$('#refreshSupport').onclick=renderTickets;$$('[data-ticket-open]').forEach(b=>b.onclick=async()=>{try{const d=await supportApi('/api/admin/support/tickets');const t=(d.tickets||[]).find(x=>x.id===b.dataset.ticketOpen);if(t)openTicketSupport(t)}catch(e){alert(e.message)}});$$('[data-chat-open]').forEach(b=>b.onclick=()=>openChatSupport(b.dataset.chatOpen));}catch(e){$('#content').innerHTML=`<div class="notice">${esc(e.message)}</div>`}}
 
-async function loadOrders(){try{const r=await fetch('/api/admin/orders',{cache:'no-store'});const d=await r.json();const tbody=document.querySelector('#ordersTable tbody');const loading=document.getElementById('ordersLoading');if(!r.ok)throw new Error(d.error||'خطا');if(loading)loading.remove();if(!tbody)return;tbody.innerHTML=(d.orders||[]).map(o=>`<tr><td dir="ltr">${o.id}</td><td>${o.customer_name||'—'}<br><small>${o.phone||''}</small></td><td>${new Intl.NumberFormat('fa-IR').format(o.total||0)} تومان</td><td><span class="status">${o.payment_status}</span></td><td><span class="status">${o.order_status}</span></td><td dir="ltr">${o.tracking_code||'—'}</td></tr>`).join('')||'<tr><td colspan="6">هنوز سفارشی ثبت نشده است.</td></tr>';}catch(e){const l=document.getElementById('ordersLoading');if(l)l.textContent=e.message;}}
+async function loadOrders(){
+  try{
+    const r=await fetch('/api/admin/orders',{cache:'no-store'});
+    const d=await r.json();
+    const tbody=document.querySelector('#ordersTable tbody');
+    const loading=document.getElementById('ordersLoading');
+    if(!r.ok)throw new Error(d.error||'خطا');
+    if(loading)loading.remove();
+    if(!tbody)return;
+    const payOptions=[['pending','در انتظار پرداخت'],['submitted','رسید ثبت شده'],['paid','پرداخت تأیید شد'],['failed','رد پرداخت'],['refunded','بازپرداخت']];
+    const orderOptions=[['pending_payment','در انتظار پرداخت'],['awaiting_verification','در انتظار بررسی'],['processing','در حال آماده‌سازی'],['shipped','ارسال شده'],['delivered','تحویل شده'],['cancelled','لغو شده']];
+    const optionHtml=(options,current)=>options.map(([value,label])=>`<option value="${value}" ${String(current)===value?'selected':''}>${label}</option>`).join('');
+    tbody.innerHTML=(d.orders||[]).map(o=>`<tr>
+      <td dir="ltr">${esc(String(o.id))}</td>
+      <td>${esc(o.customer_name||'—')}<br><small>${esc(o.phone||'')}</small></td>
+      <td>${new Intl.NumberFormat('fa-IR').format(o.total||0)} تومان</td>
+      <td><select data-pay-status="${esc(String(o.id))}">${optionHtml(payOptions,o.payment_status)}</select></td>
+      <td><select data-order-status="${esc(String(o.id))}">${optionHtml(orderOptions,o.order_status)}</select></td>
+      <td><input data-order-tracking="${esc(String(o.id))}" value="${esc(o.tracking_code||'')}" placeholder="کد رهگیری" dir="ltr" style="min-width:120px"></td>
+      <td><button type="button" class="gold" data-order-save="${esc(String(o.id))}">ذخیره تغییرات</button></td>
+    </tr>`).join('')||'<tr><td colspan="7">هنوز سفارشی ثبت نشده است.</td></tr>';
+    $$('[data-order-save]').forEach(btn=>btn.onclick=async()=>{
+      const id=btn.dataset.orderSave;
+      const paymentStatus=$(`[data-pay-status="${CSS.escape(id)}"]`)?.value||'';
+      const orderStatus=$(`[data-order-status="${CSS.escape(id)}"]`)?.value||'';
+      const trackingCode=$(`[data-order-tracking="${CSS.escape(id)}"]`)?.value||'';
+      btn.disabled=true;
+      try{
+        const response=await fetch('/api/admin/orders/'+encodeURIComponent(id),{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({paymentStatus,orderStatus,trackingCode})});
+        const result=await response.json();
+        if(!response.ok)throw new Error(result.error||'ذخیره وضعیت سفارش ناموفق بود.');
+        btn.textContent='ذخیره شد ✓';
+        setTimeout(()=>{btn.textContent='ذخیره تغییرات';btn.disabled=false;},1000);
+      }catch(error){alert(error.message);btn.disabled=false;}
+    });
+  }catch(e){const l=document.getElementById('ordersLoading');if(l)l.textContent=e.message;}
+}
 
 function render(){let html='';if(current==='dashboard')html=dashboard();if(current==='products')html=productsPage();if(current==='orders'){html=orders();setTimeout(loadOrders,0);}if(current==='payment'){html=paymentPage();setTimeout(()=>{loadPaymentSettings();$$('#payCardNumber,#payCardName,#payBankName').forEach(e=>e.addEventListener('input',updatePaymentPreview));$('#gatewayEnabled')?.addEventListener('change',updateGatewayBadge);$('#savePaymentCard')?.addEventListener('click',()=>savePaymentSettings('card'));$('#saveGateway')?.addEventListener('click',()=>savePaymentSettings('gateway'));},0);}if(current==='customers'){renderCustomersPage();return;}if(current==='categories')html=categoriesPage();if(current==='brands')html=brandsPage();if(current==='coupons')html=couponsPage();if(current==='reviews')html=simple('نظرات مشتریان','تأیید، رد و پاسخ به دیدگاه‌ها',[['در انتظار بررسی','۰ نظر'],['امتیاز محصولات','پس از ثبت خرید فعال می‌شود'],['گزارش اسپم','مدیریت گزارش‌های کاربران']]);if(current==='content')html=simple('محتوا و بنرها','مدیریت Hero، بنر، مجله و صفحات ثابت',[['Hero اصلی','تصویر، عنوان و CTA صفحه اول'],['مجله آوان','مقالات و محتوای آموزشی'],['صفحات ثابت','درباره ما، تماس، قوانین و حریم خصوصی']]);if(current==='notifications')html=simple('اعلان‌ها','مدیریت اعلان‌های فروشگاه',[['اعلان سفارش','ثبت، پرداخت و ارسال سفارش'],['اعلان مدیریتی','موجودی کم و سفارش جدید'],['اعلان مشتری','ساختار آماده اتصال به SMS/Email']]);if(current==='tickets'){renderTickets();return;}if(current==='wallet')html=simple('کیف پول و وفاداری','امتیاز، اعتبار و باشگاه مشتریان',[['امتیاز خرید','قابل فعال‌سازی برای مشتریان'],['کیف پول','شارژ و برداشت اعتبار'],['سطوح مشتری','برنزی، نقره‌ای، طلایی']]);if(current==='reports')html=simple('گزارش‌ها','گزارش فروش، محصولات و مشتریان',[['گزارش فروش','روزانه، ماهانه و بازه دلخواه'],['محصولات پرفروش','قابل محاسبه از سفارش‌ها'],['گزارش موجودی','هشدار موجودی کم']]);if(current==='admins')html=simple('مدیران و دسترسی‌ها','مدیریت کاربران پنل و سطح دسترسی',[['مدیر اصلی','دسترسی کامل'],['مدیر محتوا','بنر، مجله و صفحات'],['اپراتور سفارش','سفارش‌ها و مشتریان']]);if(current==='activity')html=simple('گزارش فعالیت','ثبت عملیات مدیران و تغییرات',[['ورود مدیران','زمان و نشست‌ها'],['تغییر محصول','قیمت، موجودی و اطلاعات'],['تغییر تنظیمات','ثبت عملیات حساس']]);if(current==='settings')html=simple('تنظیمات فروشگاه','تنظیمات اصلی آوان',[['اطلاعات فروشگاه','نام، لوگو، تماس و آدرس'],['پرداخت','درگاه و وضعیت پرداخت'],['ارسال','روش‌ها، هزینه و کد رهگیری'],['امنیت','مدیران و نشست‌ها']]);$('#content').innerHTML=html;$$('[data-page-go]').forEach(b=>b.onclick=()=>{current=b.dataset.pageGo;render();});const nav=document.querySelector(`#nav button[data-page="${current}"]`);$('#title').textContent=nav?.querySelector('span')?.textContent||'داشبورد';if(current==='products'){
   renderProducts();

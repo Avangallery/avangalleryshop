@@ -346,8 +346,8 @@ function staffAllowed(info, pathname) {
   if(info.kind==='master'||info.role==='super_admin')return true;
   const p=String(pathname||'');
   if(p==='/api/admin/me'||p==='/api/admin/logout')return true;
-  if(info.role==='content_manager')return p.startsWith('/api/products')||p==='/api/admin/store-settings'||p==='/api/admin/activity'||p.startsWith('/api/admin/reports');
-  if(info.role==='order_operator')return p.startsWith('/api/admin/orders')||p.startsWith('/api/admin/support')||p==='/api/admin/customers'||p==='/api/admin/activity'||p.startsWith('/api/admin/wallet')||p.startsWith('/api/admin/reports');
+  if(info.role==='content_manager')return p.startsWith('/api/products')||p==='/api/admin/store-settings'||p==='/api/admin/activity'||p.startsWith('/api/admin/reports')||p.startsWith('/api/admin/content')||p.startsWith('/api/admin/notifications')||p.startsWith('/api/admin/reviews');
+  if(info.role==='order_operator')return p.startsWith('/api/admin/orders')||p.startsWith('/api/admin/support')||p==='/api/admin/customers'||p==='/api/admin/activity'||p.startsWith('/api/admin/wallet')||p.startsWith('/api/admin/reports')||p.startsWith('/api/admin/reviews')||p.startsWith('/api/admin/notifications');
   return false;
 }
 async function logAdminActivity(env, request, action, details='') {
@@ -828,6 +828,91 @@ async function api(request, env, url) {
     if(!order) return json({ok:false,error:'سفارش پیدا نشد.'},404);
     const {results}=await env.DB.prepare(`SELECT * FROM order_items WHERE order_id=? ORDER BY rowid ASC`).bind(orderId).all();
     return json({ok:true,order,items:results||[],payment:await paymentConfig(env)});
+  }
+
+
+  async function ensureCmsTables(env) {
+    if(!env.DB)throw new Error('D1 binding DB is not configured.');
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS store_content (
+      id TEXT PRIMARY KEY, content_type TEXT NOT NULL DEFAULT 'page', title TEXT NOT NULL DEFAULT '',
+      slug TEXT NOT NULL DEFAULT '', body TEXT NOT NULL DEFAULT '', image_url TEXT NOT NULL DEFAULT '',
+      button_text TEXT NOT NULL DEFAULT '', button_url TEXT NOT NULL DEFAULT '', is_published INTEGER NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`).run();
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS store_announcements (
+      id TEXT PRIMARY KEY, title TEXT NOT NULL DEFAULT '', message TEXT NOT NULL DEFAULT '',
+      audience TEXT NOT NULL DEFAULT 'customers', is_active INTEGER NOT NULL DEFAULT 1,
+      starts_at TEXT NOT NULL DEFAULT '', ends_at TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`).run();
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS store_reviews (
+      id TEXT PRIMARY KEY, product_id TEXT NOT NULL DEFAULT '', product_name TEXT NOT NULL DEFAULT '',
+      customer_name TEXT NOT NULL DEFAULT '', customer_email TEXT NOT NULL DEFAULT '',
+      rating INTEGER NOT NULL DEFAULT 5, review_text TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'pending', admin_reply TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`).run();
+  }
+  const cmsId=()=>crypto.randomUUID();
+  if (url.pathname === '/api/admin/content' && request.method === 'GET') {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureCmsTables(env);const type=String(url.searchParams.get('type')||'').trim();
+    const {results}=await env.DB.prepare(`SELECT * FROM store_content WHERE (?='' OR content_type=?) ORDER BY sort_order ASC,updated_at DESC`).bind(type,type).all();
+    return json({ok:true,items:results||[]});
+  }
+  if (url.pathname === '/api/admin/content' && ['POST','PUT','DELETE'].includes(request.method)) {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureCmsTables(env);
+    if(request.method==='DELETE'){const id=String(url.searchParams.get('id')||'');if(!id)return json({ok:false,error:'شناسه محتوا الزامی است.'},400);await env.DB.prepare(`DELETE FROM store_content WHERE id=?`).bind(id).run();return json({ok:true});}
+    const b=await request.json().catch(()=>({})),id=String(b.id||cmsId()),type=String(b.content_type||'page');
+    if(!['hero','banner','article','page'].includes(type))return json({ok:false,error:'نوع محتوا معتبر نیست.'},400);
+    const title=String(b.title||'').trim().slice(0,180),slug=String(b.slug||'').trim().slice(0,180);
+    if(!title)return json({ok:false,error:'عنوان الزامی است.'},400);
+    await env.DB.prepare(`INSERT INTO store_content(id,content_type,title,slug,body,image_url,button_text,button_url,is_published,sort_order,updated_at)
+      VALUES(?,?,?,?,?,?,?,?,?,?,datetime('now')) ON CONFLICT(id) DO UPDATE SET content_type=excluded.content_type,title=excluded.title,slug=excluded.slug,body=excluded.body,image_url=excluded.image_url,button_text=excluded.button_text,button_url=excluded.button_url,is_published=excluded.is_published,sort_order=excluded.sort_order,updated_at=datetime('now')`)
+      .bind(id,type,title,slug,String(b.body||'').slice(0,20000),String(b.image_url||'').slice(0,2000),String(b.button_text||'').slice(0,100),String(b.button_url||'').slice(0,2000),b.is_published?1:0,Math.max(0,Number(b.sort_order)||0)).run();
+    await logAdminActivity(env,request,'ویرایش محتوا',title);return json({ok:true,id});
+  }
+  if (url.pathname === '/api/admin/notifications' && request.method === 'GET') {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureCmsTables(env);const {results}=await env.DB.prepare(`SELECT * FROM store_announcements ORDER BY created_at DESC LIMIT 300`).all();return json({ok:true,items:results||[]});
+  }
+  if (url.pathname === '/api/admin/notifications' && ['POST','PUT','DELETE'].includes(request.method)) {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureCmsTables(env);
+    if(request.method==='DELETE'){const id=String(url.searchParams.get('id')||'');await env.DB.prepare(`DELETE FROM store_announcements WHERE id=?`).bind(id).run();return json({ok:true});}
+    const b=await request.json().catch(()=>({})),id=String(b.id||cmsId()),title=String(b.title||'').trim().slice(0,180),message=String(b.message||'').trim().slice(0,3000),audience=String(b.audience||'customers');
+    if(!title||!message)return json({ok:false,error:'عنوان و متن اعلان الزامی است.'},400);
+    if(!['customers','admins','all'].includes(audience))return json({ok:false,error:'مخاطب اعلان معتبر نیست.'},400);
+    await env.DB.prepare(`INSERT INTO store_announcements(id,title,message,audience,is_active,starts_at,ends_at,created_at) VALUES(?,?,?,?,?,?,?,datetime('now')) ON CONFLICT(id) DO UPDATE SET title=excluded.title,message=excluded.message,audience=excluded.audience,is_active=excluded.is_active,starts_at=excluded.starts_at,ends_at=excluded.ends_at`)
+      .bind(id,title,message,audience,b.is_active===false?0:1,String(b.starts_at||''),String(b.ends_at||'')).run();
+    await logAdminActivity(env,request,'مدیریت اعلان',title);return json({ok:true,id});
+  }
+  if (url.pathname === '/api/admin/reviews' && request.method === 'GET') {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureCmsTables(env);const status=String(url.searchParams.get('status')||'').trim();
+    const {results}=await env.DB.prepare(`SELECT * FROM store_reviews WHERE (?='' OR status=?) ORDER BY created_at DESC LIMIT 500`).bind(status,status).all();
+    const stats=await env.DB.prepare(`SELECT COUNT(*) total,SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) pending,ROUND(AVG(rating),1) avg_rating FROM store_reviews`).first();
+    return json({ok:true,items:results||[],stats:stats||{}});
+  }
+  if (url.pathname === '/api/admin/reviews' && ['POST','PATCH','DELETE'].includes(request.method)) {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureCmsTables(env);
+    if(request.method==='DELETE'){const id=String(url.searchParams.get('id')||'');await env.DB.prepare(`DELETE FROM store_reviews WHERE id=?`).bind(id).run();return json({ok:true});}
+    const b=await request.json().catch(()=>({})),id=String(b.id||cmsId());
+    if(request.method==='POST'){
+      const customer=String(b.customer_name||'').trim().slice(0,160),product=String(b.product_name||'').trim().slice(0,180),text=String(b.review_text||'').trim().slice(0,5000),rating=Math.min(5,Math.max(1,Math.round(Number(b.rating)||5)));
+      if(!customer||!text)return json({ok:false,error:'نام مشتری و متن نظر الزامی است.'},400);
+      await env.DB.prepare(`INSERT INTO store_reviews(id,product_id,product_name,customer_name,customer_email,rating,review_text,status,admin_reply) VALUES(?,?,?,?,?,?,?,'pending','')`).bind(id,String(b.product_id||''),product,customer,String(b.customer_email||'').slice(0,200),rating,text).run();
+      return json({ok:true,id});
+    }
+    const status=String(b.status||'pending');if(!['pending','approved','rejected','spam'].includes(status))return json({ok:false,error:'وضعیت نظر معتبر نیست.'},400);
+    await env.DB.prepare(`UPDATE store_reviews SET status=?,admin_reply=?,updated_at=datetime('now') WHERE id=?`).bind(status,String(b.admin_reply||'').slice(0,3000),id).run();
+    await logAdminActivity(env,request,'بررسی نظر مشتری',id+' • '+status);return json({ok:true});
+  }
+  if (url.pathname === '/api/announcements' && request.method === 'GET') {
+    await ensureCmsTables(env);const now=new Date().toISOString();
+    const {results}=await env.DB.prepare(`SELECT id,title,message FROM store_announcements WHERE is_active=1 AND audience IN ('customers','all') AND (starts_at='' OR starts_at<=?) AND (ends_at='' OR ends_at>=?) ORDER BY created_at DESC LIMIT 20`).bind(now,now).all();
+    return json({ok:true,items:results||[]});
   }
 
   if (url.pathname === '/api/admin/wallet' && request.method === 'GET') {

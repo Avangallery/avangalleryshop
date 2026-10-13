@@ -338,3 +338,15 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important}
 .stock-low{color:#ffb36e}.reports-filter .inline-message{display:block;margin-top:10px}
 @media(max-width:900px){.reports-grid{grid-template-columns:1fr}.reports-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.wallet-summary{grid-template-columns:1fr}}
 @media(max-width:560px){.reports-summary{grid-template-columns:1fr 1fr}.wallet-search,.wallet-search input{width:100%;min-width:0}.wallet-toolbar{align-items:stretch}.reports-filter form>*{width:100%}}
+
+/* V139: AVAN CMS, announcements and customer review management */
+.cms-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0}
+.cms-tabs{display:flex;gap:7px;flex-wrap:wrap}
+.cms-tabs button,.cms-actions button{border:1px solid rgba(216,182,90,.22);background:#0a2432;color:#b7cbd4;border-radius:10px;padding:9px 13px;font:inherit;font-size:12px;cursor:pointer}
+.cms-tabs button.active,.cms-tabs button:hover,.cms-actions button:hover{background:rgba(216,182,90,.12);border-color:#d8b65a;color:#f1d06d}
+.cms-panel{border:1px solid rgba(216,182,90,.16);border-radius:16px;background:linear-gradient(145deg,rgba(8,32,45,.92),rgba(5,23,34,.96));padding:14px;min-width:0}
+.cms-actions{display:flex;gap:6px;flex-wrap:wrap}.cms-actions .danger{border-color:rgba(255,115,115,.24);color:#ffaaa6}.cms-actions .danger:hover{background:rgba(255,100,100,.1);border-color:#ff8d8d}
+.cms-sub{display:block;max-width:300px;color:#91afbd;font-size:11px;margin-top:5px;white-space:normal;overflow-wrap:anywhere}
+.cms-help{margin:0;color:#9db7c4;font-size:12px;max-width:600px}
+.cms-modal{max-width:680px;text-align:right}.cms-modal h2{color:#f0cd70;margin:10px 0 18px}.cms-modal label{display:block;margin:12px 0;color:#a9c0cb;font-size:12px}.cms-modal input:not([type=checkbox]),.cms-modal textarea,.cms-modal select{display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:11px 12px;border:1px solid #254a5c;border-radius:10px;background:#061d29;color:#eef6f9;font:inherit;outline:none}.cms-modal input:focus,.cms-modal textarea:focus,.cms-modal select:focus{border-color:#d8b65a;box-shadow:0 0 0 3px rgba(216,182,90,.08)}.cms-modal textarea{resize:vertical;min-height:86px}.cms-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cms-check{display:flex!important;align-items:center;gap:9px;min-height:42px}.cms-check input{accent-color:#d8b65a;width:16px;height:16px}.review-stars{color:#edc85d;letter-spacing:1px;white-space:nowrap}
+@media(max-width:650px){.cms-two{grid-template-columns:1fr}.cms-toolbar{align-items:stretch}.cms-tabs{width:100%}.cms-tabs button{flex:1}.cms-toolbar>.gold{width:100%}.cms-panel{padding:8px}.cms-modal{max-height:80vh;overflow:auto}}

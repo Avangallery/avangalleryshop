@@ -179,7 +179,7 @@ async function ensureOrdersTables(env) {
     ['shipping', `ALTER TABLE orders ADD COLUMN shipping INTEGER NOT NULL DEFAULT 0`], ['discount', `ALTER TABLE orders ADD COLUMN discount INTEGER NOT NULL DEFAULT 0`],
     ['total', `ALTER TABLE orders ADD COLUMN total INTEGER NOT NULL DEFAULT 0`], ['payment_method', `ALTER TABLE orders ADD COLUMN payment_method TEXT NOT NULL DEFAULT 'card_transfer'`],
     ['payment_status', `ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'pending'`], ['order_status', `ALTER TABLE orders ADD COLUMN order_status TEXT NOT NULL DEFAULT 'pending_payment'`],
-    ['tracking_code', `ALTER TABLE orders ADD COLUMN tracking_code TEXT NOT NULL DEFAULT ''`], ['receipt_image', `ALTER TABLE orders ADD COLUMN receipt_image TEXT NOT NULL DEFAULT ''`], ['created_at', `ALTER TABLE orders ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`],
+    ['tracking_code', `ALTER TABLE orders ADD COLUMN tracking_code TEXT NOT NULL DEFAULT ''`], ['payment_reference', `ALTER TABLE orders ADD COLUMN payment_reference TEXT NOT NULL DEFAULT ''`], ['receipt_image', `ALTER TABLE orders ADD COLUMN receipt_image TEXT NOT NULL DEFAULT ''`], ['created_at', `ALTER TABLE orders ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`],
     ['updated_at', `ALTER TABLE orders ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''`]
   ];
   for (const [name, sql] of additions) if (!cols.has(name)) await env.DB.prepare(sql).run();
@@ -274,11 +274,71 @@ async function validSession(request, secret) {
   const [payload, sig] = token.split('.');
   if (!payload || !sig) return false;
   try {
-    const exp = Number(new TextDecoder().decode(unb64u(payload)));
-    if (!Number.isFinite(exp) || exp < Math.floor(Date.now() / 1000)) return false;
     const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
-    return crypto.subtle.verify('HMAC', key, unb64u(sig), new TextEncoder().encode(payload));
+    if (!await crypto.subtle.verify('HMAC', key, unb64u(sig), new TextEncoder().encode(payload))) return false;
+    const raw = new TextDecoder().decode(unb64u(payload));
+    const exp = Number(raw);
+    if (Number.isFinite(exp) && exp > 0) return exp >= Math.floor(Date.now()/1000);
+    const data = JSON.parse(raw);
+    return data?.kind === 'staff' && Number(data.exp) >= Math.floor(Date.now()/1000);
   } catch (_) { return false; }
+}
+
+
+async function ensureAdminTables(env) {
+  if (!env.DB) throw new Error('D1 binding DB is not configured.');
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS admin_staff (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL DEFAULT '', email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'order_operator',
+    active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`).run();
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS admin_activity (
+    id TEXT PRIMARY KEY, actor TEXT NOT NULL DEFAULT 'مدیر فروشگاه', action TEXT NOT NULL,
+    details TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`).run();
+  await ensureStoreSettings(env);
+}
+async function makeStaffSession(secret, staff) {
+  const exp=Math.floor(Date.now()/1000)+SESSION_TTL;
+  const payload=b64u(new TextEncoder().encode(JSON.stringify({kind:'staff',id:String(staff.id),role:String(staff.role),name:String(staff.name||staff.email),email:String(staff.email),exp})));
+  return `${payload}.${b64u(await hmac(secret,payload))}`;
+}
+async function adminSessionInfo(request, env) {
+  const token=cookieValue(request,SESSION_COOKIE);
+  if(!token||!env.ADMIN_PASSWORD)return null;
+  const [payload,sig]=token.split('.');
+  if(!payload||!sig)return null;
+  try {
+    const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(String(env.ADMIN_PASSWORD)),{name:'HMAC',hash:'SHA-256'},false,['verify']);
+    if(!await crypto.subtle.verify('HMAC',key,unb64u(sig),new TextEncoder().encode(payload)))return null;
+    const raw=new TextDecoder().decode(unb64u(payload)), numeric=Number(raw);
+    if(Number.isFinite(numeric)&&numeric>0) return numeric>=Math.floor(Date.now()/1000)?{kind:'master',role:'super_admin',name:'مدیر اصلی',exp:numeric}:null;
+    const data=JSON.parse(raw);
+    if(data?.kind!=='staff'||!data.id||Number(data.exp)<Math.floor(Date.now()/1000)||!env.DB)return null;
+    await ensureAdminTables(env);
+    const staff=await env.DB.prepare(`SELECT id,name,email,role,active FROM admin_staff WHERE id=?`).bind(String(data.id)).first();
+    if(!staff||Number(staff.active)!==1)return null;
+    return {kind:'staff',id:String(staff.id),role:String(staff.role),name:String(staff.name||staff.email),email:String(staff.email),exp:Number(data.exp)};
+  } catch (_) { return null; }
+}
+function staffAllowed(info, pathname) {
+  if(!info)return false;
+  if(info.kind==='master'||info.role==='super_admin')return true;
+  const p=String(pathname||'');
+  if(p==='/api/admin/me'||p==='/api/admin/logout')return true;
+  if(info.role==='content_manager')return p.startsWith('/api/products')||p==='/api/admin/store-settings'||p==='/api/admin/activity';
+  if(info.role==='order_operator')return p.startsWith('/api/admin/orders')||p.startsWith('/api/admin/support')||p==='/api/admin/customers'||p==='/api/admin/activity';
+  return false;
+}
+async function logAdminActivity(env, request, action, details='') {
+  try {
+    if(!env.DB)return;
+    await ensureAdminTables(env);
+    const identity=await adminSessionInfo(request,env);
+    await env.DB.prepare(`INSERT INTO admin_activity(id,actor,action,details,created_at) VALUES(?,?,?,?,datetime('now'))`)
+      .bind('ACT-'+crypto.randomUUID(),identity?.name||'مدیر اصلی',String(action).slice(0,160),String(details).slice(0,1200)).run();
+  } catch (_) {}
 }
 
 function normalizeMetadata(input) {
@@ -456,21 +516,63 @@ async function api(request, env, url) {
     if (!user) return json({ ok:true, authenticated:false }, 200, { 'Set-Cookie': clearCookie(USER_SESSION_COOKIE) });
     return json({ ok:true, authenticated:true, user });
   }
+  if (url.pathname === '/api/store-settings' && request.method === 'GET') {
+    if(!env.DB)return json({ok:true,settings:{}});
+    await ensureStoreSettings(env);
+    const {results}=await env.DB.prepare(`SELECT key,value FROM store_settings WHERE key IN ('store_name','store_logo_url','store_phone','store_email','store_address','support_phone','support_email','shipping_method','shipping_cost','free_shipping_min','shipping_company')`).all();
+    return json({ok:true,settings:Object.fromEntries((results||[]).map(x=>[x.key,x.value]))});
+  }
+  if (url.pathname === '/api/account/orders' && request.method === 'GET') {
+    if (!env.DB) return json({ok:false,error:'پایگاه داده در دسترس نیست.'},500);
+    await ensureOrdersTables(env);
+    const session=await validUserSession(request,customerSessionSecret(env));
+    if(!session) return json({ok:false,error:'برای مشاهده سفارش‌ها وارد حساب شوید.'},401);
+    const user=await env.DB.prepare(`SELECT id FROM users WHERE id=? LIMIT 1`).bind(session.uid).first();
+    if(!user) return json({ok:false,error:'حساب کاربری پیدا نشد.'},404);
+    const userIdCol=(await env.DB.prepare(`PRAGMA table_info(orders)`).all()).results?.find(c=>String(c.name)==='user_id');
+    const orderUserId=/INT/i.test(String(userIdCol?.type||''))?Number(user.id):String(user.id);
+    const {results:orders}=await env.DB.prepare(`SELECT id,customer_name,email,total,subtotal,shipping,discount,payment_status,order_status,tracking_code,created_at,updated_at FROM orders WHERE user_id=? OR lower(email)=lower((SELECT email FROM users WHERE id=?)) ORDER BY created_at DESC LIMIT 100`).bind(orderUserId,user.id).all();
+    const items=[];
+    for(const o of (orders||[])){
+      const {results}=await env.DB.prepare(`SELECT * FROM order_items WHERE order_id=? ORDER BY rowid ASC`).bind(String(o.id)).all().catch(()=>({results:[]}));
+      o.items=(results||[]).map(i=>({product_id:i.product_id, name:i.product_name||i.name||'محصول آوان', image:i.product_image||i.image||'', price:Number(i.unit_price??i.price??0), quantity:Number(i.quantity??i.qty??1), total:Number(i.line_total??i.total??i.amount??0)}));
+    }
+    return json({ok:true,orders:orders||[]});
+  }
   if (url.pathname === '/api/auth/logout' && request.method === 'POST') {
     return json({ ok:true }, 200, { 'Set-Cookie': clearCookie(USER_SESSION_COOKIE) });
   }
   if (url.pathname === '/api/admin/login' && request.method === 'POST') {
     const body = await request.json().catch(() => ({}));
     const password = String(body.password || '');
-    if (!env.ADMIN_PASSWORD || password !== env.ADMIN_PASSWORD) return json({ ok: false, error: 'رمز واردشده صحیح نیست.' }, 401);
+    const email = String(body.email || '').trim().toLowerCase();
+    if (!env.ADMIN_PASSWORD) return json({ok:false,error:'رمز مدیریت در تنظیمات Cloudflare تعریف نشده است.'},500);
+    if (email) {
+      if (!env.DB) return json({ok:false,error:'پایگاه داده مدیران تنظیم نشده است.'},500);
+      await ensureAdminTables(env);
+      const staff=await env.DB.prepare(`SELECT * FROM admin_staff WHERE lower(email)=? AND active=1 LIMIT 1`).bind(email).first();
+      if(!staff || !(await verifyCustomerPassword(password,staff.password_hash))) return json({ok:false,error:'ایمیل یا رمز عبور مدیر صحیح نیست.'},401);
+      const token=await makeStaffSession(env.ADMIN_PASSWORD,staff);
+      await logAdminActivity(env,{headers:new Headers({'Cookie':`${SESSION_COOKIE}=${encodeURIComponent(token)}`})},'ورود مدیر',`ورود ${staff.email}`);
+      return json({ok:true,role:staff.role},200,{'Set-Cookie':`${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL}`});
+    }
+    if (password !== env.ADMIN_PASSWORD) return json({ ok: false, error: 'رمز واردشده صحیح نیست.' }, 401);
     const token = await makeSession(env.ADMIN_PASSWORD);
-    return json({ ok: true }, 200, { 'Set-Cookie': `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL}` });
+    await logAdminActivity(env,request,'ورود مدیر اصلی','ورود با رمز اصلی مدیریت');
+    return json({ ok: true, role:'super_admin' }, 200, { 'Set-Cookie': `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL}` });
   }
   if (url.pathname === '/api/admin/logout' && request.method === 'POST') {
     return json({ ok: true }, 200, { 'Set-Cookie': `${SESSION_COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0` });
   }
   if (url.pathname === '/api/admin/me' && request.method === 'GET') {
-    return json({ ok: await validSession(request, env.ADMIN_PASSWORD) });
+    const info=await adminSessionInfo(request,env);
+    return json({ ok: !!info, role:info?.role||'', name:info?.name||'' });
+  }
+
+  if (url.pathname.startsWith('/api/admin/') && !['/api/admin/login','/api/admin/logout','/api/admin/me'].includes(url.pathname)) {
+    const info=await adminSessionInfo(request,env);
+    if(!info)return json({ok:false,error:'نشست مدیریت معتبر نیست؛ دوباره وارد شوید.'},401);
+    if(!staffAllowed(info,url.pathname))return json({ok:false,error:'نقش شما اجازه انجام این عملیات را ندارد.'},403);
   }
 
   // Customer support: D1-backed tickets and live chat
@@ -586,7 +688,12 @@ async function api(request, env, url) {
     const map=new Map(products.map(p=>[String(p.id),p]));
     let subtotal=0; const normalized=[];
     for(const raw of items){ const p=map.get(String(raw.id)); const qty=Math.max(1,Math.floor(Number(raw.qty)||1)); if(!p||Number(p.active)!==1) return json({ok:false,error:`محصول ${raw.id} در دسترس نیست.`},400); if(Number(p.stock)<qty) return json({ok:false,error:`موجودی ${p.name} برای تعداد درخواستی کافی نیست.`},409); const line=Number(p.price)*qty; subtotal+=line; normalized.push({product:p,qty,line}); }
-    const shipping = subtotal >= 5000000 ? 0 : 0;
+    await ensureStoreSettings(env);
+    const {results:shippingRows}=await env.DB.prepare(`SELECT key,value FROM store_settings WHERE key IN ('shipping_cost','free_shipping_min')`).all();
+    const shippingSettings=Object.fromEntries((shippingRows||[]).map(x=>[x.key,x.value]));
+    const shippingCost=Math.max(0,Number(shippingSettings.shipping_cost)||0);
+    const freeShippingMin=Number(shippingSettings.free_shipping_min)>0?Number(shippingSettings.free_shipping_min):5000000;
+    const shipping = subtotal >= freeShippingMin ? 0 : shippingCost;
     const discount = 0;
     const total = Math.max(0,subtotal+shipping-discount);
     // Create the order using the EXISTING D1 schema instead of assuming id/user_id types.
@@ -598,7 +705,7 @@ async function api(request, env, url) {
     const ordersIdIsInteger=/INT/.test(String(ordersIdCol?.type||'').toUpperCase()) && Number(ordersIdCol?.pk||0)===1;
     const ordersUserIdIsInteger=/INT/.test(String(ordersUserIdCol?.type||'').toUpperCase());
 
-    const userSession=await validUserSession(request,String(env.GOOGLE_CLIENT_SECRET||''));
+    const userSession=await validUserSession(request,customerSessionSecret(env));
     await ensureUsersTable(env);
     const userInfo=await env.DB.prepare(`PRAGMA table_info(users)`).all();
     const userCols=new Map((userInfo.results||[]).map(r=>[String(r.name),r]));
@@ -691,7 +798,7 @@ async function api(request, env, url) {
     if(receiptImage && receiptImage.length > 2800000) return json({ok:false,error:'حجم تصویر رسید باید کمتر از ۲ مگابایت باشد.'},413);
     const order=await env.DB.prepare(`SELECT id,payment_status FROM orders WHERE id=?`).bind(orderId).first();
     if(!order) return json({ok:false,error:'سفارش پیدا نشد.'},404);
-    await env.DB.prepare(`UPDATE orders SET tracking_code=?,receipt_image=?,payment_status='submitted',order_status='awaiting_verification',updated_at=datetime('now') WHERE id=?`).bind(reference,receiptImage,orderId).run();
+    await env.DB.prepare(`UPDATE orders SET payment_reference=?,receipt_image=?,payment_status='submitted',order_status='awaiting_verification',updated_at=datetime('now') WHERE id=?`).bind(reference,receiptImage,orderId).run();
     return json({ok:true,message:'اطلاعات پرداخت و رسید ثبت شد و پس از بررسی مدیر تأیید می‌شود.'});
   }
   if (url.pathname.match(/^\/api\/orders\/[^/]+$/) && request.method === 'GET') {
@@ -703,10 +810,60 @@ async function api(request, env, url) {
     const {results}=await env.DB.prepare(`SELECT * FROM order_items WHERE order_id=? ORDER BY rowid ASC`).bind(orderId).all();
     return json({ok:true,order,items:results||[],payment:await paymentConfig(env)});
   }
+  if (url.pathname === '/api/admin/staff' && request.method === 'GET') {
+    const info=await adminSessionInfo(request,env); if(!info||info.role!=='super_admin')return json({ok:false,error:'دسترسی مدیر اصلی لازم است.'},403);
+    await ensureAdminTables(env);
+    const {results}=await env.DB.prepare(`SELECT id,name,email,role,active,created_at,updated_at FROM admin_staff ORDER BY created_at DESC`).all();
+    return json({ok:true,staff:results||[]});
+  }
+  if (url.pathname === '/api/admin/staff' && request.method === 'POST') {
+    const info=await adminSessionInfo(request,env); if(!info||info.role!=='super_admin')return json({ok:false,error:'دسترسی مدیر اصلی لازم است.'},403);
+    await ensureAdminTables(env);
+    const b=await request.json().catch(()=>({}));
+    const name=String(b.name||'').trim(),email=String(b.email||'').trim().toLowerCase(),password=String(b.password||''),role=String(b.role||'order_operator');
+    if(!name||!/^\S+@\S+\.\S+$/.test(email)||password.length<8||!['content_manager','order_operator'].includes(role))return json({ok:false,error:'نام، ایمیل معتبر، رمز حداقل ۸ کاراکتری و نقش مجاز را وارد کنید.'},400);
+    const hashed=await hashCustomerPassword(password);
+    try{await env.DB.prepare(`INSERT INTO admin_staff(id,name,email,password_hash,role,active,created_at,updated_at) VALUES(?,?,?,?,?,1,datetime('now'),datetime('now'))`).bind('ADM-'+crypto.randomUUID(),name,email,hashed.salt+'$'+hashed.hash,role).run();}
+    catch(e){return json({ok:false,error:'این ایمیل قبلاً ثبت شده یا ذخیره مدیر ناموفق بود.'},409);}
+    await logAdminActivity(env,request,'ایجاد مدیر',`${email} • ${role}`);
+    return json({ok:true});
+  }
+  const staffMatch=url.pathname.match(/^\/api\/admin\/staff\/([^/]+)$/);
+  if(staffMatch && request.method==='PATCH'){
+    const info=await adminSessionInfo(request,env);if(!info||info.role!=='super_admin')return json({ok:false,error:'دسترسی مدیر اصلی لازم است.'},403);
+    await ensureAdminTables(env);const id=decodeURIComponent(staffMatch[1]);const b=await request.json().catch(()=>({}));
+    const role=String(b.role||'').trim(),active=b.active;
+    if(role&&!['content_manager','order_operator'].includes(role))return json({ok:false,error:'نقش نامعتبر است.'},400);
+    await env.DB.prepare(`UPDATE admin_staff SET role=CASE WHEN ?<>'' THEN ? ELSE role END,active=CASE WHEN ? IS NULL THEN active ELSE ? END,updated_at=datetime('now') WHERE id=?`).bind(role,role,active===undefined?null:Number(!!active),Number(!!active),id).run();
+    await logAdminActivity(env,request,'تغییر دسترسی مدیر',id);return json({ok:true});
+  }
+  if (url.pathname === '/api/admin/activity' && request.method === 'GET') {
+    const info=await adminSessionInfo(request,env);if(!info)return json({ok:false,error:'Unauthorized'},401);
+    await ensureAdminTables(env);const {results}=await env.DB.prepare(`SELECT id,actor,action,details,created_at FROM admin_activity ORDER BY created_at DESC LIMIT 200`).all();
+    return json({ok:true,activities:results||[]});
+  }
+  if (url.pathname === '/api/admin/store-settings' && request.method === 'GET') {
+    const info=await adminSessionInfo(request,env);if(!info)return json({ok:false,error:'Unauthorized'},401);
+    await ensureAdminTables(env);const {results}=await env.DB.prepare(`SELECT key,value,updated_at FROM store_settings`).all();
+    return json({ok:true,settings:Object.fromEntries((results||[]).map(x=>[x.key,x.value]))});
+  }
+  if (url.pathname === '/api/admin/store-settings' && request.method === 'POST') {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureAdminTables(env);const b=await request.json().catch(()=>({}));
+    const allowed=['store_name','store_logo_url','store_phone','store_email','store_address','shipping_method','shipping_cost','free_shipping_min','shipping_company','support_phone','support_email'];
+    for(const key of allowed){if(b[key]!==undefined)await env.DB.prepare(`INSERT INTO store_settings(key,value,updated_at) VALUES(?,?,datetime('now')) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=datetime('now')`).bind(key,String(b[key]??'').trim().slice(0,1000)).run();}
+    await logAdminActivity(env,request,'ذخیره تنظیمات فروشگاه',allowed.filter(k=>b[k]!==undefined).join(', '));
+    return json({ok:true});
+  }
+
   if (url.pathname === '/api/admin/orders' && request.method === 'GET') {
     if(!await validSession(request,env.ADMIN_PASSWORD)) return json({ok:false,error:'Unauthorized'},401);
     await ensureOrdersTables(env);
     const {results}=await env.DB.prepare(`SELECT * FROM orders ORDER BY created_at DESC`).all();
+    for(const o of (results||[])){
+      const {results:items}=await env.DB.prepare(`SELECT * FROM order_items WHERE order_id=? ORDER BY rowid ASC`).bind(String(o.id)).all().catch(()=>({results:[]}));
+      o.items=(items||[]).map(i=>({name:i.product_name||i.name||'محصول',image:i.product_image||i.image||'',price:Number(i.unit_price??i.price??0),quantity:Number(i.quantity??i.qty??1),total:Number(i.line_total??i.total??i.amount??0)}));
+    }
     return json({ok:true,orders:results||[]});
   }
   if (url.pathname === '/api/admin/payment-settings' && request.method === 'GET') {
@@ -720,6 +877,7 @@ async function api(request, env, url) {
     const b=await request.json().catch(()=>({}));
     const values={payment_card_number:String(b.cardNumber||'').trim(),payment_card_name:String(b.cardName||'').trim(),payment_bank_name:String(b.bankName||'').trim(),payment_gateway_enabled:b.gatewayEnabled?'1':'0',payment_gateway_name:String(b.gatewayName||'').trim(),payment_gateway_merchant_id:String(b.merchantId||'').trim(),payment_gateway_note:String(b.note||'').trim()};
     for(const [key,value] of Object.entries(values)) await env.DB.prepare(`INSERT INTO store_settings(key,value,updated_at) VALUES(?,?,datetime('now')) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=datetime('now')`).bind(key,value).run();
+    await logAdminActivity(env,request,'ذخیره تنظیمات پرداخت','اطلاعات کارت یا تنظیمات درگاه تغییر کرد');
     return json({ok:true,payment:await paymentConfig(env)});
   }
 
@@ -730,19 +888,25 @@ async function api(request, env, url) {
     const orderId=decodeURIComponent(adminOrder[1]);
     const body=await request.json().catch(()=>({}));
     const paymentStatus=String(body.paymentStatus||'').trim();
-    const orderStatus=String(body.orderStatus||'').trim();
+    let orderStatus=String(body.orderStatus||'').trim();
     const tracking=String(body.trackingCode||'').trim();
     const allowedPay=['pending','submitted','paid','failed','refunded']; const allowedOrder=['pending_payment','awaiting_verification','processing','shipped','delivered','cancelled'];
     if(paymentStatus && !allowedPay.includes(paymentStatus)) return json({ok:false,error:'وضعیت پرداخت نامعتبر است.'},400);
     if(orderStatus && !allowedOrder.includes(orderStatus)) return json({ok:false,error:'وضعیت سفارش نامعتبر است.'},400);
+    const currentOrder=await env.DB.prepare(`SELECT order_status FROM orders WHERE id=?`).bind(orderId).first();
+    if(!currentOrder)return json({ok:false,error:'سفارش پیدا نشد.'},404);
+    if(!orderStatus && paymentStatus==='paid' && ['pending_payment','awaiting_verification'].includes(String(currentOrder.order_status)))orderStatus='processing';
+    if(!orderStatus && paymentStatus==='failed' && String(currentOrder.order_status)==='awaiting_verification')orderStatus='pending_payment';
     await env.DB.prepare(`UPDATE orders SET payment_status=CASE WHEN ?<>'' THEN ? ELSE payment_status END,order_status=CASE WHEN ?<>'' THEN ? ELSE order_status END,tracking_code=CASE WHEN ?<>'' THEN ? ELSE tracking_code END,updated_at=datetime('now') WHERE id=?`).bind(paymentStatus,paymentStatus,orderStatus,orderStatus,tracking,tracking,orderId).run();
+    await logAdminActivity(env,request,'به‌روزرسانی سفارش',`سفارش ${orderId} • پرداخت: ${paymentStatus||'بدون تغییر'} • وضعیت: ${orderStatus||'بدون تغییر'} • رهگیری: ${tracking||'بدون تغییر'}`);
     return json({ok:true});
   }
 
   if (!url.pathname.startsWith('/api/products')) return json({ ok: false, error: 'Not found' }, 404);
   if (!env.DB) return json({ ok: false, error: 'D1 binding DB is not configured.' }, 500);
   await ensureProductMetaTable(env);
-  const isAdmin = await validSession(request, env.ADMIN_PASSWORD);
+  const adminInfo = await adminSessionInfo(request, env);
+  const isAdmin = !!adminInfo && staffAllowed(adminInfo, url.pathname);
 
   if (url.pathname === '/api/products' && request.method === 'GET') {
     const visibility = isAdmin ? '' : ' WHERE p.active=1';
@@ -767,6 +931,7 @@ async function api(request, env, url) {
       env.DB.prepare(`INSERT INTO product_meta (product_id,metadata_json,updated_at) VALUES (?,?,datetime('now'))`).bind(id, JSON.stringify(body.metadata))
     ]);
     const product = await env.DB.prepare(`SELECT * FROM products WHERE id=?`).bind(id).first();
+    await logAdminActivity(env,request,'ایجاد محصول',`${body.name} • ${id}`);
     return json({ ok: true, product: { ...product, metadata: body.metadata } }, 201);
   }
 
@@ -780,10 +945,12 @@ async function api(request, env, url) {
       env.DB.prepare(`INSERT INTO product_meta (product_id,metadata_json,updated_at) VALUES (?,?,datetime('now')) ON CONFLICT(product_id) DO UPDATE SET metadata_json=excluded.metadata_json,updated_at=datetime('now')`).bind(id, JSON.stringify(body.metadata))
     ]);
     const product = await env.DB.prepare(`SELECT * FROM products WHERE id=?`).bind(id).first();
+    await logAdminActivity(env,request,'ویرایش محصول',`${body.name} • ${id}`);
     return json({ ok: true, product: { ...product, metadata: body.metadata } });
   }
   if (request.method === 'DELETE') {
     await env.DB.prepare(`UPDATE products SET active=0,updated_at=datetime('now') WHERE id=?`).bind(id).run();
+    await logAdminActivity(env,request,'غیرفعال‌سازی محصول',id);
     return json({ ok: true });
   }
   return json({ ok: false, error: 'Method not allowed' }, 405);

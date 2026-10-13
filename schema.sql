@@ -78,3 +78,23 @@ CREATE TABLE IF NOT EXISTS store_settings (
   value TEXT NOT NULL DEFAULT '',
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+
+-- V136: role-based staff access and audit trail (also created lazily by the Worker)
+CREATE TABLE IF NOT EXISTS admin_staff (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'order_operator',
+  active INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS admin_activity (
+  id TEXT PRIMARY KEY,
+  actor TEXT NOT NULL DEFAULT 'مدیر فروشگاه',
+  action TEXT NOT NULL,
+  details TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

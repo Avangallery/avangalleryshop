@@ -272,3 +272,47 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important}
 .payment-preview{margin-top:16px;padding:22px;border:1px solid rgba(231,191,98,.16);border-radius:18px;background:radial-gradient(circle at 15% 0%,rgba(231,191,98,.1),transparent 30%),linear-gradient(145deg,#0a2534,#061721);display:flex;align-items:center;justify-content:space-between;gap:22px}.payment-preview .eyebrow{font-size:9px;color:#dcb75a;letter-spacing:2px}.payment-preview h3{margin:6px 0 4px;font-size:16px}.payment-preview p{margin:0;color:#718b99;font-size:10px}.payment-card-preview{width:min(360px,100%);padding:20px;border-radius:17px;background:linear-gradient(135deg,#112f3d,#071923);border:1px solid rgba(231,191,98,.25);box-shadow:0 16px 35px rgba(0,0,0,.22);text-align:right}.payment-card-preview small{display:block;color:#8099a5;font-size:9px}.payment-card-preview strong{display:block;margin:10px 0;font-size:19px;letter-spacing:2px;color:#f2d279;direction:ltr;text-align:left}.payment-card-preview span,.payment-card-preview b{display:block;font-size:10px;color:#c8d6dc;margin-top:6px}
 @media(max-width:900px){.payment-admin-grid{grid-template-columns:1fr}.payment-preview{flex-direction:column;align-items:stretch}.payment-card-preview{width:100%}}
 @media(max-width:560px){.payment-form-grid{grid-template-columns:1fr}.payment-card-panel,.gateway-panel,.payment-preview{padding:15px}.panel-head{gap:10px}.panel-head h3{font-size:14px}.payment-card-preview strong{font-size:16px}}
+
+/* V136 AVAN unified admin components */
+.dashboard-hero{position:relative;isolation:isolate;overflow:hidden;min-height:245px;background:linear-gradient(135deg,#082432,#041722);border-color:rgba(216,182,90,.24)}
+.dashboard-hero-watch{position:absolute;inset:0;width:100%;height:100%;opacity:.68;z-index:-1}
+.dashboard-hero-watch img{width:100%;height:100%;object-fit:cover;object-position:center 48%;filter:contrast(1.06) saturate(.72)}
+.hero-watch-overlay{background:linear-gradient(90deg,rgba(3,18,27,.95) 0%,rgba(3,18,27,.72) 42%,rgba(3,18,27,.35) 100%)}
+.dashboard-hero-copy{position:relative;z-index:2;max-width:72%;text-shadow:0 2px 12px rgba(0,0,0,.28)}
+.hero-brand-mark{display:flex;align-items:center;gap:8px;flex-direction:column;background:rgba(3,20,30,.48);border:1px solid rgba(231,191,98,.25);border-radius:16px;padding:9px 12px;backdrop-filter:blur(8px)}
+.hero-brand-mark svg{width:35px;height:35px}
+.hero-brand-mark b{font:800 13px Arial;letter-spacing:3px}
+.hero-brand-mark small{font-size:8px;letter-spacing:3px}
+.order-admin-panel{overflow:hidden}
+.order-admin-toolbar,.panel-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border-bottom:1px solid rgba(216,182,90,.12);flex-wrap:wrap}
+.order-admin-toolbar b,.panel-title-row h3{display:block;margin:0;color:#f4d16e}
+.order-admin-toolbar small{display:block;color:#91afbd;margin-top:5px}
+#ordersTable{min-width:1120px}
+#ordersTable td{vertical-align:top;padding:14px 10px}
+#ordersTable select,#ordersTable input{border:1px solid #24495b;border-radius:9px;background:#071e2a;color:#eaf3f7;padding:9px;font:inherit;max-width:180px}
+.order-admin-date,.muted{display:block;color:#8fa9b7;font-size:11px;margin-top:5px}
+.order-items-summary{font-size:11px;color:#d5bd73;margin-top:7px;line-height:1.8}
+.receipt-view-btn{border:1px solid rgba(216,182,90,.5);background:rgba(216,182,90,.1);color:#f0cd70;border-radius:10px;padding:9px 11px;font:inherit;cursor:pointer;white-space:nowrap}
+.receipt-view-btn:hover{background:rgba(216,182,90,.2)}
+.quick-pay-actions{display:flex;gap:5px;margin-top:7px}
+.quick-pay-actions button{border:1px solid rgba(216,182,90,.25);background:#0a2a38;color:#e8c65f;border-radius:7px;padding:5px 8px;cursor:pointer;font:inherit;font-size:11px}
+.quick-pay-actions button[data-pay-approve]{color:#8fe2b0;border-color:rgba(100,220,150,.25)}
+.quick-pay-actions button[data-pay-reject]{color:#ffaaa6;border-color:rgba(255,100,100,.25)}
+.receipt-modal{text-align:center;max-width:min(760px,90vw)}
+.staff-create{padding:20px;margin-bottom:18px}
+.staff-create h3{margin:0 0 15px;color:#f0cd70}
+.staff-form,.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.staff-form label,.settings-grid label{display:flex;flex-direction:column;gap:7px;color:#b8cbd3;font-size:13px}
+.staff-form input,.staff-form select,.settings-grid input,.settings-grid textarea{width:100%;min-width:0;background:#061d29;border:1px solid #254a5c;border-radius:11px;padding:12px;color:#edf5f8;font:inherit;outline:none}
+.staff-form input:focus,.staff-form select:focus,.settings-grid input:focus,.settings-grid textarea:focus{border-color:#d8b65a;box-shadow:0 0 0 3px rgba(216,182,90,.09)}
+.staff-form>button{justify-self:start}
+.inline-message{align-self:center;color:#8fe2b0;font-size:12px}
+.staff-list{padding:12px 18px}
+.staff-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.staff-avatar{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;background:rgba(216,182,90,.12);border:1px solid rgba(216,182,90,.3);color:#f0cd70;font-weight:800}
+.staff-info{min-width:160px;flex:1}.staff-info b,.staff-info small{display:block}.staff-info small{font-size:11px;color:#8fa9b7;margin-top:4px}
+.staff-role{display:flex;align-items:center;gap:8px;color:#9bb4bf;font-size:12px}.staff-role select{background:#061d29;border:1px solid #254a5c;border-radius:8px;padding:8px;color:#eaf3f7}
+.staff-active{display:flex;align-items:center;gap:6px;color:#a9c0cb;font-size:12px}
+.activity-list{padding:14px 18px;overflow:auto}.activity-header,.activity-row{display:grid;grid-template-columns:1fr 1.2fr 2fr 1.2fr;gap:12px;align-items:start;padding:12px;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}.activity-header{color:#e7c35e;font-weight:800}.activity-row small,.activity-row time{color:#9db5c0;overflow-wrap:anywhere}
+.store-settings-form{padding:20px}.settings-wide{grid-column:1/-1}.settings-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px}.settings-actions .inline-message{margin-inline:4px}
+@media(max-width:760px){.dashboard-hero-copy{max-width:100%}.hero-brand-mark{right:14px;top:14px}.staff-form,.settings-grid{grid-template-columns:1fr}.activity-header{display:none}.activity-row{grid-template-columns:1fr 1fr}.activity-row small,.activity-row time{grid-column:span 2}.staff-role{width:100%;justify-content:space-between}.staff-role select{flex:1}.order-admin-toolbar{align-items:flex-start}}

@@ -48,3 +48,15 @@ Checkout payment form accepts an optional JPG/PNG/WebP receipt image up to 2 MB,
 
 ## V135 — Required receipt, optional reference
 Checkout now places the receipt upload before the transaction reference, makes the image required and the reference optional, and styles the upload area in the navy/gold AVAN theme with preview, remove, and drag/drop support. API also rejects payment submissions without a valid receipt image.
+
+
+## V136 — Consolidated account and admin workflows
+
+- Customer account page loads the signed-in customer's real order history, line items, payment state, shipment state, and carrier tracking code.
+- Admin order management displays order items, receipt preview, transaction reference, payment approval/rejection actions, order status, and carrier tracking-code editing.
+- Payment transaction references are stored separately from shipment tracking codes.
+- Admin dashboard hero uses a full-width watch image treatment, a small inline SVG watch mark, and working product-add/support actions.
+- Admin staff management supports creating email/password staff accounts, role assignment, activation/deactivation, and role checks for protected API routes.
+- Admin activity log records sign-ins, product mutations, order updates, payment settings, staff changes, and store settings changes.
+- Store settings are D1-backed; the public endpoint exposes only non-sensitive store/shipping settings, and configured shipping cost/free-shipping threshold are used during checkout.
+- No Cloudflare R2 dependency was introduced.

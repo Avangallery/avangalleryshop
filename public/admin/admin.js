@@ -24,14 +24,14 @@ function dashboard(){
       <h2>سلام، مدیر عزیز <span>✦</span></h2>
       <p>به پنل مدیریت آوان گالری خوش آمدید. اینجا همه‌چیز برای مدیریت حرفه‌ای فروشگاه ساعت شما آماده است.</p>
       <div class="hero-actions">
-        <button class="gold" data-page-go="products">＋ افزودن محصول</button>
+        <button class="gold" data-add-product>＋ افزودن محصول</button>
         <button class="ghost" data-page-go="tickets">پشتیبانی مشتریان</button>
       </div>
     </div>
     <div class="dashboard-hero-watch">
       <img src="/assets/watch-background-clean.jpg" alt="AVAN GALLERY">
       <div class="hero-watch-overlay"></div>
-      <div class="hero-brand-mark">AVAN<br><small>GALLERY</small></div>
+      <div class="hero-brand-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="24" cy="24" r="15" fill="none" stroke="currentColor" stroke-opacity=".55"/><path d="M24 13v11l8 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><b>AVAN</b><small>GALLERY</small></div>
     </div>
   </section>
 
@@ -284,7 +284,7 @@ async function renderCustomersPage(){
   try{ $('#content').innerHTML='<div class="support-loading">در حال دریافت مشتریان…</div>'; $('#title').textContent='مشتریان'; await loadCustomers(); $('#content').innerHTML=customersPage(); renderCustomers(); $('#customerSearch').oninput=async()=>{const q=$('#customerSearch').value.trim(); if(q.length>=2||q.length===0){try{await loadCustomers(q);renderCustomers()}catch(e){}} else renderCustomers()}; $('#refreshCustomers').onclick=async()=>{await loadCustomers($('#customerSearch').value.trim());renderCustomers()}; }
   catch(e){$('#content').innerHTML=`<div class="notice">${esc(e.message)}</div>`}
 }
-function orders(){return head('سفارش‌ها','مدیریت پرداخت، ارسال، تأیید یا رد پرداخت و کد رهگیری')+`<section class="panel"><div id="ordersLoading" class="notice">در حال دریافت سفارش‌ها...</div><div class="table-wrap"><table class="table" id="ordersTable"><thead><tr><th>شماره</th><th>مشتری</th><th>مبلغ</th><th>پرداخت</th><th>وضعیت سفارش</th><th>کد پیگیری</th><th>اقدامات</th></tr></thead><tbody></tbody></table></div></section>`}
+function orders(){return head('سفارش‌ها','مشاهده رسید، تأیید یا رد پرداخت و ثبت کد رهگیری مرسوله')+`<section class="panel order-admin-panel"><div class="order-admin-toolbar"><div><b>مدیریت سفارش‌های آوان</b><small>رسیدها را بررسی کنید و وضعیت پرداخت و ارسال را ذخیره کنید.</small></div><button class="ghost" id="refreshOrders">↻ بروزرسانی</button></div><div id="ordersLoading" class="notice">در حال دریافت سفارش‌ها...</div><div class="table-wrap"><table class="table" id="ordersTable"><thead><tr><th>سفارش</th><th>مشتری و محصولات</th><th>مبلغ</th><th>رسید پرداخت</th><th>وضعیت پرداخت</th><th>وضعیت سفارش</th><th>کد رهگیری شرکت ارسال</th><th>ذخیره</th></tr></thead><tbody></tbody></table></div></section>`}
 function paymentPage(){return head('پرداخت و کارت','مدیریت اطلاعات کارت، پرداخت دستی و تنظیمات درگاه')+`<div class="payment-admin-grid">
 <section class="panel payment-card-panel"><div class="panel-head"><div><h3>اطلاعات کارت فروشگاه</h3><p>این اطلاعات در مرحله پرداخت کارت‌به‌کارت مشتری نمایش داده می‌شود.</p></div><span class="live-pill" id="paymentLive">● فعال</span></div>
 <div class="payment-form-grid"><label>شماره کارت<input id="payCardNumber" dir="ltr" inputmode="numeric" placeholder="6037 0000 0000 0000"></label><label>نام صاحب کارت<input id="payCardName" placeholder="نام صاحب حساب / فروشگاه"></label><label>بانک<input id="payBankName" placeholder="نام بانک"></label></div>
@@ -330,43 +330,71 @@ async function renderTickets(){try{$('#content').innerHTML='<div class="support-
 
 async function loadOrders(){
   try{
-    const r=await fetch('/api/admin/orders',{cache:'no-store'});
-    const d=await r.json();
-    const tbody=document.querySelector('#ordersTable tbody');
-    const loading=document.getElementById('ordersLoading');
-    if(!r.ok)throw new Error(d.error||'خطا');
-    if(loading)loading.remove();
-    if(!tbody)return;
+    const r=await fetch('/api/admin/orders',{cache:'no-store'}),d=await r.json();
+    const tbody=document.querySelector('#ordersTable tbody'),loading=document.getElementById('ordersLoading');
+    if(!r.ok)throw new Error(d.error||'خطا در دریافت سفارش‌ها');
+    if(loading)loading.remove();if(!tbody)return;
     const payOptions=[['pending','در انتظار پرداخت'],['submitted','رسید ثبت شده'],['paid','پرداخت تأیید شد'],['failed','رد پرداخت'],['refunded','بازپرداخت']];
     const orderOptions=[['pending_payment','در انتظار پرداخت'],['awaiting_verification','در انتظار بررسی'],['processing','در حال آماده‌سازی'],['shipped','ارسال شده'],['delivered','تحویل شده'],['cancelled','لغو شده']];
     const optionHtml=(options,current)=>options.map(([value,label])=>`<option value="${value}" ${String(current)===value?'selected':''}>${label}</option>`).join('');
-    tbody.innerHTML=(d.orders||[]).map(o=>`<tr>
-      <td dir="ltr">${esc(String(o.id))}</td>
-      <td>${esc(o.customer_name||'—')}<br><small>${esc(o.phone||'')}</small></td>
-      <td>${new Intl.NumberFormat('fa-IR').format(o.total||0)} تومان</td>
-      <td><select data-pay-status="${esc(String(o.id))}">${optionHtml(payOptions,o.payment_status)}</select></td>
+    tbody.innerHTML=(d.orders||[]).map(o=>{
+      const items=(o.items||[]).map(i=>`${esc(i.name)} × ${fa(i.quantity||1)}`).join('<br>');
+      return `<tr>
+      <td><b dir="ltr">${esc(String(o.id))}</b><small class="order-admin-date">${esc(o.created_at||'')}</small></td>
+      <td>${esc(o.customer_name||'—')}<br><small>${esc(o.phone||'')}</small><div class="order-items-summary">${items||'جزئیات محصول ثبت نشده'}</div></td>
+      <td><b>${fa(o.total||0)} تومان</b></td>
+      <td>${o.receipt_image?`<button type="button" class="receipt-view-btn" data-receipt="${esc(String(o.id))}">مشاهده رسید ↗</button>`:`<span class="muted">رسیدی ندارد</span>`}${o.payment_reference?`<small class="order-admin-date">کد تراکنش: <b dir="ltr">${esc(o.payment_reference)}</b></small>`:''}</td>
+      <td><select data-pay-status="${esc(String(o.id))}">${optionHtml(payOptions,o.payment_status)}</select><div class="quick-pay-actions"><button type="button" data-pay-approve="${esc(String(o.id))}">تأیید</button><button type="button" data-pay-reject="${esc(String(o.id))}">رد</button></div></td>
       <td><select data-order-status="${esc(String(o.id))}">${optionHtml(orderOptions,o.order_status)}</select></td>
-      <td><input data-order-tracking="${esc(String(o.id))}" value="${esc(o.tracking_code||'')}" placeholder="کد رهگیری" dir="ltr" style="min-width:120px"></td>
+      <td><input data-order-tracking="${esc(String(o.id))}" value="${esc(o.tracking_code||'')}" placeholder="کد شرکت ارسال" dir="ltr" style="min-width:135px"><small class="muted">پس از ارسال ذخیره کنید</small></td>
       <td><button type="button" class="gold" data-order-save="${esc(String(o.id))}">ذخیره تغییرات</button></td>
-    </tr>`).join('')||'<tr><td colspan="7">هنوز سفارشی ثبت نشده است.</td></tr>';
-    $$('[data-order-save]').forEach(btn=>btn.onclick=async()=>{
-      const id=btn.dataset.orderSave;
-      const paymentStatus=$(`[data-pay-status="${CSS.escape(id)}"]`)?.value||'';
-      const orderStatus=$(`[data-order-status="${CSS.escape(id)}"]`)?.value||'';
+    </tr>`}).join('')||'<tr><td colspan="8"><div class="notice">هنوز سفارشی ثبت نشده است.</div></td></tr>';
+    const saveOrder=async(id,extra={})=>{
+      const paymentStatus=extra.paymentStatus||$(`[data-pay-status="${CSS.escape(id)}"]`)?.value||'';
+      const orderStatus=Object.prototype.hasOwnProperty.call(extra,'paymentStatus')&&!Object.prototype.hasOwnProperty.call(extra,'orderStatus')?'':($(`[data-order-status="${CSS.escape(id)}"]`)?.value||'');
       const trackingCode=$(`[data-order-tracking="${CSS.escape(id)}"]`)?.value||'';
-      btn.disabled=true;
-      try{
-        const response=await fetch('/api/admin/orders/'+encodeURIComponent(id),{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({paymentStatus,orderStatus,trackingCode})});
-        const result=await response.json();
-        if(!response.ok)throw new Error(result.error||'ذخیره وضعیت سفارش ناموفق بود.');
-        btn.textContent='ذخیره شد ✓';
-        setTimeout(()=>{btn.textContent='ذخیره تغییرات';btn.disabled=false;},1000);
-      }catch(error){alert(error.message);btn.disabled=false;}
-    });
+      const result=await adminApi('/api/admin/orders/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({paymentStatus,orderStatus,trackingCode})});
+      const target=$(`[data-pay-status="${CSS.escape(id)}"]`);if(target&&paymentStatus)target.value=paymentStatus;
+      return result;
+    };
+    if($('#refreshOrders'))$('#refreshOrders').onclick=loadOrders;
+    $$('[data-order-save]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.orderSave;btn.disabled=true;try{await saveOrder(id);btn.textContent='ذخیره شد ✓';await loadOrders();}catch(e){alert(e.message);btn.disabled=false;}});
+    $$('[data-pay-approve]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.payApprove;if(!confirm('پرداخت این سفارش تأیید شود؟ فقط پس از بررسی رسید تأیید کنید.'))return;try{await saveOrder(id,{paymentStatus:'paid'});await loadOrders();}catch(e){alert(e.message)}});
+    $$('[data-pay-reject]').forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.payReject;if(!confirm('پرداخت این سفارش رد شود؟'))return;try{await saveOrder(id,{paymentStatus:'failed'});await loadOrders();}catch(e){alert(e.message)}});
+    $$('[data-receipt]').forEach(btn=>btn.onclick=()=>{const o=(d.orders||[]).find(x=>String(x.id)===btn.dataset.receipt);if(!o?.receipt_image)return;openModal(`<button class="close">×</button><div class="receipt-modal"><span class="eyebrow">AVAN GALLERY • PAYMENT RECEIPT</span><h2>رسید سفارش ${esc(String(o.id))}</h2><p>${esc(o.customer_name||'')} • ${fa(o.total||0)} تومان</p><a href="${esc(o.receipt_image)}" target="_blank" rel="noopener"><img src="${esc(o.receipt_image)}" alt="رسید پرداخت سفارش" style="display:block;max-width:100%;max-height:70vh;object-fit:contain;margin:18px auto;border-radius:14px;border:1px solid rgba(216,182,90,.35)"></a><div class="modal-actions"><button class="ghost close2">بستن</button></div></div>`);$('#modalCard .close2').onclick=closeModal;});
   }catch(e){const l=document.getElementById('ordersLoading');if(l)l.textContent=e.message;}
 }
 
-function render(){let html='';if(current==='dashboard')html=dashboard();if(current==='products')html=productsPage();if(current==='orders'){html=orders();setTimeout(loadOrders,0);}if(current==='payment'){html=paymentPage();setTimeout(()=>{loadPaymentSettings();$$('#payCardNumber,#payCardName,#payBankName').forEach(e=>e.addEventListener('input',updatePaymentPreview));$('#gatewayEnabled')?.addEventListener('change',updateGatewayBadge);$('#savePaymentCard')?.addEventListener('click',()=>savePaymentSettings('card'));$('#saveGateway')?.addEventListener('click',()=>savePaymentSettings('gateway'));},0);}if(current==='customers'){renderCustomersPage();return;}if(current==='categories')html=categoriesPage();if(current==='brands')html=brandsPage();if(current==='coupons')html=couponsPage();if(current==='reviews')html=simple('نظرات مشتریان','تأیید، رد و پاسخ به دیدگاه‌ها',[['در انتظار بررسی','۰ نظر'],['امتیاز محصولات','پس از ثبت خرید فعال می‌شود'],['گزارش اسپم','مدیریت گزارش‌های کاربران']]);if(current==='content')html=simple('محتوا و بنرها','مدیریت Hero، بنر، مجله و صفحات ثابت',[['Hero اصلی','تصویر، عنوان و CTA صفحه اول'],['مجله آوان','مقالات و محتوای آموزشی'],['صفحات ثابت','درباره ما، تماس، قوانین و حریم خصوصی']]);if(current==='notifications')html=simple('اعلان‌ها','مدیریت اعلان‌های فروشگاه',[['اعلان سفارش','ثبت، پرداخت و ارسال سفارش'],['اعلان مدیریتی','موجودی کم و سفارش جدید'],['اعلان مشتری','ساختار آماده اتصال به SMS/Email']]);if(current==='tickets'){renderTickets();return;}if(current==='wallet')html=simple('کیف پول و وفاداری','امتیاز، اعتبار و باشگاه مشتریان',[['امتیاز خرید','قابل فعال‌سازی برای مشتریان'],['کیف پول','شارژ و برداشت اعتبار'],['سطوح مشتری','برنزی، نقره‌ای، طلایی']]);if(current==='reports')html=simple('گزارش‌ها','گزارش فروش، محصولات و مشتریان',[['گزارش فروش','روزانه، ماهانه و بازه دلخواه'],['محصولات پرفروش','قابل محاسبه از سفارش‌ها'],['گزارش موجودی','هشدار موجودی کم']]);if(current==='admins')html=simple('مدیران و دسترسی‌ها','مدیریت کاربران پنل و سطح دسترسی',[['مدیر اصلی','دسترسی کامل'],['مدیر محتوا','بنر، مجله و صفحات'],['اپراتور سفارش','سفارش‌ها و مشتریان']]);if(current==='activity')html=simple('گزارش فعالیت','ثبت عملیات مدیران و تغییرات',[['ورود مدیران','زمان و نشست‌ها'],['تغییر محصول','قیمت، موجودی و اطلاعات'],['تغییر تنظیمات','ثبت عملیات حساس']]);if(current==='settings')html=simple('تنظیمات فروشگاه','تنظیمات اصلی آوان',[['اطلاعات فروشگاه','نام، لوگو، تماس و آدرس'],['پرداخت','درگاه و وضعیت پرداخت'],['ارسال','روش‌ها، هزینه و کد رهگیری'],['امنیت','مدیران و نشست‌ها']]);$('#content').innerHTML=html;$$('[data-page-go]').forEach(b=>b.onclick=()=>{current=b.dataset.pageGo;render();});const nav=document.querySelector(`#nav button[data-page="${current}"]`);$('#title').textContent=nav?.querySelector('span')?.textContent||'داشبورد';if(current==='products'){
+
+async function adminApi(path,options={}){
+ const r=await fetch(path,{cache:'no-store',...options,headers:{'content-type':'application/json',...(options.headers||{})}});
+ const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'عملیات ناموفق بود.');return d;
+}
+function adminsPage(){return head('مدیران و دسترسی‌ها','ساخت حساب مدیران، تعیین نقش و فعال یا غیرفعال کردن دسترسی')+`<section class="panel staff-create"><h3>افزودن مدیر جدید</h3><form id="staffForm" class="staff-form"><label>نام و نام خانوادگی<input name="name" required placeholder="نام مدیر"></label><label>ایمیل ورود<input name="email" type="email" required dir="ltr" placeholder="manager@example.com"></label><label>رمز عبور اولیه<input name="password" type="password" minlength="8" required placeholder="حداقل ۸ کاراکتر"></label><label>نقش دسترسی<select name="role"><option value="order_operator">اپراتور سفارش — سفارش‌ها و پشتیبانی</option><option value="content_manager">مدیر محتوا — محصولات و تنظیمات عمومی</option></select></label><button class="gold" type="submit">＋ ایجاد مدیر</button><span id="staffMessage" class="inline-message"></span></form></section><section class="panel"><div class="panel-title-row"><h3>مدیران ثبت‌شده</h3><button class="ghost" id="refreshStaff">↻ بروزرسانی</button></div><div id="staffList" class="staff-list"><div class="notice">در حال دریافت مدیران…</div></div></section><div class="notice">حساب مدیر اصلی از رمز مدیریت Cloudflare استفاده می‌کند. حساب‌های این فهرست با ایمیل و رمز جداگانه وارد می‌شوند و نقش آن‌ها در API بررسی می‌شود.</div>`}
+async function loadStaff(){
+ const box=$('#staffList');if(!box)return;box.innerHTML='<div class="notice">در حال دریافت مدیران…</div>';
+ try{const d=await adminApi('/api/admin/staff');const list=d.staff||[];
+ box.innerHTML=list.length?list.map(s=>`<article class="staff-row"><div class="staff-avatar">${esc((s.name||'م').trim().charAt(0))}</div><div class="staff-info"><b>${esc(s.name)}</b><small dir="ltr">${esc(s.email)}</small><small>ایجاد: ${esc(s.created_at||'—')}</small></div><label class="staff-role">نقش<select data-staff-role="${esc(s.id)}"><option value="content_manager" ${s.role==='content_manager'?'selected':''}>مدیر محتوا</option><option value="order_operator" ${s.role==='order_operator'?'selected':''}>اپراتور سفارش</option></select></label><label class="staff-active"><input type="checkbox" data-staff-active="${esc(s.id)}" ${Number(s.active)===1?'checked':''}> فعال</label><button class="gold" data-staff-save="${esc(s.id)}">ذخیره</button></article>`).join(''):'<div class="notice">هنوز مدیر دیگری ساخته نشده است.</div>';
+ $$('[data-staff-save]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const id=b.dataset.staffSave;await adminApi('/api/admin/staff/'+encodeURIComponent(id),{method:'PATCH',body:JSON.stringify({role:$(`[data-staff-role="${CSS.escape(id)}"]`).value,active:$(`[data-staff-active="${CSS.escape(id)}"]`).checked})});b.textContent='ذخیره شد ✓';setTimeout(()=>{b.textContent='ذخیره';b.disabled=false},1000)}catch(e){alert(e.message);b.disabled=false}});
+ }catch(e){box.innerHTML=`<div class="notice">${esc(e.message)}</div>`}
+}
+function activityPage(){return head('گزارش فعالیت','ردیابی تغییرات مدیریتی و عملیات حساس فروشگاه')+`<section class="panel"><div class="panel-title-row"><h3>آخرین فعالیت‌ها</h3><button class="ghost" id="refreshActivity">↻ بروزرسانی</button></div><div id="activityList" class="activity-list"><div class="notice">در حال دریافت گزارش‌ها…</div></div></section>`}
+async function loadActivity(){const box=$('#activityList');if(!box)return;try{const d=await adminApi('/api/admin/activity');const rows=d.activities||[];box.innerHTML=rows.length?`<div class="activity-header"><span>مدیر</span><span>عملیات</span><span>جزئیات</span><span>زمان</span></div>`+rows.map(a=>`<div class="activity-row"><b>${esc(a.actor)}</b><span>${esc(a.action)}</span><small>${esc(a.details||'—')}</small><time>${esc(a.created_at||'')}</time></div>`).join(''):'<div class="notice">هنوز فعالیتی ثبت نشده است. عملیات بعدی مدیران در این بخش ثبت می‌شود.</div>'}catch(e){box.innerHTML=`<div class="notice">${esc(e.message)}</div>`}}
+function settingsPage(){return head('تنظیمات فروشگاه','اطلاعات تماس، نشانی و تنظیمات پایه ارسال')+`<form id="storeSettingsForm" class="panel store-settings-form"><div class="settings-grid"><label>نام فروشگاه<input name="store_name" required placeholder="آوان گالری"></label><label>شماره تماس<input name="store_phone" dir="ltr" placeholder="شماره تماس فروشگاه"></label><label>ایمیل پشتیبانی<input name="store_email" type="email" dir="ltr" placeholder="support@example.com"></label><label>شماره پشتیبانی<input name="support_phone" dir="ltr" placeholder="شماره پشتیبانی"></label><label>ایمیل پشتیبانی مشتریان<input name="support_email" type="email" dir="ltr" placeholder="ایمیل پشتیبانی"></label><label>شرکت ارسال پیش‌فرض<input name="shipping_company" placeholder="مثلاً پست یا تیپاکس"></label><label>روش ارسال<input name="shipping_method" placeholder="پست پیشتاز / تیپاکس"></label><label>هزینه ارسال (تومان)<input name="shipping_cost" type="number" min="0" step="1000"></label><label>حداقل خرید ارسال رایگان (تومان)<input name="free_shipping_min" type="number" min="0" step="10000"></label><label class="settings-wide">آدرس فروشگاه<textarea name="store_address" rows="3" placeholder="آدرس کامل فروشگاه"></textarea></label></div><div class="settings-actions"><button class="gold" type="submit">ذخیره تنظیمات</button><span id="storeSettingsMessage" class="inline-message"></span><button class="ghost" type="button" id="openPaymentSettings">مدیریت کارت و درگاه پرداخت ←</button></div></form><div class="notice">تنظیمات پرداخت و کارت‌به‌کارت در صفحه «پرداخت و کارت» مدیریت می‌شود؛ این فرم تنظیمات عمومی فروشگاه و ارسال را ذخیره می‌کند.</div>`}
+async function loadStoreSettings(){try{const d=await adminApi('/api/admin/store-settings');const form=$('#storeSettingsForm');if(!form)return;for(const [k,v] of Object.entries(d.settings||{})){const el=form.elements.namedItem(k);if(el)el.value=v;} }catch(e){const m=$('#storeSettingsMessage');if(m)m.textContent=e.message;}}
+function wireFunctionalPage(){
+ if(current==='admins'){
+  $('#staffForm')?.addEventListener('submit',async e=>{e.preventDefault();const form=e.target,btn=form.querySelector('button[type="submit"]'),msg=$('#staffMessage');btn.disabled=true;try{const payload=Object.fromEntries(new FormData(form));await adminApi('/api/admin/staff',{method:'POST',body:JSON.stringify(payload)});msg.textContent='مدیر با موفقیت ایجاد شد ✓';form.reset();await loadStaff();}catch(err){msg.textContent=err.message;}finally{btn.disabled=false;}});
+  $('#refreshStaff')?.addEventListener('click',loadStaff);loadStaff();
+ }
+ if(current==='activity'){$('#refreshActivity')?.addEventListener('click',loadActivity);loadActivity();}
+ if(current==='settings'){
+  loadStoreSettings();$('#openPaymentSettings')?.addEventListener('click',()=>{current='payment';render();});
+  $('#storeSettingsForm')?.addEventListener('submit',async e=>{e.preventDefault();const btn=e.target.querySelector('button[type="submit"]'),msg=$('#storeSettingsMessage');btn.disabled=true;try{await adminApi('/api/admin/store-settings',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});msg.textContent='تنظیمات ذخیره شد ✓';}catch(err){msg.textContent=err.message;}finally{btn.disabled=false;}});
+ }
+}
+
+function render(){let html='';if(current==='dashboard')html=dashboard();if(current==='products')html=productsPage();if(current==='orders'){html=orders();setTimeout(loadOrders,0);}if(current==='payment'){html=paymentPage();setTimeout(()=>{loadPaymentSettings();$$('#payCardNumber,#payCardName,#payBankName').forEach(e=>e.addEventListener('input',updatePaymentPreview));$('#gatewayEnabled')?.addEventListener('change',updateGatewayBadge);$('#savePaymentCard')?.addEventListener('click',()=>savePaymentSettings('card'));$('#saveGateway')?.addEventListener('click',()=>savePaymentSettings('gateway'));},0);}if(current==='customers'){renderCustomersPage();return;}if(current==='categories')html=categoriesPage();if(current==='brands')html=brandsPage();if(current==='coupons')html=couponsPage();if(current==='reviews')html=simple('نظرات مشتریان','تأیید، رد و پاسخ به دیدگاه‌ها',[['در انتظار بررسی','۰ نظر'],['امتیاز محصولات','پس از ثبت خرید فعال می‌شود'],['گزارش اسپم','مدیریت گزارش‌های کاربران']]);if(current==='content')html=simple('محتوا و بنرها','مدیریت Hero، بنر، مجله و صفحات ثابت',[['Hero اصلی','تصویر، عنوان و CTA صفحه اول'],['مجله آوان','مقالات و محتوای آموزشی'],['صفحات ثابت','درباره ما، تماس، قوانین و حریم خصوصی']]);if(current==='notifications')html=simple('اعلان‌ها','مدیریت اعلان‌های فروشگاه',[['اعلان سفارش','ثبت، پرداخت و ارسال سفارش'],['اعلان مدیریتی','موجودی کم و سفارش جدید'],['اعلان مشتری','ساختار آماده اتصال به SMS/Email']]);if(current==='tickets'){renderTickets();return;}if(current==='wallet')html=simple('کیف پول و وفاداری','امتیاز، اعتبار و باشگاه مشتریان',[['امتیاز خرید','قابل فعال‌سازی برای مشتریان'],['کیف پول','شارژ و برداشت اعتبار'],['سطوح مشتری','برنزی، نقره‌ای، طلایی']]);if(current==='reports')html=simple('گزارش‌ها','گزارش فروش، محصولات و مشتریان',[['گزارش فروش','روزانه، ماهانه و بازه دلخواه'],['محصولات پرفروش','قابل محاسبه از سفارش‌ها'],['گزارش موجودی','هشدار موجودی کم']]);if(current==='admins')html=adminsPage();if(current==='activity')html=activityPage();if(current==='settings')html=settingsPage();$('#content').innerHTML=html;$$('[data-page-go]').forEach(b=>b.onclick=()=>{current=b.dataset.pageGo;render();});$$('[data-add-product]').forEach(b=>b.onclick=()=>{current='products';render();setTimeout(()=>openProduct(''),30);});wireFunctionalPage();const nav=document.querySelector(`#nav button[data-page="${current}"]`);$('#title').textContent=nav?.querySelector('span')?.textContent||'داشبورد';if(current==='products'){
   renderProducts();
   $('#newProduct').onclick=()=>openProduct();
   $('#pSearch').oninput=renderProducts;

@@ -25,6 +25,17 @@
         // Keep the normal login link if the auth endpoint is temporarily unavailable.
       });
   }
+  fetch('/api/store-settings', {cache:'no-store'})
+    .then(r=>r.ok?r.json():null)
+    .then(d=>{
+      const settings=d?.settings||{};
+      const logo=String(settings.store_logo_url||'').trim();
+      if(logo && (/^https?:\/\//i.test(logo) || logo.startsWith('/') || logo.startsWith('assets/'))) {
+        const img=$('.avan-logo-image');
+        if(img) img.src=logo;
+      }
+      if(settings.store_name) document.title=document.title.replace('آوان گالری',settings.store_name);
+    }).catch(()=>{});
   const searchForm = $('#headerSearch');
   const searchInput = $('#headerSearchInput');
   const searchPop = $('#searchPopover');

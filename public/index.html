@@ -495,5 +495,49 @@
   window.addEventListener('resize',function(){ closeAll(); });
 })();
 </script>
+<script>
+/* V140: make footer shortcuts work immediately and open modal-only destinations. */
+(function () {
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest('.avan-footer-links-v94 a, .avan-bottom-links a');
+    if (!link) return;
+    var href = link.getAttribute('href') || '';
+    if (href === '#faq' || href === '#privacy') {
+      event.preventDefault();
+      var modal = document.getElementById(href === '#faq' ? 'faqModal' : 'privacyModal');
+      if (modal) {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('avan-info-open');
+      }
+      return;
+    }
+    if (href.charAt(0) === '#' && href.length > 1) {
+      var target = document.getElementById(href.slice(1));
+      if (target) {
+        event.preventDefault();
+        history.replaceState(null, '', href);
+        target.scrollIntoView({ behavior: 'auto', block: 'start' });
+      }
+    }
+  });
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest('[data-close-info]')) return;
+    document.querySelectorAll('.avan-info-modal.is-open').forEach(function (modal) {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+    document.body.classList.remove('avan-info-open');
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') return;
+    document.querySelectorAll('.avan-info-modal.is-open').forEach(function (modal) {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+    document.body.classList.remove('avan-info-open');
+  });
+})();
+</script>
 </body>
 </html>

@@ -157,3 +157,12 @@ html:has(.login-page),body:has(.login-page){
   .login-panel{padding-left:12px;padding-right:12px;padding-bottom:28px}
   .panel-inner{width:100%;margin-top:0;margin-bottom:0}
 }
+
+/* AVAN branded scrollbar: thin, smooth and low-distraction */
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#b9953c #061a25;scroll-padding-block:16px}
+body{overflow-x:hidden;-webkit-overflow-scrolling:touch}
+body::-webkit-scrollbar{width:10px}
+body::-webkit-scrollbar-track{background:#061a25;border-inline-start:1px solid rgba(216,182,90,.08)}
+body::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#e7c35e,#a9822b);border:2px solid #061a25;border-radius:999px}
+body::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#f3d77c,#c49b3c)}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}

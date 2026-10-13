@@ -44,3 +44,7 @@ Order-item inserts are now generated from the actual D1 table columns and popula
 
 ## V134 — Payment receipt upload
 Checkout payment form accepts an optional JPG/PNG/WebP receipt image up to 2 MB, previews/removes it client-side, and submits it with the transaction reference. The Worker stores the data URL in `orders.receipt_image`; existing D1 databases receive the new column through the orders migration. Admin UI visibility of receipt images may require a separate admin-orders UI change.
+
+
+## V135 — Required receipt, optional reference
+Checkout now places the receipt upload before the transaction reference, makes the image required and the reference optional, and styles the upload area in the navy/gold AVAN theme with preview, remove, and drag/drop support. API also rejects payment submissions without a valid receipt image.

@@ -686,8 +686,8 @@ async function api(request, env, url) {
     const body=await request.json().catch(()=>({}));
     const reference=String(body.reference||'').trim();
     const receiptImage=String(body.receiptImage||'').trim();
-    if(!reference) return json({ok:false,error:'کد پیگیری/شماره تراکنش را وارد کنید.'},400);
-    if(receiptImage && !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(receiptImage)) return json({ok:false,error:'فرمت تصویر رسید معتبر نیست. فایل JPG، PNG یا WebP انتخاب کنید.'},400);
+    if(!receiptImage) return json({ok:false,error:'بارگذاری تصویر رسید پرداخت الزامی است.'},400);
+    if(!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(receiptImage)) return json({ok:false,error:'فرمت تصویر رسید معتبر نیست. فایل JPG، PNG یا WebP انتخاب کنید.'},400);
     if(receiptImage && receiptImage.length > 2800000) return json({ok:false,error:'حجم تصویر رسید باید کمتر از ۲ مگابایت باشد.'},413);
     const order=await env.DB.prepare(`SELECT id,payment_status FROM orders WHERE id=?`).bind(orderId).first();
     if(!order) return json({ok:false,error:'سفارش پیدا نشد.'},404);

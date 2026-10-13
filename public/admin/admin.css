@@ -316,3 +316,25 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important}
 .activity-list{padding:14px 18px;overflow:auto}.activity-header,.activity-row{display:grid;grid-template-columns:1fr 1.2fr 2fr 1.2fr;gap:12px;align-items:start;padding:12px;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}.activity-header{color:#e7c35e;font-weight:800}.activity-row small,.activity-row time{color:#9db5c0;overflow-wrap:anywhere}
 .store-settings-form{padding:20px}.settings-wide{grid-column:1/-1}.settings-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px}.settings-actions .inline-message{margin-inline:4px}
 @media(max-width:760px){.dashboard-hero-copy{max-width:100%}.hero-brand-mark{right:14px;top:14px}.staff-form,.settings-grid{grid-template-columns:1fr}.activity-header{display:none}.activity-row{grid-template-columns:1fr 1fr}.activity-row small,.activity-row time{grid-column:span 2}.staff-role{width:100%;justify-content:space-between}.staff-role select{flex:1}.order-admin-toolbar{align-items:flex-start}}
+
+/* V137: working wallet, loyalty and reports views */
+.wallet-summary,.reports-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 18px}
+.wallet-summary article,.reports-summary article{border:1px solid rgba(216,182,90,.18);border-radius:16px;padding:18px;background:linear-gradient(145deg,#0a2837,#061c28);min-width:0}
+.wallet-summary small,.reports-summary small{display:block;color:#91afbd;font-size:12px}
+.wallet-summary b,.reports-summary b{display:inline-block;color:#f2d171;font-size:23px;margin-top:10px;overflow-wrap:anywhere}
+.wallet-summary em,.reports-summary em{font-style:normal;color:#92b2c1;font-size:11px;margin-inline-start:7px}
+.wallet-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:18px;border-bottom:1px solid rgba(216,182,90,.12)}
+.wallet-toolbar h3{margin:0;color:#f1d06d}.wallet-toolbar p{margin:7px 0 0;color:#91afbd;font-size:12px}
+.wallet-search{display:flex;gap:8px;flex-wrap:wrap}.wallet-search input{min-width:240px;border:1px solid #254a5c;border-radius:10px;background:#061d29;color:#eaf3f7;padding:10px 12px;font:inherit}
+.wallet-table{min-width:900px}.wallet-email{display:block;color:#8fa9b7;font-size:11px;margin-top:5px}
+.wallet-balance{color:#8fe2b0}.wallet-actions{display:flex;gap:5px;flex-wrap:wrap}.wallet-actions button{border:1px solid rgba(216,182,90,.25);background:#0b2a38;color:#f0cd70;border-radius:8px;padding:7px 9px;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+.wallet-actions button:hover{background:rgba(216,182,90,.14)}
+.loyalty-tier{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid rgba(216,182,90,.25);padding:5px 9px;font-size:11px;white-space:nowrap;background:rgba(216,182,90,.07);color:#e7c35e}
+.tier-gold{color:#f4d36f;border-color:rgba(244,211,111,.4);background:rgba(244,211,111,.1)}.tier-silver{color:#c8d6df;border-color:rgba(200,214,223,.3);background:rgba(200,214,223,.08)}.tier-bronze{color:#d6a57d;border-color:rgba(214,165,125,.3);background:rgba(214,165,125,.08)}.tier-red{color:#ffaaa6;border-color:rgba(255,100,100,.3);background:rgba(255,100,100,.08)}
+.wallet-ledger-panel{margin-top:18px}.wallet-entry-modal{max-width:520px;text-align:right}.wallet-entry-modal h2{color:#f0cd70}.wallet-entry-modal p{color:#a8c0ca}.wallet-entry-modal label{display:block;margin:14px 0;color:#adc2cb;font-size:13px}.wallet-entry-modal input{display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #284e60;background:#061d29;color:#eef6f9;border-radius:10px;font:inherit}.wallet-entry-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.reports-filter{padding:16px 18px;margin-bottom:18px}.reports-filter form{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.reports-filter label{display:flex;flex-direction:column;gap:7px;color:#a9c0cb;font-size:12px}.reports-filter input{background:#061d29;color:#eaf3f7;border:1px solid #254a5c;border-radius:10px;padding:10px;font:inherit}
+.reports-summary{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}
+.reports-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:18px}.reports-grid>.panel{min-width:0;overflow:hidden}.reports-grid .table-wrap,.panel>.table-wrap{max-width:100%;overflow:auto}
+.stock-low{color:#ffb36e}.reports-filter .inline-message{display:block;margin-top:10px}
+@media(max-width:900px){.reports-grid{grid-template-columns:1fr}.reports-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.wallet-summary{grid-template-columns:1fr}}
+@media(max-width:560px){.reports-summary{grid-template-columns:1fr 1fr}.wallet-search,.wallet-search input{width:100%;min-width:0}.wallet-toolbar{align-items:stretch}.reports-filter form>*{width:100%}}

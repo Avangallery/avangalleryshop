@@ -91,7 +91,8 @@ async function ensureUsersTable(env) {
     ['provider', `ALTER TABLE users ADD COLUMN provider TEXT NOT NULL DEFAULT 'google'`],
     ['created_at', `ALTER TABLE users ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`],
     ['updated_at', `ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''`],
-    ['password_hash', `ALTER TABLE users ADD COLUMN password_hash TEXT`]
+    ['password_hash', `ALTER TABLE users ADD COLUMN password_hash TEXT`],
+    ['phone', `ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''`]
   ];
   for (const [name, sql] of additions) {
     if (!columns.has(name)) {
@@ -285,6 +286,24 @@ async function validSession(request, secret) {
 }
 
 
+
+async function ensureWalletTables(env) {
+  if(!env.DB)throw new Error('D1 binding DB is not configured.');
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS wallet_ledger (
+    id TEXT PRIMARY KEY, customer_id TEXT NOT NULL DEFAULT '', email TEXT NOT NULL DEFAULT '',
+    entry_type TEXT NOT NULL CHECK(entry_type IN ('credit','debit','points')),
+    amount INTEGER NOT NULL DEFAULT 0, note TEXT NOT NULL DEFAULT '',
+    created_by TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`).run();
+  await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_wallet_customer ON wallet_ledger(customer_id,email,created_at DESC)`).run();
+}
+function loyaltyTier(points) {
+  const n=Math.max(0,Number(points)||0);
+  if(n>=10000)return 'طلایی';
+  if(n>=3000)return 'نقره‌ای';
+  return 'برنزی';
+}
+
 async function ensureAdminTables(env) {
   if (!env.DB) throw new Error('D1 binding DB is not configured.');
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS admin_staff (
@@ -327,8 +346,8 @@ function staffAllowed(info, pathname) {
   if(info.kind==='master'||info.role==='super_admin')return true;
   const p=String(pathname||'');
   if(p==='/api/admin/me'||p==='/api/admin/logout')return true;
-  if(info.role==='content_manager')return p.startsWith('/api/products')||p==='/api/admin/store-settings'||p==='/api/admin/activity';
-  if(info.role==='order_operator')return p.startsWith('/api/admin/orders')||p.startsWith('/api/admin/support')||p==='/api/admin/customers'||p==='/api/admin/activity';
+  if(info.role==='content_manager')return p.startsWith('/api/products')||p==='/api/admin/store-settings'||p==='/api/admin/activity'||p.startsWith('/api/admin/reports');
+  if(info.role==='order_operator')return p.startsWith('/api/admin/orders')||p.startsWith('/api/admin/support')||p==='/api/admin/customers'||p==='/api/admin/activity'||p.startsWith('/api/admin/wallet')||p.startsWith('/api/admin/reports');
   return false;
 }
 async function logAdminActivity(env, request, action, details='') {
@@ -810,6 +829,62 @@ async function api(request, env, url) {
     const {results}=await env.DB.prepare(`SELECT * FROM order_items WHERE order_id=? ORDER BY rowid ASC`).bind(orderId).all();
     return json({ok:true,order,items:results||[],payment:await paymentConfig(env)});
   }
+
+  if (url.pathname === '/api/admin/wallet' && request.method === 'GET') {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureUsersTable(env);await ensureOrdersTables(env);await ensureWalletTables(env);
+    const urlQ=new URL(request.url),q=String(urlQ.searchParams.get('q')||'').trim().slice(0,100);
+    const {results:users}=await env.DB.prepare(`SELECT id,name,email,phone,created_at FROM users WHERE (?='' OR name LIKE ? OR email LIKE ? OR phone LIKE ?) ORDER BY created_at DESC LIMIT 300`).bind(q,`%${q}%`,`%${q}%`,`%${q}%`).all();
+    const customers=[];
+    for(const u of (users||[])){
+      const id=String(u.id??''),email=String(u.email||'');
+      const bal=await env.DB.prepare(`SELECT COALESCE(SUM(CASE WHEN entry_type='credit' THEN amount WHEN entry_type='debit' THEN -amount ELSE 0 END),0) AS balance,COALESCE(SUM(CASE WHEN entry_type='points' THEN amount ELSE 0 END),0) AS points FROM wallet_ledger WHERE customer_id=? OR (customer_id='' AND lower(email)=lower(?))`).bind(id,email).first();
+      const earned=await env.DB.prepare(`SELECT COALESCE(SUM(CAST(o.total/10000 AS INTEGER)),0) AS points,COUNT(*) AS orders,COALESCE(SUM(o.total),0) AS paid_total FROM orders o WHERE o.payment_status='paid' AND ((o.user_id IS NOT NULL AND CAST(o.user_id AS TEXT)=?) OR (o.email<>'' AND lower(o.email)=lower(?)))`).bind(id,email).first();
+      const points=Math.max(0,Number(earned?.points||0)+Number(bal?.points||0));
+      customers.push({...u,id,balance:Number(bal?.balance||0),points,tier:loyaltyTier(points),orders:Number(earned?.orders||0),paid_total:Number(earned?.paid_total||0)});
+    }
+    return json({ok:true,customers,summary:{customers:customers.length,balance:customers.reduce((s,c)=>s+c.balance,0),points:customers.reduce((s,c)=>s+c.points,0)}});
+  }
+  if (url.pathname === '/api/admin/wallet/ledger' && request.method === 'GET') {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureWalletTables(env);
+    const q=new URL(request.url).searchParams,id=String(q.get('customer_id')||''),email=String(q.get('email')||'');
+    const {results}=await env.DB.prepare(`SELECT id,customer_id,email,entry_type,amount,note,created_by,created_at FROM wallet_ledger WHERE (?='' OR customer_id=?) AND (?='' OR lower(email)=lower(?)) ORDER BY created_at DESC LIMIT 200`).bind(id,id,email,email).all();
+    return json({ok:true,entries:results||[]});
+  }
+  if (url.pathname === '/api/admin/wallet/ledger' && request.method === 'POST') {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureUsersTable(env);await ensureWalletTables(env);
+    const b=await request.json().catch(()=>({}));
+    const customerId=String(b.customerId||'').trim(),email=String(b.email||'').trim().toLowerCase();
+    const type=String(b.type||''),amount=Math.round(Number(b.amount)||0),note=String(b.note||'').trim().slice(0,500);
+    if(!customerId&&!email)return json({ok:false,error:'مشتری انتخاب نشده است.'},400);
+    if(!['credit','debit','points'].includes(type)||amount<=0||amount>100000000000)return json({ok:false,error:'نوع تراکنش یا مبلغ معتبر نیست.'},400);
+    if(type==='debit'){
+      const row=await env.DB.prepare(`SELECT COALESCE(SUM(CASE WHEN entry_type='credit' THEN amount WHEN entry_type='debit' THEN -amount ELSE 0 END),0) AS balance FROM wallet_ledger WHERE customer_id=? OR (customer_id='' AND lower(email)=lower(?))`).bind(customerId,email).first();
+      if(Number(row?.balance||0)<amount)return json({ok:false,error:'موجودی کیف پول برای این برداشت کافی نیست.'},400);
+    }
+    const identity=await adminSessionInfo(request,env);
+    await env.DB.prepare(`INSERT INTO wallet_ledger(id,customer_id,email,entry_type,amount,note,created_by,created_at) VALUES(?,?,?,?,?,?,?,datetime('now'))`).bind('WAL-'+crypto.randomUUID(),customerId,email,type,amount,note,identity?.name||'مدیر اصلی').run();
+    await logAdminActivity(env,request,'تراکنش کیف پول',`${email||customerId} • ${type} • ${amount}`);
+    return json({ok:true});
+  }
+  if (url.pathname === '/api/admin/reports' && request.method === 'GET') {
+    const info=await adminSessionInfo(request,env);if(!info||!staffAllowed(info,url.pathname))return json({ok:false,error:'دسترسی لازم را ندارید.'},403);
+    await ensureOrdersTables(env);
+    const q=new URL(request.url).searchParams;
+    const from=String(q.get('from')||'').slice(0,10),to=String(q.get('to')||'').slice(0,10);
+    const validDate=s=>!s||/^\d{4}-\d{2}-\d{2}$/.test(s);
+    if(!validDate(from)||!validDate(to))return json({ok:false,error:'بازه تاریخ معتبر نیست.'},400);
+    if(from&&to&&from>to)return json({ok:false,error:'تاریخ شروع بعد از تاریخ پایان است.'},400);
+    const where=`(?='' OR date(created_at)>=date(?)) AND (?='' OR date(created_at)<=date(?))`;
+    const summary=await env.DB.prepare(`SELECT COUNT(*) AS orders_count,COALESCE(SUM(CASE WHEN payment_status='paid' THEN total ELSE 0 END),0) AS sales_total,COALESCE(SUM(CASE WHEN payment_status='paid' THEN 1 ELSE 0 END),0) AS paid_count,COALESCE(SUM(CASE WHEN payment_status<>'paid' THEN 1 ELSE 0 END),0) AS unpaid_count,COALESCE(SUM(CASE WHEN payment_status='paid' THEN shipping ELSE 0 END),0) AS shipping_total FROM orders WHERE ${where}`).bind(from,from,to,to).first();
+    const {results:daily}=await env.DB.prepare(`SELECT date(created_at) AS day,COUNT(*) AS orders_count,COALESCE(SUM(CASE WHEN payment_status='paid' THEN total ELSE 0 END),0) AS sales_total FROM orders WHERE ${where} GROUP BY date(created_at) ORDER BY day DESC LIMIT 90`).bind(from,from,to,to).all();
+    const {results:topProducts}=await env.DB.prepare(`SELECT oi.product_id,COALESCE(NULLIF(oi.product_name,''),p.name,'محصول حذف‌شده') AS name,COALESCE(SUM(oi.quantity),0) AS quantity,COALESCE(SUM(oi.line_total),0) AS gross FROM order_items oi JOIN orders o ON o.id=oi.order_id LEFT JOIN products p ON p.id=oi.product_id WHERE o.payment_status='paid' AND ${where.replaceAll('created_at','o.created_at')} GROUP BY oi.product_id,name ORDER BY quantity DESC,gross DESC LIMIT 10`).bind(from,from,to,to).all();
+    const {results:inventory}=await env.DB.prepare(`SELECT id,name,sku,stock,price,updated_at FROM products WHERE active=1 ORDER BY CAST(stock AS INTEGER) ASC,name ASC LIMIT 50`).all().catch(()=>({results:[]}));
+    return json({ok:true,from,to,summary:summary||{},daily:daily||[],topProducts:topProducts||[],inventory:inventory||[]});
+  }
+
   if (url.pathname === '/api/admin/staff' && request.method === 'GET') {
     const info=await adminSessionInfo(request,env); if(!info||info.role!=='super_admin')return json({ok:false,error:'دسترسی مدیر اصلی لازم است.'},403);
     await ensureAdminTables(env);

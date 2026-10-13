@@ -334,6 +334,16 @@
     <button type="button" class="avan-info-primary" data-close-info>متوجه شدم</button>
   </div>
 </div>
+<div class="avan-info-modal" id="avanQuickLinkModal" aria-hidden="true">
+  <div class="avan-info-backdrop" data-close-quick-link></div>
+  <div class="avan-info-dialog" role="dialog" aria-modal="true" aria-labelledby="avanQuickLinkTitle">
+    <button type="button" class="avan-info-close" data-close-quick-link aria-label="بستن">×</button>
+    <div class="avan-info-brand"><img src="assets/avan-mark-clean.png" alt="آوان گالری"><div><strong>آوان گالری</strong><small>AVAN GALLERY</small></div></div>
+    <h3 id="avanQuickLinkTitle">آوان گالری</h3>
+    <p id="avanQuickLinkText" class="avan-quick-link-text"></p>
+    <button type="button" class="avan-info-primary" data-close-quick-link>بستن پنجره</button>
+  </div>
+</div>
 <button type="button" class="avan-floating-support" id="avanFloatingSupport" aria-label="پشتیبانی آوان"><img src="assets/avan-mark-clean.png" alt=""> <span>پشتیبانی</span><small>آنلاین</small></button>
 <div class="online-support-modal" id="onlineSupportModal" aria-hidden="true">
   <div class="online-support-backdrop" data-close-support></div>
@@ -496,15 +506,39 @@
 })();
 </script>
 <script>
-/* V140: make footer shortcuts work immediately and open modal-only destinations. */
+/* V141: footer quick links open an overlay and never move the page scroll position. */
 (function () {
+  var copy = {
+    home: ['صفحه اصلی', 'به صفحه اصلی آوان گالری خوش آمدید. برای دیدن محصولات و پیشنهادها، از منوی بالای سایت استفاده کنید.'],
+    products: ['محصولات آوان گالری', 'مجموعه ساعت‌های کلاسیک، لوکس و روزمره آوان گالری را از بخش «محصولات» در منوی بالای سایت مشاهده کنید.'],
+    about: ['درباره آوان گالری', 'آوان گالری به شما کمک می‌کند با توجه به سلیقه، سبک پوشش و نیازتان ساعت مناسب را انتخاب کنید. برای راهنمایی بیشتر با پشتیبانی در ارتباط باشید.'],
+    contact: ['تماس با ما', 'پشتیبانی: 09965799499
+اینستاگرام: @avan.watch
+ایمیل: avangallery@gmail.com
+آدرس: مازندران، قائمشهر'],
+    faq: ['سؤالات متداول', 'برای ثبت سفارش، محصول را انتخاب کرده و مراحل خرید را تکمیل کنید. برای پیگیری سفارش یا دریافت راهنمایی انتخاب ساعت، با پشتیبانی آوان گالری تماس بگیرید.'],
+    privacy: ['حریم خصوصی', 'اطلاعات کاربران فقط برای ارائه خدمات فروشگاه، ثبت و پیگیری سفارش، ارسال و پشتیبانی استفاده می‌شود.']
+  };
+  var modal = document.getElementById('avanQuickLinkModal');
+  var title = document.getElementById('avanQuickLinkTitle');
+  var text = document.getElementById('avanQuickLinkText');
+  function closeModal() {
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('avan-info-open');
+  }
   document.addEventListener('click', function (event) {
     var link = event.target.closest('.avan-footer-links-v94 a, .avan-bottom-links a');
-    if (!link) return;
-    var href = link.getAttribute('href') || '';
-    if (href === '#faq' || href === '#privacy') {
+    if (link) {
+      var href = link.getAttribute('href') || '';
+      if (href.charAt(0) !== '#') return;
+      var key = href.slice(1);
+      if (!copy[key]) return;
       event.preventDefault();
-      var modal = document.getElementById(href === '#faq' ? 'faqModal' : 'privacyModal');
+      event.stopPropagation();
+      if (title) title.textContent = copy[key][0];
+      if (text) text.textContent = copy[key][1];
       if (modal) {
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
@@ -512,30 +546,22 @@
       }
       return;
     }
-    if (href.charAt(0) === '#' && href.length > 1) {
-      var target = document.getElementById(href.slice(1));
-      if (target) {
-        event.preventDefault();
-        history.replaceState(null, '', href);
-        target.scrollIntoView({ behavior: 'auto', block: 'start' });
-      }
+    if (event.target.closest('[data-close-quick-link]')) closeModal();
+    if (event.target.closest('[data-close-info]')) {
+      document.querySelectorAll('.avan-info-modal.is-open').forEach(function (m) {
+        m.classList.remove('is-open'); m.setAttribute('aria-hidden', 'true');
+      });
+      document.body.classList.remove('avan-info-open');
     }
-  });
-  document.addEventListener('click', function (event) {
-    if (!event.target.closest('[data-close-info]')) return;
-    document.querySelectorAll('.avan-info-modal.is-open').forEach(function (modal) {
-      modal.classList.remove('is-open');
-      modal.setAttribute('aria-hidden', 'true');
-    });
-    document.body.classList.remove('avan-info-open');
-  });
+  }, true);
   document.addEventListener('keydown', function (event) {
-    if (event.key !== 'Escape') return;
-    document.querySelectorAll('.avan-info-modal.is-open').forEach(function (modal) {
-      modal.classList.remove('is-open');
-      modal.setAttribute('aria-hidden', 'true');
-    });
-    document.body.classList.remove('avan-info-open');
+    if (event.key === 'Escape') {
+      closeModal();
+      document.querySelectorAll('.avan-info-modal.is-open').forEach(function (m) {
+        m.classList.remove('is-open'); m.setAttribute('aria-hidden', 'true');
+      });
+      document.body.classList.remove('avan-info-open');
+    }
   });
 })();
 </script>

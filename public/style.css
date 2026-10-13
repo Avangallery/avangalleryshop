@@ -600,3 +600,8 @@ body{scroll-behavior:auto}
 html, body { scroll-behavior: auto !important; }
 html { scroll-padding-top: 0 !important; }
 .avan-footer-links-v94 a, .avan-bottom-links a { cursor: pointer; }
+
+/* V141: instant footer link overlays; no anchor jumps or page scrolling. */
+.avan-quick-link-text{white-space:pre-line;line-height:2.2;color:#b7c8ce;font-size:14px;margin:14px 0 22px}
+body.avan-info-open{overflow:hidden}
+#avanQuickLinkModal .avan-info-dialog{max-height:min(82vh,650px);overflow:auto;overscroll-behavior:contain}

@@ -428,7 +428,9 @@ async function api(request, env, url) {
 
   // Customer email/password registration and login
   if ((url.pathname === '/api/auth/register' || url.pathname === '/api/auth/login') && request.method === 'POST') {
-    if (!env.DB) return json({ok:false,error:'اتصال پایگاه داده حساب‌های کاربری تنظیم نشده است.'},500);
+    if (!env.DB) return json({ok:false,error:'اتصال پایگاه داده حساب‌های کاربری تنظیم نشده است. Binding با نام DB را در Cloudflare بررسی کنید.'},500);
+    const sessionSecret = customerSessionSecret(env);
+    if (!sessionSecret) return json({ok:false,error:'کلید نشست حساب کاربری تنظیم نشده است. در Cloudflare یک Secret با نام AUTH_SESSION_SECRET تعریف کنید و دوباره Deploy کنید.'},500);
     const body = await request.json().catch(() => ({}));
     const email = String(body.email || body.identity || '').trim().toLowerCase();
     const password = String(body.password || '');
@@ -449,7 +451,9 @@ async function api(request, env, url) {
         const integerId = !!(idCol && /INT/.test(idCol.type) && idCol.pk);
         const id = integerId ? null : ('usr-' + crypto.randomUUID());
         const values = {
-          id, google_id:'', email, name, avatar:'', provider:'password',
+          // Keep google_id NULL for password accounts. The original schema
+          // makes google_id UNIQUE, and empty strings collide after the first account.
+          id, google_id:null, email, name, avatar:'', provider:'password',
           password_hash:hashed.salt+'$'+hashed.hash, phone:'',
           created_at:new Date().toISOString(), updated_at:new Date().toISOString()
         };
@@ -472,13 +476,23 @@ async function api(request, env, url) {
       } else {
         if (!user || !(await verifyCustomerPassword(password, user.password_hash))) return json({ok:false,error:'ایمیل یا رمز عبور صحیح نیست.'},401);
       }
-      const session = await makeUserSession(customerSessionSecret(env), user.id);
+      const session = await makeUserSession(sessionSecret, user.id);
       return json({ok:true,user:{id:user.id,email:user.email,name:user.name,provider:user.provider}},200,{
         'Set-Cookie': oauthCookie(USER_SESSION_COOKIE, session, USER_SESSION_TTL),
         'Cache-Control':'no-store'
       });
     } catch (err) {
-      return json({ok:false,error:'ثبت‌نام یا ورود انجام نشد. تنظیمات پایگاه داده را بررسی کنید.',detail:String(err?.message||err)},500);
+      const detail = String(err?.message || err || 'unknown error');
+      // Keep implementation details out of the public response, but make the
+      // common setup failures actionable for the shop owner.
+      let message = 'عملیات ورود یا ثبت‌نام انجام نشد. اتصال D1 و ساختار جدول users را بررسی کنید.';
+      if (/UNIQUE constraint failed: users\.email/i.test(detail)) message = 'این ایمیل قبلاً ثبت شده است؛ وارد حساب شوید یا از ایمیل دیگری استفاده کنید.';
+      else if (/UNIQUE constraint failed: users\.google_id/i.test(detail)) message = 'ساختار قدیمی جدول کاربران با ثبت‌نام سازگار نبود. یک بار دیگر تلاش کنید؛ اگر خطا ادامه داشت، جدول users در D1 نیاز به بررسی دارد.';
+      else if (/no such column: password_hash|users schema lacks email\/password_hash/i.test(detail)) message = 'ستون‌های ورود در جدول کاربران کامل نیستند. اجرای مهاجرت D1 لازم است.';
+      else if (/D1 binding DB is not configured/i.test(detail)) message = 'اتصال پایگاه داده با نام DB در تنظیمات Worker موجود نیست.';
+      else if (/crypto|secret|key/i.test(detail)) message = 'کلید نشست حساب کاربری معتبر نیست. مقدار AUTH_SESSION_SECRET را در Cloudflare بررسی کنید.';
+      console.error('Customer authentication failed:', detail);
+      return json({ok:false,error:message},500);
     }
   }
 

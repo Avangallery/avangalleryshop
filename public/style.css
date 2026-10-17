@@ -756,3 +756,35 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   transform: none !important;
 }
 .style-card:hover .style-card-media img { transform: translateY(-2px) scale(1.015) !important; }
+
+/* V154: give the transparent style-guide watches breathing room; never crop the watch */
+.avan-style-guide .style-card-media{
+  position:relative;
+  box-sizing:border-box;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px 18px;
+}
+.avan-style-guide .style-card-media img{
+  display:block;
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  box-sizing:border-box;
+  padding:8px;
+  object-fit:contain !important;
+  object-position:center center !important;
+  background:transparent !important;
+  transform:none !important;
+  filter:none !important;
+}
+.avan-style-guide .style-card:hover .style-card-media img{
+  transform:scale(1.025) !important;
+}
+@media(max-width:680px){
+  .avan-style-guide .style-card-media{padding:12px 20px;height:250px;}
+  .avan-style-guide .style-card-media img{padding:10px;}
+}

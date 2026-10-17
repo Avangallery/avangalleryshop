@@ -703,3 +703,30 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   outline-offset: 2px;
 }
 ::selection { background: #ffffff; color: #0b2340; }
+
+
+/* V148: repair AVAN brand mark rendering; keep logos fully visible in every viewport. */
+.avan-logo-image,
+.main-nav .logo img.avan-logo-image,
+.avan-brand img,
+.avan-brand-lockup img,
+.avan-footer-brand img,
+.avan-footer-logo-v94 img,
+.avan-info-brand img,
+.online-support-brand img,
+.avan-floating-support img,
+.avan-support-icon.avan-support-logo img {
+  display:block;
+  object-fit:contain !important;
+  object-position:center center !important;
+  flex-shrink:0;
+  max-width:100%;
+}
+.avan-logo-image { width:50px; height:50px; flex:0 0 50px; border-radius:50%; }
+@media (max-width:900px) { .avan-logo-image { width:40px; height:40px; flex-basis:40px; } }
+@media (max-width:560px) { .avan-logo-image { width:36px; height:36px; flex-basis:36px; } }
+
+/* V149: Contact links and Western digits */
+.avan-contact-row-v94 .avan-latin-number,.avan-support-card-v94 .avan-latin-number{direction:ltr;unicode-bidi:isolate;display:inline-block;font-variant-numeric:lining-nums;letter-spacing:.15px}
+.avan-contact-row-v94{cursor:pointer}
+.avan-contact-row-v94:focus-visible{outline:2px solid #0b2340;outline-offset:3px}

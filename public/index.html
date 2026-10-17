@@ -507,61 +507,46 @@
 })();
 </script>
 <script>
-/* V142: footer quick links open an overlay and never move the page scroll position. */
+/* V150: real footer navigation with instant (non-animated) jumps. FAQ and privacy open their full existing dialogs. */
 (function () {
-  var copy = {
-    home: ['صفحه اصلی', 'به صفحه اصلی آوان گالری خوش آمدید. برای دیدن محصولات و پیشنهادها، از منوی بالای سایت استفاده کنید.'],
-    products: ['محصولات آوان گالری', 'مجموعه ساعت‌های کلاسیک، لوکس و روزمره آوان گالری را از بخش «محصولات» در منوی بالای سایت مشاهده کنید.'],
-    about: ['درباره آوان گالری', 'آوان گالری به شما کمک می‌کند با توجه به سلیقه، سبک پوشش و نیازتان ساعت مناسب را انتخاب کنید. برای راهنمایی بیشتر با پشتیبانی در ارتباط باشید.'],
-    contact: ['تماس با ما', 'پشتیبانی: 09965799499\nاینستاگرام: @avan.watch\nایمیل: avangallery@gmail.com\nآدرس: مازندران، قائمشهر'],
-    faq: ['سؤالات متداول', 'برای ثبت سفارش، محصول را انتخاب کرده و مراحل خرید را تکمیل کنید. برای پیگیری سفارش یا دریافت راهنمایی انتخاب ساعت، با پشتیبانی آوان گالری تماس بگیرید.'],
-    privacy: ['حریم خصوصی', 'اطلاعات کاربران فقط برای ارائه خدمات فروشگاه، ثبت و پیگیری سفارش، ارسال و پشتیبانی استفاده می‌شود.']
-  };
-  var modal = document.getElementById('avanQuickLinkModal');
-  var title = document.getElementById('avanQuickLinkTitle');
-  var text = document.getElementById('avanQuickLinkText');
-  function closeModal() {
-    if (!modal) return;
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('avan-info-open');
+  function openInfoModal(id) {
+    var modal = document.getElementById(id);
+    if (!modal) return false;
+    document.querySelectorAll('.avan-info-modal.is-open').forEach(function (item) {
+      item.classList.remove('is-open');
+      item.setAttribute('aria-hidden', 'true');
+    });
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('avan-info-open');
+    return true;
   }
   document.addEventListener('click', function (event) {
     var link = event.target && event.target.closest ? event.target.closest('.avan-footer-links-v94 a, .avan-bottom-links a') : null;
-    if (link) {
-      var href = link.getAttribute('href') || '';
-      if (href.charAt(0) !== '#') return;
-      var key = href.slice(1);
-      if (!copy[key]) return;
+    if (!link) return;
+    var href = link.getAttribute('href') || '';
+    if (href === '#faq') {
       event.preventDefault();
-      event.stopImmediatePropagation();
       event.stopPropagation();
-      if (title) title.textContent = copy[key][0];
-      if (text) text.textContent = copy[key][1];
-      if (modal) {
-        modal.classList.add('is-open');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('avan-info-open');
-      }
+      openInfoModal('faqModal');
       return;
     }
-    if (event.target.closest('[data-close-quick-link]')) closeModal();
-    if (event.target.closest('[data-close-info]')) {
-      document.querySelectorAll('.avan-info-modal.is-open').forEach(function (m) {
-        m.classList.remove('is-open'); m.setAttribute('aria-hidden', 'true');
-      });
-      document.body.classList.remove('avan-info-open');
+    if (href === '#privacy') {
+      event.preventDefault();
+      event.stopPropagation();
+      openInfoModal('privacyModal');
+      return;
     }
+    if (href.charAt(0) !== '#') return;
+    var target = document.getElementById(href.slice(1));
+    if (!target) return;
+    event.preventDefault();
+    event.stopPropagation();
+    /* No smooth animation: navigate directly to the real target section. */
+    var top = target.getBoundingClientRect().top + window.pageYOffset;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+    if (history && history.replaceState) history.replaceState(null, '', href);
   }, true);
-  document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape') {
-      closeModal();
-      document.querySelectorAll('.avan-info-modal.is-open').forEach(function (m) {
-        m.classList.remove('is-open'); m.setAttribute('aria-hidden', 'true');
-      });
-      document.body.classList.remove('avan-info-open');
-    }
-  });
 })();
 </script>
 </body>

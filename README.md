@@ -60,3 +60,10 @@ Checkout now places the receipt upload before the transaction reference, makes t
 - Admin activity log records sign-ins, product mutations, order updates, payment settings, staff changes, and store settings changes.
 - Store settings are D1-backed; the public endpoint exposes only non-sensitive store/shipping settings, and configured shipping cost/free-shipping threshold are used during checkout.
 - No Cloudflare R2 dependency was introduced.
+
+
+## V143 — customer authentication fix
+- Fixed password-account registration for the existing D1 schema by storing `google_id` as `NULL` rather than an empty string (the original schema marks this field `UNIQUE`).
+- Added a clear preflight error when no stable customer session secret is configured.
+- Improved safe, actionable messages for common D1 migration/uniqueness failures while keeping SQL details in Worker logs.
+- No Cloudflare R2 dependency added.

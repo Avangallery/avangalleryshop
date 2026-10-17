@@ -605,3 +605,36 @@ html { scroll-padding-top: 0 !important; }
 .avan-quick-link-text{white-space:pre-line;line-height:2.2;color:#b7c8ce;font-size:14px;margin:14px 0 22px}
 body.avan-info-open{overflow:hidden}
 #avanQuickLinkModal .avan-info-dialog{max-height:min(82vh,650px);overflow:auto;overscroll-behavior:contain}
+
+
+/* V144 — Responsive style guide cards + complete detail dialog */
+.avan-style-guide{padding:clamp(52px,6vw,88px) clamp(16px,3.2vw,48px);overflow:clip;}
+.style-guide-shell{display:flex!important;flex-direction:column;align-items:stretch;gap:clamp(24px,3vw,38px);width:min(1440px,100%);margin-inline:auto;}
+.style-guide-intro{order:0!important;width:100%;max-width:920px!important;margin-inline:auto!important;padding:0!important;text-align:center!important;}
+.style-guide-brand{justify-content:center;}
+.style-guide-intro>p{max-width:850px;margin:18px auto 26px!important;}
+.style-guide-features{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 24px;margin:0 auto 26px!important;}
+.style-guide-features span{justify-content:center;}
+.style-guide-cards{order:1!important;display:grid;width:100%;max-width:1240px;margin:0 auto;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.5vw,20px);align-items:stretch;}
+.style-card{display:flex;flex-direction:column;align-items:stretch;min-width:0;min-height:0;height:100%;padding:clamp(15px,1.6vw,22px);border-radius:20px;cursor:pointer;}
+.style-card-icon{flex:0 0 auto;}
+.style-card h3{flex:0 0 auto;}
+.style-card p{flex:1 0 auto;min-height:0;font-size:clamp(11px,.88vw,13px);line-height:2.05;margin-bottom:16px;}
+.style-card-media{position:relative;width:100%;height:clamp(170px,17vw,230px);margin-top:auto;overflow:hidden;border-radius:14px;background:radial-gradient(ellipse at center,rgba(19,58,77,.72),rgba(1,10,17,.98));}
+.style-card-media img{display:block;width:100%;height:100%;object-fit:contain!important;object-position:center!important;padding:10px;box-sizing:border-box;filter:drop-shadow(0 10px 15px rgba(0,0,0,.32)) saturate(.92)!important;transform:none!important;transition:transform .25s ease,filter .25s ease;}
+.style-card:hover .style-card-media img,.style-card:focus-visible .style-card-media img{transform:scale(1.035)!important;filter:drop-shadow(0 14px 20px rgba(0,0,0,.4)) saturate(1.02)!important;}
+.style-card>button{position:relative;z-index:1;width:100%;min-height:42px;margin-top:14px;padding:10px 12px;font-size:12px;}
+.style-card:focus-visible{outline:2px solid #e7bd61;outline-offset:4px;}
+.style-guide-modal{padding:clamp(10px,3vw,24px);overscroll-behavior:contain;}
+.style-guide-dialog{width:min(760px,100%);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;padding:clamp(20px,3.2vw,34px);scrollbar-width:thin;scrollbar-color:#b78c38 #041522;}
+#styleGuideModalImage{width:min(340px,100%)!important;height:clamp(150px,28vw,230px)!important;object-fit:contain!important;padding:8px;box-sizing:border-box;background:radial-gradient(ellipse at center,rgba(17,56,76,.85),#03121f)!important;}
+.style-guide-dialog h3{font-size:clamp(21px,3vw,29px);line-height:1.5;padding-left:32px;}
+.style-guide-dialog>p{font-size:clamp(13px,1.5vw,15px);line-height:2.15;}
+.style-guide-tips{font-size:clamp(12px,1.4vw,14px);line-height:2.1;padding:clamp(13px,2vw,20px);}
+.style-guide-tips ul{padding-right:22px;}
+.style-guide-modal-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+.style-guide-modal-grid button{min-height:68px;}
+body.style-guide-open{overflow:hidden;}
+@media(max-width:1050px){.style-guide-cards{grid-template-columns:repeat(2,minmax(0,1fr));max-width:850px;}.style-card-media{height:clamp(190px,25vw,250px);}}
+@media(max-width:600px){.avan-style-guide{padding:46px 13px;}.style-guide-shell{gap:24px;}.style-guide-intro h2{font-size:clamp(27px,7.5vw,35px);}.style-guide-intro>p{font-size:13px;line-height:2;}.style-guide-features{display:grid;grid-template-columns:1fr;gap:8px;justify-items:start;}.style-guide-features span{justify-content:flex-start;text-align:right;}.style-guide-cards{grid-template-columns:minmax(0,1fr);max-width:440px;gap:15px;}.style-card{padding:17px;}.style-card p{font-size:13px;line-height:2.05;}.style-card-media{height:240px;}.style-card>button{font-size:13px;min-height:44px;}.style-guide-dialog{padding:22px 15px;border-radius:18px;}.style-guide-modal-grid{grid-template-columns:1fr;}.style-guide-modal-head{padding-left:34px;}.style-guide-products{min-height:46px;justify-content:center;}}
+@media(prefers-reduced-motion:reduce){.style-card,.style-card-media img,.style-guide-cta{transition:none!important;}}

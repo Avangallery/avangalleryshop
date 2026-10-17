@@ -166,3 +166,39 @@ body::-webkit-scrollbar-track{background:#0b2340;border-inline-start:1px solid r
 body::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#ffffff,#ffffff);border:2px solid #0b2340;border-radius:999px}
 body::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#ffffff,#ffffff)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+
+
+/* AVAN GALLERY V146 — restore strong control contrast; white + navy only */
+:root{--avan-navy:#0b2340;--avan-white:#fff;--avan-border:#000814;--line:#000814;--line2:#000814;--gold:#fff;--gold2:#fff;--gold-2:#fff;--success:#fff;--danger:#fff;color-scheme:dark}
+html,body{scrollbar-color:#000814 #0b2340}
+/* Cards and field groups get a clear near-black navy outline */
+.card,.panel,.form-card,.checkout-card,.account-card,.admin-card,.modal-content,.style-card,.product-card,.cart-card,.payment,.payment-card,.order-card,.dashboard-card,.settings-card,.section-card{border-color:#000814!important;}
+/* Form fields must never blend into their surrounding navy background */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),select,textarea,
+.field input,.field textarea,.form-control,.form-input,.search-input{
+  background:#fff!important;color:#0b2340!important;border:2px solid #000814!important;
+  box-shadow:none!important;caret-color:#0b2340!important;outline-offset:2px;
+}
+input::placeholder,textarea::placeholder,.field input::placeholder,.field textarea::placeholder{color:#0b2340!important;opacity:.72!important}
+input:focus,select:focus,textarea:focus,.field input:focus,.field textarea:focus{border-color:#000814!important;outline:2px solid #0b2340!important;outline-offset:1px!important;box-shadow:0 0 0 2px #fff!important}
+/* Clickable controls: legible contrast and a visible dark outline */
+button,.btn,.button,[role="button"],input[type="submit"],input[type="button"],.back,.nav-link,.menu-link{
+  border-color:#000814!important;outline-offset:2px;
+}
+button:not(.icon-button):not(.menu-toggle),.btn,input[type="submit"],input[type="button"]{
+  box-shadow:none!important;
+}
+button:focus-visible,.btn:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:2px solid #000814!important;outline-offset:3px!important}
+/* Primary actions stay navy with white text; white controls stay white with navy text */
+.btn,.primary-btn,.checkout-btn,.submit-btn,.add-to-cart,.buy-now,.admin-primary,.button-primary{
+  background:#0b2340!important;color:#fff!important;border:2px solid #000814!important;
+}
+.btn:hover,.primary-btn:hover,.checkout-btn:hover,.submit-btn:hover,.add-to-cart:hover,.buy-now:hover,.admin-primary:hover,.button-primary:hover{
+  background:#fff!important;color:#0b2340!important;border-color:#000814!important;
+}
+/* Keep nav and utility buttons legible without introducing another color */
+header button,nav button,.header-actions button,.nav-actions button,.back,.outline-btn,.secondary-btn{
+  border:1px solid #000814!important;
+}
+hr,.divider,.section-divider{border-color:#000814!important;background-color:#000814!important}
+::selection{background:#0b2340!important;color:#fff!important}

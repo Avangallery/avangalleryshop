@@ -22,6 +22,44 @@ body::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#ffffff,#f
 h1{margin:0 0 8px;font-size:26px}.email{color:#ffffff;margin:0 0 28px;direction:ltr;unicode-bidi:isolate}.badge{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#ffffff;font-size:12px;margin-bottom:24px}.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}.actions a,.actions button{min-width:180px;height:48px;border-radius:13px;border:1px solid rgba(255,255,255,.35);background:#0b2340;color:#ffffff;text-decoration:none;font:700 14px Vazirmatn;cursor:pointer}.actions a.primary{background:linear-gradient(135deg,#ffffff,#ffffff);color:#0b2340;border:0;display:grid;place-items:center}.state{color:#ffffff;margin:0 0 20px}.orders-section{margin-top:30px;text-align:right;border-top:1px solid rgba(255,255,255,.2);padding-top:24px}.orders-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.orders-head h2{margin:0;font-size:20px}.orders-grid{display:grid;gap:14px;margin-top:16px}.order-card{border:1px solid rgba(255,255,255,.22);border-radius:18px;background:linear-gradient(145deg,rgba(11,35,64,.9),rgba(11,35,64,.95));padding:18px;text-align:right}.order-top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.order-number{color:#ffffff;font-weight:800;direction:ltr}.order-meta{color:#ffffff;font-size:12px;margin-top:6px}.order-badges{display:flex;gap:7px;flex-wrap:wrap}.order-pill{display:inline-flex;border-radius:999px;padding:6px 10px;font-size:12px;border:1px solid rgba(255,255,255,.22);color:#ffffff;background:rgba(255,255,255,.08)}.order-pill.paid{color:#ffffff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08)}.order-pill.rejected{color:#ffffff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08)}.order-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:14px}.order-item{display:flex;gap:10px;align-items:center;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:9px;background:rgba(11,35,64,.12)}.order-item img{width:56px;height:56px;object-fit:contain;border-radius:9px;background:#ffffff}.order-item b{display:block;font-size:13px}.order-item small{display:block;color:#ffffff;margin-top:4px}.order-total{display:flex;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)}.order-empty{padding:22px;border:1px dashed rgba(255,255,255,.28);border-radius:14px;color:#ffffff;text-align:center}.tracking-line{font-size:12px;color:#ffffff;margin-top:8px;direction:rtl}.orders-refresh{border:1px solid rgba(255,255,255,.35);background:#0b2340;color:#ffffff;border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer}.error{color:#ffffff}.loading{color:#ffffff}
 @media(max-width:560px){body{padding:12px}.account-card{padding:28px 20px;border-radius:22px}h1{font-size:22px}.actions{flex-direction:column}.actions a,.actions button{width:100%}}
 </style>
+
+<!-- AVAN V146 contrast fix -->
+<style id="avan-v146-contrast-fix">
+/* AVAN GALLERY V146 — restore strong control contrast; white + navy only */
+:root{--avan-navy:#0b2340;--avan-white:#fff;--avan-border:#000814;--line:#000814;--line2:#000814;--gold:#fff;--gold2:#fff;--gold-2:#fff;--success:#fff;--danger:#fff;color-scheme:dark}
+html,body{scrollbar-color:#000814 #0b2340}
+/* Cards and field groups get a clear near-black navy outline */
+.card,.panel,.form-card,.checkout-card,.account-card,.admin-card,.modal-content,.style-card,.product-card,.cart-card,.payment,.payment-card,.order-card,.dashboard-card,.settings-card,.section-card{border-color:#000814!important;}
+/* Form fields must never blend into their surrounding navy background */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),select,textarea,
+.field input,.field textarea,.form-control,.form-input,.search-input{
+  background:#fff!important;color:#0b2340!important;border:2px solid #000814!important;
+  box-shadow:none!important;caret-color:#0b2340!important;outline-offset:2px;
+}
+input::placeholder,textarea::placeholder,.field input::placeholder,.field textarea::placeholder{color:#0b2340!important;opacity:.72!important}
+input:focus,select:focus,textarea:focus,.field input:focus,.field textarea:focus{border-color:#000814!important;outline:2px solid #0b2340!important;outline-offset:1px!important;box-shadow:0 0 0 2px #fff!important}
+/* Clickable controls: legible contrast and a visible dark outline */
+button,.btn,.button,[role="button"],input[type="submit"],input[type="button"],.back,.nav-link,.menu-link{
+  border-color:#000814!important;outline-offset:2px;
+}
+button:not(.icon-button):not(.menu-toggle),.btn,input[type="submit"],input[type="button"]{
+  box-shadow:none!important;
+}
+button:focus-visible,.btn:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:2px solid #000814!important;outline-offset:3px!important}
+/* Primary actions stay navy with white text; white controls stay white with navy text */
+.btn,.primary-btn,.checkout-btn,.submit-btn,.add-to-cart,.buy-now,.admin-primary,.button-primary{
+  background:#0b2340!important;color:#fff!important;border:2px solid #000814!important;
+}
+.btn:hover,.primary-btn:hover,.checkout-btn:hover,.submit-btn:hover,.add-to-cart:hover,.buy-now:hover,.admin-primary:hover,.button-primary:hover{
+  background:#fff!important;color:#0b2340!important;border-color:#000814!important;
+}
+/* Keep nav and utility buttons legible without introducing another color */
+header button,nav button,.header-actions button,.nav-actions button,.back,.outline-btn,.secondary-btn{
+  border:1px solid #000814!important;
+}
+hr,.divider,.section-divider{border-color:#000814!important;background-color:#000814!important}
+::selection{background:#0b2340!important;color:#fff!important}
+</style>
 </head>
 <body>
 <main class="account-card" id="accountCard">

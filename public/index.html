@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>70684897</title>
+<title>آوان گالری | AVAN GALLERY</title>
 <meta name="enamad" content="70684897">
 <meta name="description" content="آوان گالری | فروش انواع ساعت های کلاسیک، لوکس و روزمره با تضمین اصالت کالا و ارسال مطمئن.">
 <meta name="theme-color" content="#0b2340">
@@ -507,7 +507,7 @@
 })();
 </script>
 <script>
-/* V150: real footer navigation with instant (non-animated) jumps. FAQ and privacy open their full existing dialogs. */
+/* V151: real footer navigation with gentle smooth motion. FAQ and privacy open their full existing dialogs. */
 (function () {
   function openInfoModal(id) {
     var modal = document.getElementById(id);
@@ -542,9 +542,10 @@
     if (!target) return;
     event.preventDefault();
     event.stopPropagation();
-    /* No smooth animation: navigate directly to the real target section. */
+    /* Gentle, native smooth movement only for these quick links. */
     var top = target.getBoundingClientRect().top + window.pageYOffset;
-    window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion ? 'auto' : 'smooth' });
     if (history && history.replaceState) history.replaceState(null, '', href);
   }, true);
 })();

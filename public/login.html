@@ -48,8 +48,8 @@
           <p class="field-error" id="nameError"></p>
         </div>
 
-        <label>شماره موبایل یا ایمیل</label>
-        <div class="field"><span class="field-icon">✉</span><input id="identity" type="text" autocomplete="username" placeholder="شماره موبایل یا ایمیل خود را وارد کنید"></div>
+        <label>ایمیل</label>
+        <div class="field"><span class="field-icon">✉</span><input id="identity" type="text" autocomplete="username" placeholder="ایمیل خود را وارد کنید"></div>
         <p class="field-error" id="identityError"></p>
 
         <label>رمز عبور</label>
@@ -123,7 +123,7 @@ form.addEventListener('submit',async e=>{
   e.preventDefault();
   document.querySelectorAll('.field-error').forEach(x=>x.textContent='');
   const id=document.getElementById('identity');
-  if(!id.value.trim()){document.getElementById('identityError').textContent='ایمیل خود را وارد کنید.';return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id.value.trim())){document.getElementById('identityError').textContent='یک ایمیل معتبر وارد کنید.';return;}
   if(!pass.value){document.getElementById('passwordError').textContent='رمز عبور را وارد کنید.';return;}
   if(registerTab.classList.contains('active')){
     const name=document.getElementById('fullName');

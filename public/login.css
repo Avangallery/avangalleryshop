@@ -166,3 +166,19 @@ body::-webkit-scrollbar-track{background:#0b2340;border-inline-start:1px solid r
 body::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#ffffff,#ffffff);border:2px solid #0b2340;border-radius:999px}
 body::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#ffffff,#ffffff)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+
+/* V158 — restore visible, accessible authentication fields */
+.login-panel .panel-inner{overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:thin;scrollbar-color:#fff #0b2340}
+.login-panel .field{width:100%;min-height:54px;background:#fff!important;border:1.5px solid #b6c6d7!important;border-radius:12px;display:flex;align-items:center;gap:4px;margin:7px 0 4px;overflow:hidden}
+.login-panel .field:focus-within{border-color:#fff!important;box-shadow:0 0 0 3px rgba(255,255,255,.23)!important}
+.login-panel .field input{display:block!important;min-width:0;width:100%;flex:1;color:#0b2340!important;background:#fff!important;opacity:1!important;padding:14px 10px!important;line-height:1.6!important;text-align:right;direction:rtl}
+.login-panel .field input::placeholder{color:#63758a!important;opacity:1!important}
+.login-panel .field-icon,.login-panel .toggle-pass{flex:none;color:#0b2340!important;opacity:1!important}
+.login-panel form>label,.login-panel .register-fields>label{display:block!important;color:#fff!important;margin:13px 0 3px!important}
+.login-panel .field-error{color:#fff;min-height:5px;margin:0 4px 4px}
+.login-panel .auth-tabs button.active{background:rgba(255,255,255,.12);border:1px solid #fff}
+.login-panel .google-g{color:#0b2340!important}
+.login-panel .google-btn{border-color:rgba(255,255,255,.5)!important}
+.login-panel .register-fields[hidden],.login-panel #loginOptions[hidden]{display:none!important}
+@media(min-width:951px){html:has(.login-page),body:has(.login-page){overflow-y:auto!important;height:auto!important}.login-page{height:auto!important;min-height:100vh!important;overflow:visible!important}.login-panel{height:auto!important;min-height:100vh!important;overflow:visible!important;padding-top:88px!important;padding-bottom:30px!important}.login-panel .panel-inner{max-height:none!important;overflow:visible!important}}
+@media(max-width:950px){.login-panel .panel-inner{max-height:none!important;overflow:visible!important}.login-panel{overflow:visible!important}}

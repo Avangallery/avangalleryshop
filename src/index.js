@@ -2,8 +2,6 @@ const SESSION_COOKIE = 'avan_admin_session';
 const SESSION_TTL = 60 * 60 * 24;
 const USER_SESSION_COOKIE = 'avan_user_session';
 const USER_SESSION_TTL = 60 * 60 * 24 * 30;
-const GOOGLE_STATE_COOKIE = 'avan_google_oauth_state';
-const GOOGLE_STATE_TTL = 600;
 
 function json(data, status = 200, extra = {}) {
   return new Response(JSON.stringify(data), {
@@ -213,10 +211,6 @@ async function paymentConfig(env) {
   };
 }
 
-function googleRedirectUri(request) {
-  return new URL('/api/auth/google/callback', request.url).toString();
-}
-
 function oauthCookie(name, value, maxAge) {
   return `${name}=${encodeURIComponent(value)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAge}`;
 }
@@ -421,7 +415,7 @@ async function verifyCustomerPassword(password, stored) {
   return result.hash === expected;
 }
 function customerSessionSecret(env) {
-  return String(env.AUTH_SESSION_SECRET || env.GOOGLE_CLIENT_SECRET || env.ADMIN_PASSWORD || '');
+  return String(env.AUTH_SESSION_SECRET || env.ADMIN_SECRET || env.ADMIN_PASSWORD || '');
 }
 
 async function api(request, env, url) {
@@ -485,7 +479,7 @@ async function api(request, env, url) {
       const detail = String(err?.message || err || 'unknown error');
       // Keep implementation details out of the public response, but make the
       // common setup failures actionable for the shop owner.
-      let message = 'عملیات ورود یا ثبت‌نام انجام نشد. اتصال D1 و ساختار جدول users را بررسی کنید.';
+      let message = 'ثبت‌نام انجام نشد. ساختار جدول users در D1 با نسخه فعلی سازگار نیست؛ جزئیات خطا در لاگ Worker ثبت شده است.';
       if (/UNIQUE constraint failed: users\.email/i.test(detail)) message = 'این ایمیل قبلاً ثبت شده است؛ وارد حساب شوید یا از ایمیل دیگری استفاده کنید.';
       else if (/UNIQUE constraint failed: users\.google_id/i.test(detail)) message = 'ساختار قدیمی جدول کاربران با ثبت‌نام سازگار نبود. یک بار دیگر تلاش کنید؛ اگر خطا ادامه داشت، جدول users در D1 نیاز به بررسی دارد.';
       else if (/no such column: password_hash|users schema lacks email\/password_hash/i.test(detail)) message = 'ستون‌های ورود در جدول کاربران کامل نیستند. اجرای مهاجرت D1 لازم است.';
@@ -496,51 +490,7 @@ async function api(request, env, url) {
     }
   }
 
-  // Customer Google OAuth
-  if (url.pathname === '/api/auth/google' && request.method === 'GET') {
-    if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return json({ ok:false, error: !env.GOOGLE_CLIENT_ID ? 'Google OAuth Client ID is missing.' : 'Google OAuth Client Secret is missing. Add GOOGLE_CLIENT_SECRET as a Production Secret in Cloudflare.' }, 500);
-    const state = crypto.randomUUID();
-    const redirectUri = googleRedirectUri(request);
-    const params = new URLSearchParams({
-      client_id: env.GOOGLE_CLIENT_ID,
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'openid email profile',
-      state,
-      prompt: 'select_account'
-    });
-    return redirectWithCookies(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`, [oauthCookie(GOOGLE_STATE_COOKIE, state, GOOGLE_STATE_TTL)]);
-  }
-  if (url.pathname === '/api/auth/google/callback' && request.method === 'GET') {
-    if (!env.DB || !env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return Response.redirect(new URL('/login.html?google=error&reason=not-configured', request.url), 302);
-    const state = url.searchParams.get('state') || '';
-    const savedState = cookieValue(request, GOOGLE_STATE_COOKIE) || '';
-    const code = url.searchParams.get('code') || '';
-    const oauthError = url.searchParams.get('error') || '';
-    const clearState = clearCookie(GOOGLE_STATE_COOKIE);
-    if (oauthError) return redirectWithCookies(new URL(`/login.html?google=error&reason=${encodeURIComponent(oauthError)}`, request.url).toString(), [clearState]);
-    if (!state || !savedState || state !== savedState || !code) return redirectWithCookies(new URL('/login.html?google=error&reason=invalid-state', request.url).toString(), [clearState]);
-    try {
-      const tokens = await googleTokenExchange(env, request, code);
-      const googleUser = await verifyGoogleIdToken(tokens.id_token, env.GOOGLE_CLIENT_ID);
-      await ensureUsersTable(env);
-      let user = await env.DB.prepare(`SELECT * FROM users WHERE google_id=? OR email=? LIMIT 1`).bind(googleUser.googleId, googleUser.email).first();
-      if (user) {
-        await env.DB.prepare(`UPDATE users SET google_id=?,email=?,name=?,avatar=?,provider='google',updated_at=datetime('now') WHERE id=?`).bind(googleUser.googleId, googleUser.email, googleUser.name, googleUser.avatar, user.id).run();
-        user = await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(user.id).first();
-      } else {
-        user = await createUserCompat(env, {id:crypto.randomUUID(), googleId:googleUser.googleId, email:googleUser.email, name:googleUser.name, avatar:googleUser.avatar, provider:'google', phone:''});
-      }
-      const sessionSecret = customerSessionSecret(env);
-      const session = await makeUserSession(sessionSecret, user.id);
-      return redirectWithCookies(new URL('/account.html?login=success', request.url).toString(), [
-        oauthCookie(USER_SESSION_COOKIE, session, USER_SESSION_TTL),
-        clearState
-      ]);
-    } catch (err) {
-      return redirectWithCookies(new URL(`/login.html?google=error&reason=${encodeURIComponent(err?.message || 'oauth-failed')}`, request.url).toString(), [clearState]);
-    }
-  }
+  // Google OAuth removed; email/password is the only customer login method.
   if (url.pathname === '/api/auth/me' && request.method === 'GET') {
     if (!env.DB) return json({ ok:true, authenticated:false });
     const session = await validUserSession(request, customerSessionSecret(env));

@@ -182,3 +182,14 @@ body::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#ffffff,#f
 .login-panel .register-fields[hidden],.login-panel #loginOptions[hidden]{display:none!important}
 @media(min-width:951px){html:has(.login-page),body:has(.login-page){overflow-y:auto!important;height:auto!important}.login-page{height:auto!important;min-height:100vh!important;overflow:visible!important}.login-panel{height:auto!important;min-height:100vh!important;overflow:visible!important;padding-top:88px!important;padding-bottom:30px!important}.login-panel .panel-inner{max-height:none!important;overflow:visible!important}}
 @media(max-width:950px){.login-panel .panel-inner{max-height:none!important;overflow:visible!important}.login-panel{overflow:visible!important}}
+
+/* V159 — remove Google login UI; improve standard email/password registration */
+.google-btn,.google-note,.divider{display:none!important}
+.login-panel .field{background:#fff!important;border:1px solid rgba(255,255,255,.72)!important;min-height:52px}
+.login-panel .field input{color:#0b2340!important}
+.login-panel .field input::placeholder{color:#52657b!important;opacity:1}
+.login-panel .field-icon,.login-panel .toggle-pass{color:#0b2340!important}
+.login-panel .field:focus-within{border-color:#fff!important;box-shadow:0 0 0 3px rgba(255,255,255,.18)!important}
+.login-panel .auth-tabs button.active{color:#fff!important;border:1px solid #fff!important;background:rgba(255,255,255,.12)!important}
+.login-panel .auth-tabs span{color:#fff!important}
+#authApiError{overflow-wrap:anywhere}

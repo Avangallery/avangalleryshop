@@ -656,6 +656,8 @@ async function api(request, env, url) {
   // Checkout + manual card transfer orders (no R2 required)
   if (url.pathname === '/api/orders' && request.method === 'POST') {
     if (!env.DB) return json({ok:false,error:'D1 binding DB is not configured.'},500);
+    const checkoutSession=await validUserSession(request,customerSessionSecret(env));
+    if(!checkoutSession?.uid) return json({ok:false,error:'برای ثبت سفارش ابتدا وارد حساب کاربری شوید.',loginRequired:true},401);
     await ensureOrdersTables(env);
     const body = await request.json().catch(()=>({}));
     const items = Array.isArray(body.items) ? body.items : [];
@@ -702,9 +704,7 @@ async function api(request, env, url) {
     }
 
     if(userId===null || userId===undefined || userId===''){
-      const guestEmail=`guest-${crypto.randomUUID()}@avan.local`;
-      const guest=await createUserCompat(env, {id:usersIdIsInteger ? undefined : ('guest-'+crypto.randomUUID()), email:guestEmail, name, avatar:'', provider:'guest', phone});
-      userId=guest?.id;
+      return json({ok:false,error:'حساب کاربری معتبر نیست؛ دوباره وارد شوید.',loginRequired:true},401);
     }
     if(userId===null || userId===undefined || userId==='') return json({ok:false,error:'شناسه کاربر برای ثبت سفارش ایجاد نشد.'},500);
     const orderUserValue=ordersUserIdIsInteger ? Number(userId) : String(userId);

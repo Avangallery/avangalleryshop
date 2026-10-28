@@ -113,6 +113,12 @@ function showAuthError(message){
   if(!box){box=document.createElement('div');box.id='authApiError';box.style.cssText='margin:12px 0;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.3);color:#ffffff;font-size:13px;line-height:1.8';form.before(box);}
   box.textContent=message;
 }
+function getPostLoginDestination(){
+  const requested=new URLSearchParams(window.location.search).get('next')||'';
+  // Only allow same-origin local paths to avoid open redirects.
+  if(requested.startsWith('/')&&!requested.startsWith('//')&&!requested.includes('\\')) return requested;
+  return '/account.html?login=success';
+}
 form.addEventListener('submit',async e=>{
   e.preventDefault();
   document.querySelectorAll('.field-error').forEach(x=>x.textContent='');
@@ -134,7 +140,7 @@ form.addEventListener('submit',async e=>{
       const response=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({name:name.value.trim(),email:id.value.trim(),password:pass.value})});
       const result=await response.json().catch(()=>({}));
       if(!response.ok||!result.ok) throw new Error(result.error||'ثبت‌نام انجام نشد. دوباره تلاش کنید.');
-      window.location.href='/account.html?login=success';
+      window.location.href=getPostLoginDestination();
     } catch(error) {
       showAuthError(error.message||'ارتباط با سرور برقرار نشد.');
     } finally { submitBtn.disabled=false; submitBtn.innerHTML=originalLabel; }
@@ -148,7 +154,7 @@ form.addEventListener('submit',async e=>{
       const response=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({email:id.value.trim(),password:pass.value})});
       const result=await response.json().catch(()=>({}));
       if(!response.ok||!result.ok) throw new Error(result.error||'ورود انجام نشد. دوباره تلاش کنید.');
-      window.location.href='/account.html?login=success';
+      window.location.href=getPostLoginDestination();
     } catch(error) {
       showAuthError(error.message||'ارتباط با سرور برقرار نشد.');
     } finally { submitBtn.disabled=false; submitBtn.innerHTML=originalLabel; }

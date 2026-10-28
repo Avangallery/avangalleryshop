@@ -90,6 +90,7 @@ async function ensureUsersTable(env) {
     ['created_at', `ALTER TABLE users ADD COLUMN created_at TEXT NOT NULL DEFAULT ''`],
     ['updated_at', `ALTER TABLE users ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''`],
     ['password_hash', `ALTER TABLE users ADD COLUMN password_hash TEXT`],
+    ['password_salt', `ALTER TABLE users ADD COLUMN password_salt TEXT NOT NULL DEFAULT ''`],
     ['phone', `ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''`]
   ];
   for (const [name, sql] of additions) {
@@ -408,9 +409,18 @@ async function hashCustomerPassword(password, saltHex) {
   const hex = bytes => Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2,'0')).join('');
   return {salt:hex(salt), hash:hex(bits)};
 }
-async function verifyCustomerPassword(password, stored) {
-  if (!stored || !String(stored).includes('$')) return false;
-  const [salt, expected] = String(stored).split('$');
+async function verifyCustomerPassword(password, stored, storedSalt) {
+  if (!stored) return false;
+  // New rows keep salt and hash in their dedicated columns; older rows may
+  // contain the legacy `salt$hash` value in password_hash. Support both.
+  let salt = String(storedSalt || '');
+  let expected = String(stored);
+  if (expected.includes('$')) {
+    const parts = expected.split('$');
+    salt = parts[0];
+    expected = parts[1] || '';
+  }
+  if (!salt || !expected) return false;
   const result = await hashCustomerPassword(password, salt);
   return result.hash === expected;
 }
@@ -448,7 +458,7 @@ async function api(request, env, url) {
           // Keep google_id NULL for password accounts. The original schema
           // makes google_id UNIQUE, and empty strings collide after the first account.
           id, google_id:null, email, name, avatar:'', provider:'password',
-          password_hash:hashed.salt+'$'+hashed.hash, phone:'',
+          password_hash:hashed.hash, password_salt:hashed.salt, phone:'',
           created_at:new Date().toISOString(), updated_at:new Date().toISOString()
         };
         const insertCols=[], insertVals=[];
@@ -468,7 +478,7 @@ async function api(request, env, url) {
         user = await env.DB.prepare(`SELECT * FROM users WHERE lower(email)=? LIMIT 1`).bind(email).first();
         if (!user || user.id === undefined || user.id === null) throw new Error('User row was not returned after registration');
       } else {
-        if (!user || !(await verifyCustomerPassword(password, user.password_hash))) return json({ok:false,error:'ایمیل یا رمز عبور صحیح نیست.'},401);
+        if (!user || !(await verifyCustomerPassword(password, user.password_hash, user.password_salt))) return json({ok:false,error:'ایمیل یا رمز عبور صحیح نیست.'},401);
       }
       const session = await makeUserSession(sessionSecret, user.id);
       return json({ok:true,user:{id:user.id,email:user.email,name:user.name,provider:user.provider}},200,{
@@ -482,7 +492,9 @@ async function api(request, env, url) {
       let message = 'ثبت‌نام انجام نشد. ساختار جدول users در D1 با نسخه فعلی سازگار نیست؛ جزئیات خطا در لاگ Worker ثبت شده است.';
       if (/UNIQUE constraint failed: users\.email/i.test(detail)) message = 'این ایمیل قبلاً ثبت شده است؛ وارد حساب شوید یا از ایمیل دیگری استفاده کنید.';
       else if (/UNIQUE constraint failed: users\.google_id/i.test(detail)) message = 'ساختار قدیمی جدول کاربران با ثبت‌نام سازگار نبود. یک بار دیگر تلاش کنید؛ اگر خطا ادامه داشت، جدول users در D1 نیاز به بررسی دارد.';
-      else if (/no such column: password_hash|users schema lacks email\/password_hash/i.test(detail)) message = 'ستون‌های ورود در جدول کاربران کامل نیستند. اجرای مهاجرت D1 لازم است.';
+      else if (/no such column: password_hash|no such column: password_salt|users schema lacks email\/password_hash/i.test(detail)) message = 'ستون‌های password_hash یا password_salt در جدول users کامل نیستند؛ پس از انتشار نسخه جدید دوباره تلاش کنید.';
+      else if (/NOT NULL constraint failed: users\./i.test(detail)) message = 'یکی از فیلدهای اجباری جدول users مقدار نگرفته است. ساختار جدول در لاگ Worker مشخص شده است.';
+      else if (/UNIQUE constraint failed: users\./i.test(detail)) message = 'این ایمیل قبلاً ثبت شده است؛ وارد حساب شوید یا از ایمیل دیگری استفاده کنید.';
       else if (/D1 binding DB is not configured/i.test(detail)) message = 'اتصال پایگاه داده با نام DB در تنظیمات Worker موجود نیست.';
       else if (/crypto|secret|key/i.test(detail)) message = 'کلید نشست حساب کاربری معتبر نیست. مقدار AUTH_SESSION_SECRET را در Cloudflare بررسی کنید.';
       console.error('Customer authentication failed:', detail);

@@ -788,3 +788,23 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
   .avan-style-guide .style-card-media{padding:12px 20px;height:250px;}
   .avan-style-guide .style-card-media img{padding:10px;}
 }
+
+/* V161 interaction fixes: fixed support control and modal stacking/closing */
+.avan-floating-support{
+  z-index:10060!important; pointer-events:auto!important; cursor:pointer!important;
+  animation:avanSupportFloat 3.8s ease-in-out infinite;
+  transform:translateZ(0);
+}
+.avan-floating-support:hover,.avan-floating-support:focus-visible{animation-play-state:paused;transform:translateY(-3px);outline:2px solid #fff;outline-offset:3px}
+@keyframes avanSupportFloat{0%,100%{box-shadow:0 12px 35px rgba(11,35,64,.42)}50%{box-shadow:0 14px 42px rgba(11,35,64,.65)}}
+.online-support-modal{z-index:10070!important;overscroll-behavior:contain}
+.online-support-dialog{z-index:1;max-height:calc(100dvh - 36px);overflow-y:auto;overscroll-behavior:contain}
+.avan-info-modal{z-index:10070!important;overscroll-behavior:contain}
+.avan-info-dialog{max-height:calc(100dvh - 40px);overscroll-behavior:contain}
+.avan-info-close,.online-support-close,.avan-support-btn-v94,.support-tab,[data-close-info],[data-close-support]{cursor:pointer;pointer-events:auto}
+body.avan-info-open{overflow:hidden}
+@media(max-width:600px){
+ .online-support-modal,.avan-info-modal{padding:10px}
+ .online-support-dialog,.avan-info-dialog{padding:22px 16px;border-radius:20px;max-height:calc(100dvh - 20px)}
+ .avan-floating-support{left:12px;bottom:12px}
+}

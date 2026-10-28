@@ -550,5 +550,137 @@
   }, true);
 })();
 </script>
+
+<script>
+/* V161: reliable footer navigation, FAQ close/back, and support modal controls */
+(function () {
+  'use strict';
+  var body = document.body;
+  var faqModal = document.getElementById('faqModal');
+  var privacyModal = document.getElementById('privacyModal');
+  var supportModal = document.getElementById('onlineSupportModal');
+  var supportButton = document.getElementById('avanFloatingSupport');
+  var supportFooterButton = document.getElementById('openOnlineSupport');
+  var lastFocus = null;
+
+  function openModal(modal) {
+    if (!modal) return;
+    lastFocus = document.activeElement;
+    [faqModal, privacyModal, supportModal].forEach(function (item) {
+      if (item && item !== modal) {
+        item.classList.remove('is-open');
+        item.setAttribute('aria-hidden', 'true');
+      }
+    });
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    body.classList.add('avan-info-open');
+    body.style.overflow = 'hidden';
+    var focusable = modal.querySelector('button, a, input, textarea, select, [tabindex]:not([tabindex="-1"])');
+    if (focusable) window.setTimeout(function(){ focusable.focus({preventScroll:true}); }, 30);
+  }
+  function closeModal(modal) {
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    if (![faqModal, privacyModal, supportModal].some(function (item) { return item && item.classList.contains('is-open'); })) {
+      body.classList.remove('avan-info-open');
+      body.style.overflow = '';
+    }
+    if (lastFocus && typeof lastFocus.focus === 'function') {
+      try { lastFocus.focus({preventScroll:true}); } catch (_) {}
+    }
+  }
+  function openSupport() { openModal(supportModal); }
+  function closeSupport() { closeModal(supportModal); }
+
+  if (supportButton) supportButton.addEventListener('click', function(e){ e.preventDefault(); openSupport(); });
+  if (supportFooterButton) supportFooterButton.addEventListener('click', function(e){ e.preventDefault(); openSupport(); });
+
+  document.addEventListener('click', function (event) {
+    var target = event.target;
+    var closeInfo = target.closest && target.closest('[data-close-info]');
+    var closeSupportTarget = target.closest && target.closest('[data-close-support]');
+    var faqLink = target.closest && target.closest('.avan-footer-links-v94 a, .avan-bottom-links a');
+    if (closeSupportTarget) {
+      event.preventDefault();
+      closeSupport();
+      return;
+    }
+    if (closeInfo) {
+      event.preventDefault();
+      var parentModal = closeInfo.closest('.avan-info-modal');
+      if (parentModal) closeModal(parentModal);
+      return;
+    }
+    if (faqLink) {
+      var href = faqLink.getAttribute('href') || '';
+      if (href === '#faq') {
+        event.preventDefault();
+        openModal(faqModal);
+        return;
+      }
+      if (href === '#privacy') {
+        event.preventDefault();
+        openModal(privacyModal);
+        return;
+      }
+      if (href.charAt(0) === '#') {
+        var section = document.getElementById(href.slice(1));
+        if (section) {
+          event.preventDefault();
+          section.scrollIntoView({behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'});
+          if (history && history.replaceState) history.replaceState(null, '', href);
+        }
+      }
+    }
+    var tab = target.closest && target.closest('[data-support-tab]');
+    if (tab && supportModal) {
+      event.preventDefault();
+      var key = tab.getAttribute('data-support-tab');
+      supportModal.querySelectorAll('[data-support-tab]').forEach(function (button) {
+        var active = button === tab;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      supportModal.querySelectorAll('[data-support-panel]').forEach(function (panel) {
+        panel.classList.toggle('is-active', panel.getAttribute('data-support-panel') === key);
+      });
+    }
+  }, true);
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') return;
+    [supportModal, faqModal, privacyModal].forEach(function (modal) {
+      if (modal && modal.classList.contains('is-open')) closeModal(modal);
+    });
+  });
+
+  /* Chat is a local contact form unless a backend is configured: never pretend a message was sent. */
+  var chatForm = document.getElementById('avanChatForm');
+  var chatInput = document.getElementById('avanChatInput');
+  if (chatForm && chatInput) {
+    chatForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      var message = chatInput.value.trim();
+      if (!message) { chatInput.focus(); return; }
+      var messageArea = document.getElementById('avanChatMessages');
+      if (messageArea) {
+        var bubble = document.createElement('div');
+        bubble.className = 'chat-bubble user';
+        bubble.textContent = message;
+        messageArea.appendChild(bubble);
+        var note = document.createElement('div');
+        note.className = 'chat-bubble agent';
+        note.textContent = 'پیام در این پنجره نمایش داده شد؛ برای ارسال واقعی و دریافت پاسخ، از راه‌های ارتباطی بخش پشتیبانی استفاده کنید.';
+        messageArea.appendChild(note);
+        messageArea.scrollTop = messageArea.scrollHeight;
+      }
+      chatInput.value = '';
+    });
+  }
+})();
+</script>
+
 </body>
 </html>

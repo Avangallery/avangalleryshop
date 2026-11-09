@@ -1,0 +1,18 @@
+/* AVAN GALLERY V165 — admin white / blue / black theme */
+:root{--bg:#fff!important;--panel:#fff!important;--panel2:#f7f9fc!important;--line:#111827!important;--gold:#1769d2!important;--gold2:#1769d2!important;--text:#111827!important;--muted:#4b5563!important;--blue:#1769d2!important;--danger:#dc2626!important}
+html,body{background:#fff!important;color:#111827!important}
+.admin-shell,.main,.main-content,.content,.workspace,.page-content{background:#fff!important;color:#111827!important}
+.sidebar,.admin-sidebar,.topbar,.admin-header{background:#fff!important;color:#111827!important;border-color:#111827!important;box-shadow:none!important}
+.sidebar *, .admin-sidebar *, .topbar *, .admin-header *{color:inherit}
+.sidebar nav button,.side-foot a,.side-foot button{background:#fff!important;color:#111827!important;border:1px solid transparent!important}
+.sidebar nav button:hover,.sidebar nav button.active{background:#eaf2ff!important;color:#1459b8!important;border-color:#1769d2!important}
+.panel,.card,.stat-card,.widget,.table-wrap,.form-card,.modal,.modal-content,.product-workspace,.product-filters,.products-table,.empty-products{background:#fff!important;color:#111827!important;border:1px solid #111827!important;box-shadow:0 8px 24px rgba(15,23,42,.06)!important}
+button,.btn,.primary,.primary-btn,.save-btn,.add-btn,.action-primary{background:#1769d2!important;color:#fff!important;border:1px solid #1769d2!important}
+button:hover,.btn:hover,.primary:hover,.primary-btn:hover{background:#0f55b4!important;color:#fff!important}
+input,select,textarea,.search-box{background:#fff!important;color:#111827!important;border:1px solid #111827!important;box-shadow:none!important}
+input::placeholder,textarea::placeholder{color:#6b7280!important}
+label,h1,h2,h3,h4,p,span,td,th,small,strong,b{ text-shadow:none!important }
+.table,.data-table,table{color:#111827!important;border-color:#d1d5db!important}
+th{background:#f3f6fb!important;color:#111827!important}td{background:#fff!important;color:#111827!important;border-color:#d1d5db!important}
+.muted,.subtle,.hint{color:#4b5563!important}
+body{background:#fff!important}

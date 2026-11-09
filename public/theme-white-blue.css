@@ -1,0 +1,34 @@
+/* AVAN GALLERY V165 — unified white / blue / black theme */
+:root{--navy-0:#ffffff!important;--navy-1:#ffffff!important;--navy-2:#ffffff!important;--navy-3:#ffffff!important;--bg:#ffffff!important;--panel:#ffffff!important;--panel2:#f7f9fc!important;--text:#111827!important;--muted:#4b5563!important;--line:#111827!important;--blue:#1769d2!important;--gold:#1769d2!important;--gold-2:#1769d2!important;--gold2:#1769d2!important}
+html,body{background:#fff!important;color:#111827!important}
+.site-header,.main-nav,.service-bar,.mobile-nav,.site-footer,.footer-main,.footer-bottom{background:#fff!important;color:#111827!important;border-color:#111827!important}
+.site-header *,.main-nav *,.service-bar *,.site-footer *{color:inherit}
+.nav-link,.nav-drop>button,.main-nav .logo,.service-card,.slogan,.avan-brand-en,.header-search input,.header-search input::placeholder{color:#111827!important}
+.header-search,.v43-popover,.drop-menu,.cart-drawer,.account-popover,.search-results,.mega-menu{background:#fff!important;color:#111827!important;border:1px solid #111827!important;box-shadow:0 12px 32px rgba(15,23,42,.10)!important}
+.header-search input{background:#fff!important}
+.v43-icon-btn,.v43-account,.header-search button{background:#fff!important;color:#1769d2!important;border:1px solid #111827!important}
+.nav-link.active:after,.nav-link:hover,.nav-drop>button:hover{background-color:transparent!important;color:#1769d2!important}
+button,.btn,.primary-btn,.checkout-btn,.add-to-cart,.submit-btn,.action-btn{background:#1769d2!important;color:#fff!important;border-color:#1769d2!important}
+button:hover,.btn:hover,.primary-btn:hover,.checkout-btn:hover,.add-to-cart:hover{background:#0f55b4!important;color:#fff!important}
+input,select,textarea,.field,.header-search,.search-box,.form-control{background:#fff!important;color:#111827!important;border:1px solid #111827!important;box-shadow:none!important}
+input::placeholder,textarea::placeholder{color:#6b7280!important}
+input:focus,select:focus,textarea:focus{border-color:#111827!important;outline:2px solid rgba(23,105,210,.15)!important}
+.card,.product-card,.info-card,.feature-card,.faq-item,.modal-content,.checkout-wrap .card,.payment-choice,.summary-card,.account-card,.order-card{background:#fff!important;color:#111827!important;border:1px solid #111827!important;box-shadow:0 8px 24px rgba(15,23,42,.06)!important}
+section,main,.page-content,.content-wrap,.checkout-wrap{color:#111827}
+footer,footer a,.site-footer a{color:#111827!important}
+.badge,.status-badge,.step,.muted,.hint,.description{color:#374151!important}
+/* Preserve product/watch imagery and brand artwork without color filters. */
+.product-card img,.product-image img,.hero img,.brand-logo,.avan-logo-image{filter:none!important}
+/* Login, account and checkout surfaces */
+.login-page,.login-panel,.panel-inner,.login-showcase,.showcase-overlay,.account-page,.account-shell{background:#fff!important;color:#111827!important;box-shadow:none!important}
+.login-showcase{background-image:none!important}
+.panel-inner{border:1px solid #111827!important}
+.welcome h2,.welcome p,.showcase-content h1,.showcase-content p,.trust-list strong,.trust-list small,.brand-mark,.auth-tabs button,.signup-line,.security-note,form>label,.form-row,.remember,.field-icon,.toggle-pass{color:#111827!important}
+.brand-mark{background:#fff!important;border:1px solid #111827!important}
+.auth-tabs{background:#fff!important;border:1px solid #111827!important}
+.auth-tabs button.active{background:#eaf2ff!important;color:#1459b8!important;border:1px solid #1769d2!important}
+.field{background:#fff!important;border:1px solid #111827!important}
+.primary-btn,.back-home{background:#1769d2!important;color:#fff!important;border:1px solid #1769d2!important}
+.back-home:hover{background:#0f55b4!important}
+.payment,.receipt-upload,.payment-choice-grid{background:#fff!important;color:#111827!important;border-color:#111827!important}
+.payment h3,.payment p,.payment div,.payment label,.receipt-upload *{color:#111827!important}
